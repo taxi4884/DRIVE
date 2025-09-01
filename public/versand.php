@@ -1,6 +1,7 @@
 <?php
 require_once '../includes/head.php';
 require_once '../includes/config.php';
+require_once '../includes/logger.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -13,11 +14,6 @@ require_once __DIR__ . '/../phpmailer/SMTP.php';
 // Logfile-Pfad
 define('LOGFILE', __DIR__ . '/schulung/versand.log');
 
-// Funktion zum Schreiben ins Logfile
-function logMessage($message) {
-    $timestamp = date("Y-m-d H:i:s");
-    file_put_contents(LOGFILE, "[$timestamp] $message" . PHP_EOL, FILE_APPEND);
-}
 
 /**
  * Einladung versenden + iCalendar‑Anhang
@@ -31,14 +27,14 @@ function logMessage($message) {
  
 // Funktion zum Senden der Einladung
 function sendInvitation($id, $vorname, $email, $praxistagdatum) {
-    logMessage("Versende Einladung an: $email");
+    logMessage("Versende Einladung an: $email", LOGFILE);
 	
 	/* ---------------------------------------------------------------------
 	1) Termin in DateTime wandeln
 	------------------------------------------------------------------ */
     $dateObj = DateTime::createFromFormat('d.m.Y', $praxistagdatum);
     if (!$dateObj) {
-        logMessage("Ungültiges Datumsformat: $praxistagdatum");
+        logMessage("Ungültiges Datumsformat: $praxistagdatum", LOGFILE);
         return false;
     }
 
@@ -140,10 +136,10 @@ ICS;
 
         /* ---------- Abschicken ---------- */
         $mail->send();
-        logMessage("E-Mail erfolgreich an $vorname ($email) gesendet.");
+        logMessage("E-Mail erfolgreich an $vorname ($email) gesendet.", LOGFILE);
         return true;
     } catch (Exception $e) {
-        logMessage("Fehler beim Senden der E-Mail an $email: {$mail->ErrorInfo}");
+        logMessage("Fehler beim Senden der E-Mail an $email: {$mail->ErrorInfo}", LOGFILE);
         return false;
     }
 }
@@ -161,7 +157,7 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
             $stmt->execute([':id' => $id]);
             $teilnehmer = $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            logMessage("Datenbankfehler: " . $e->getMessage());
+            logMessage("Datenbankfehler: " . $e->getMessage(), LOGFILE);
             die("<p>Fehler bei der Datenbankabfrage.</p>");
         }
 
@@ -191,9 +187,9 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
                         WHERE id = :id";
                     $updateStmt = $pdo->prepare($updateEinladung);
                     $updateStmt->execute([':id' => $id]);
-                    logMessage("letzte_einladung für Teilnehmer-ID $id aktualisiert.");
+                    logMessage("letzte_einladung für Teilnehmer-ID $id aktualisiert.", LOGFILE);
                 } catch (PDOException $e) {
-                    logMessage("Fehler beim Aktualisieren von letzte_einladung: " . $e->getMessage());
+                    logMessage("Fehler beim Aktualisieren von letzte_einladung: " . $e->getMessage(), LOGFILE);
                 }
 
                 session_start();

@@ -11,17 +11,14 @@ if (!headers_sent()) {
 }
 
 // --- Logging ---
-function logMessage($message) {
-    $logFile   = __DIR__ . '/send_weekly_sales.log';
-    $timestamp = date('[Y-m-d H:i:s]');
-    file_put_contents($logFile, "{$timestamp} {$message}\n", FILE_APPEND);
-}
-logMessage("Skript gestartet.");
+require_once __DIR__ . '/../../includes/logger.php';
+$logFile = __DIR__ . '/send_weekly_sales.log';
+logMessage("Skript gestartet.", $logFile);
 
 // --- Single-Instance Lock ---
 $lockFile = '/tmp/send_weekly_sales.lock';
 if (file_exists($lockFile)) {
-    logMessage("Skript läuft bereits. Abbruch.");
+    logMessage("Skript läuft bereits. Abbruch.", $logFile);
     exit;
 }
 file_put_contents($lockFile, (string)getmypid());
@@ -31,14 +28,14 @@ register_shutdown_function(function() use ($lockFile) {
 
 // --- Includes ---
 $dbPath = __DIR__ . '/../../includes/db.php';
-if (!file_exists($dbPath)) { logMessage("DB include fehlt: {$dbPath}"); exit; }
+if (!file_exists($dbPath)) { logMessage("DB include fehlt: {$dbPath}", $logFile); exit; }
 require_once $dbPath;
-logMessage("DB geladen.");
+logMessage("DB geladen.", $logFile);
 
 $configPath = __DIR__ . '/../../includes/config.php';
-if (!file_exists($configPath)) { logMessage("Config include fehlt: {$configPath}"); exit; }
+if (!file_exists($configPath)) { logMessage("Config include fehlt: {$configPath}", $logFile); exit; }
 require_once $configPath;
-logMessage("Config geladen.");
+logMessage("Config geladen.", $logFile);
 
 // --- PHPMailer ---
 $phpmailerPath      = __DIR__ . '/../../phpmailer/';
@@ -46,7 +43,7 @@ $exceptionPath      = $phpmailerPath . 'Exception.php';
 $phpmailerClassPath = $phpmailerPath . 'PHPMailer.php';
 $smtpPath           = $phpmailerPath . 'SMTP.php';
 if (!file_exists($exceptionPath) || !file_exists($phpmailerClassPath) || !file_exists($smtpPath)) {
-    logMessage("PHPMailer-Klassen nicht gefunden.");
+    logMessage("PHPMailer-Klassen nicht gefunden.", $logFile);
     exit;
 }
 require_once $exceptionPath;
@@ -84,18 +81,18 @@ function kwLabel(DateTime $anyDayOfWeek): string {
 
 // --- Empfänger laden ---
 function getEmailRecipients(PDO $pdo): array {
-    logMessage("Hole Empfänger (UmsatzMails=1) …");
+    logMessage("Hole Empfänger (UmsatzMails=1) …", $logFile);
     $stmt = $pdo->prepare("
         SELECT Email, Name
         FROM Benutzer
         WHERE UmsatzMails = 1 AND Email <> '' 
     ");
     if (!$stmt->execute()) {
-        logMessage("Empfänger-Abfrage fehlgeschlagen.");
+        logMessage("Empfänger-Abfrage fehlgeschlagen.", $logFile);
         return [];
     }
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-    logMessage("Empfänger: " . count($rows));
+    logMessage("Empfänger: " . count($rows), $logFile);
     return $rows;
 }
 
@@ -107,7 +104,7 @@ function getEmailRecipients(PDO $pdo): array {
  *           sync_fahreranmeldung(fahrer, anmeldung, abmeldung)
  */
 function getLastWeekSalesWithWorktime(PDO $pdo, DateTime $ws, DateTime $we): array {
-    logMessage("Aggregiere Vorwoche: ".$ws->format('Y-m-d H:i:s')." – ".$we->format('Y-m-d H:i:s'));
+    logMessage("Aggregiere Vorwoche: ".$ws->format('Y-m-d H:i:s')." – ".$we->format('Y-m-d H:i:s'), $logFile);
 
     $weekStart = $ws->format('Y-m-d H:i:s');
     $weekEnd   = $we->format('Y-m-d H:i:s');
@@ -200,7 +197,7 @@ function buildCsv(array $rows): string {
 
 // --- Email senden ---
 function sendeEmail($to, $name, $subject, $htmlBody, $csvString, $csvFilename) {
-    logMessage("Sende Mail an {$to} …");
+    logMessage("Sende Mail an {$to} …", $logFile);
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
@@ -224,15 +221,15 @@ function sendeEmail($to, $name, $subject, $htmlBody, $csvString, $csvFilename) {
         }
 
         $mail->send();
-        logMessage("Mail OK: {$to}");
+        logMessage("Mail OK: {$to}", $logFile);
     } catch (Exception $e) {
-        logMessage("Mail-Fehler an {$to}: " . $mail->ErrorInfo);
+        logMessage("Mail-Fehler an {$to}: " . $mail->ErrorInfo, $logFile);
     }
 }
 
 // --- Haupt ---
 try {
-    logMessage("Starte Hauptlauf …");
+    logMessage("Starte Hauptlauf …", $logFile);
 
     [$ws, $we] = getLastWeekRange();
     // Für Betreff/KW: eine Datum innerhalb der Vorwoche
@@ -302,10 +299,10 @@ try {
         sendeEmail($rcpt['Email'], $rcpt['Name'], $subject, $emailBody, $csv, $csvFilename);
     }
 
-    logMessage("Mails versendet. Empfänger: ".count($recipients).", Fahrerzeilen: ".count($data));
+    logMessage("Mails versendet. Empfänger: ".count($recipients).", Fahrerzeilen: ".count($data), $logFile);
 } catch (Throwable $e) {
-    logMessage("FATAL: ".$e->getMessage());
+    logMessage("FATAL: ".$e->getMessage(), $logFile);
     // Absichtlich kein rethrow – Cron soll nicht explodieren
 }
 
-logMessage("Skript beendet.");
+logMessage("Skript beendet.", $logFile);
