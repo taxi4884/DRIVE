@@ -47,24 +47,7 @@ if (file_exists($configPath)) {
     exit;
 }
 
-// PHPMailer-Klassen einbinden
-$phpmailerPath      = __DIR__ . '/../../phpmailer/';
-$exceptionPath      = $phpmailerPath . 'Exception.php';
-$phpmailerClassPath = $phpmailerPath . 'PHPMailer.php';
-$smtpPath           = $phpmailerPath . 'SMTP.php';
-
-if (file_exists($exceptionPath) && file_exists($phpmailerClassPath) && file_exists($smtpPath)) {
-    require_once $exceptionPath;
-    require_once $phpmailerClassPath;
-    require_once $smtpPath;
-    logMessage("PHPMailer-Klassen eingebunden.", $logFile);
-} else {
-    logMessage("Fehler: PHPMailer-Klassen nicht gefunden. Prüfe die Pfade.", $logFile);
-    exit;
-}
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require_once __DIR__ . '/../../includes/mailer.php';
 
 // Funktion zum Abrufen der E-Mail-Empfänger
 function getEmailRecipients(PDO $pdo) {
@@ -142,34 +125,6 @@ function getYesterdaySalesWithWorktime(PDO $pdo) {
 }
 
 // Funktion zum Senden von E-Mails
-function sendeEmail($to, $name, $subject, $body) {
-    logMessage("Senden einer E-Mail an: {$to}", $logFile);
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host       = SMTP_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = SMTP_USER;
-        $mail->Password   = SMTP_PASS;
-        $mail->SMTPSecure = SMTP_SECURE;
-        $mail->Port       = SMTP_PORT;
-
-        $mail->CharSet    = 'UTF-8';
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($to, $name);
-
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body    = $body;
-        $mail->AltBody = strip_tags($body);
-
-        $mail->send();
-        logMessage("E-Mail erfolgreich gesendet an: {$to}", $logFile);
-    } catch (Exception $e) {
-        logMessage("Fehler beim Senden der E-Mail: {$mail->ErrorInfo}", $logFile);
-    }
-}
-
 // Hauptprozess
 try {
     logMessage("Starte den Hauptprozess.", $logFile);
@@ -255,7 +210,7 @@ try {
         </div>
         ";
 
-        sendeEmail(
+        sendEmail(
             $recipient['Email'],
             $recipient['Name'],
             'Umsatz- & Arbeitszeitbericht — ' . $dateLabel,

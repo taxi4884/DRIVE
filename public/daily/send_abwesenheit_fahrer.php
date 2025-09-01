@@ -48,55 +48,7 @@ if (file_exists($configPath)) {
     exit;
 }
 
-// PHPMailer-Klassen einbinden
-$phpmailerPath = __DIR__ . '/../../phpmailer/';
-$exceptionPath = $phpmailerPath . 'Exception.php';
-$phpmailerClassPath = $phpmailerPath . 'PHPMailer.php';
-$smtpPath = $phpmailerPath . 'SMTP.php';
-
-if (file_exists($exceptionPath) && file_exists($phpmailerClassPath) && file_exists($smtpPath)) {
-    require_once $exceptionPath;
-    require_once $phpmailerClassPath;
-    require_once $smtpPath;
-    logMessage("PHPMailer-Klassen eingebunden.", $logFile);
-} else {
-    logMessage("Fehler: PHPMailer-Klassen nicht gefunden. Prüfe die Pfade.", $logFile);
-    exit;
-}
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-// Funktion zum Senden von E-Mails
-function sendeEmail($empfaengerEmail, $empfaengerName, $subject, $body) {
-    logMessage("Senden einer E-Mail an: {$empfaengerEmail}", $logFile);
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host = SMTP_HOST;
-        $mail->SMTPAuth = true;
-        $mail->Username = SMTP_USER;
-        $mail->Password = SMTP_PASS;
-        $mail->SMTPSecure = SMTP_SECURE;
-        $mail->Port = SMTP_PORT;
-
-        $mail->CharSet = 'UTF-8';
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($empfaengerEmail, $empfaengerName);
-
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body = $body;
-        $mail->AltBody = strip_tags($body);
-
-        $mail->send();
-        logMessage("E-Mail erfolgreich gesendet an: {$empfaengerEmail}", $logFile);
-        return true;
-    } catch (Exception $e) {
-        logMessage("Fehler beim Senden der E-Mail an {$empfaengerEmail}: {$mail->ErrorInfo}", $logFile);
-        return false;
-    }
-}
+require_once __DIR__ . '/../../includes/mailer.php';
 
 // Hauptprozess
 try {
@@ -131,7 +83,7 @@ try {
         ";
 
         // E-Mail senden
-        if (sendeEmail($to, 'Urlaubsverwalter', $subject, $body)) {
+        if (sendEmail($to, 'Urlaubsverwalter', $subject, $body)) {
             // Aktualisieren des processed-Status nach erfolgreich versendeter E-Mail
             $updateStmt = $pdo->prepare("
                 UPDATE FahrerAbwesenheiten 
