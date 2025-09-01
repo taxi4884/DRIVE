@@ -123,6 +123,7 @@ $gesamt_urlaubstage = $stmt->fetchColumn();
     <title>Fahrer bearbeiten | DRIVE</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="js/modal.js"></script>
     <style>
         .form-section {
             margin-bottom: 1.5rem;
@@ -373,21 +374,14 @@ $gesamt_urlaubstage = $stmt->fetchColumn();
 		</div>
 	</div>
 	<script>
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-		function openEditModal(von, bis, grund) {
-			document.getElementById('edit_startdatum').value = von;
-			document.getElementById('edit_enddatum').value = bis;
-			document.getElementById('edit_grund').value = grund;
-			document.getElementById('original_start').value = von;
-			document.getElementById('original_end').value = bis;
-			document.getElementById('editModal').style.display = 'flex';
-		}
+                function openEditModal(von, bis, grund) {
+                        document.getElementById('edit_startdatum').value = von;
+                        document.getElementById('edit_enddatum').value = bis;
+                        document.getElementById('edit_grund').value = grund;
+                        document.getElementById('original_start').value = von;
+                        document.getElementById('original_end').value = bis;
+                        document.getElementById('editModal').style.display = 'flex';
+                }
 
 		function closeEditModal() {
 			document.getElementById('editModal').style.display = 'none';

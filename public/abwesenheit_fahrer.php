@@ -72,6 +72,7 @@ $formatter->setPattern('MMMM yyyy');
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fahrer Abwesenheiten | DRIVE</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="js/modal.js"></script>
   <style>
     /* Basisstil für Kalenderzellen */
 	.dashboard-table td {
@@ -296,17 +297,9 @@ $formatter->setPattern('MMMM yyyy');
   <?php include 'modals/add_fahrer_abwesenheit_modal.php'; ?>
 
   <script>
-    function openModal(modalId) {
-      document.getElementById(modalId).style.display = 'flex';
-    }
-    function closeModal(modalId) {
-      document.getElementById(modalId).style.display = 'none';
-    }
-  </script>
-  <script>	
-		document.querySelector('.burger-menu').addEventListener('click', () => {
-			document.querySelector('.nav-links').classList.toggle('active');
-		});
+                document.querySelector('.burger-menu').addEventListener('click', () => {
+                        document.querySelector('.nav-links').classList.toggle('active');
+                });
     </script>
 </body>
 </html>

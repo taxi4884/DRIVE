@@ -58,7 +58,8 @@ try {
   <title>Persönliche Daten | DRIVE</title>
   <link rel="stylesheet" href="css/driver-dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-	<style>
+  <script src="../js/modal.js"></script>
+        <style>
 		body {
 			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 			background: #f6f8fa;
@@ -382,12 +383,6 @@ try {
   </div>
   
   <script>
-    function openModal(modalId) {
-      document.getElementById(modalId).style.display = 'flex';
-    }
-    function closeModal(modalId) {
-      document.getElementById(modalId).style.display = 'none';
-    }
     // Schließen des Modals durch Klick außerhalb des Inhalts
     window.onclick = function(event) {
       const modal = document.getElementById('urlaubModal');
