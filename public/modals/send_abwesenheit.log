@@ -1,0 +1,413 @@
+[2025-01-03 10:44:15] Konfigurationsdatei eingebunden.
+[2025-01-03 10:44:15] PHPMailer-Klassen eingebunden.
+[2025-01-03 10:44:15] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 10:45:36] Konfigurationsdatei eingebunden.
+[2025-01-03 10:45:36] PHPMailer-Klassen eingebunden.
+[2025-01-03 10:45:36] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 10:45:36] Abrufen der Krankmeldungsdetails.
+[2025-01-03 10:47:13] Konfigurationsdatei eingebunden.
+[2025-01-03 10:47:14] PHPMailer-Klassen eingebunden.
+[2025-01-03 10:47:14] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 10:47:14] Abrufen der Krankmeldungsdetails für den Typ 'Krank'.
+[2025-01-03 10:47:15] Konfigurationsdatei eingebunden.
+[2025-01-03 10:47:15] PHPMailer-Klassen eingebunden.
+[2025-01-03 10:47:15] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 10:47:15] Abrufen der Krankmeldungsdetails für den Typ 'Krank'.
+[2025-01-03 10:47:29] Konfigurationsdatei eingebunden.
+[2025-01-03 10:47:29] PHPMailer-Klassen eingebunden.
+[2025-01-03 10:47:29] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 10:47:29] Abrufen der Krankmeldungsdetails für den Typ 'Krank'.
+[2025-01-03 10:48:07] Konfigurationsdatei eingebunden.
+[2025-01-03 10:48:07] PHPMailer-Klassen eingebunden.
+[2025-01-03 10:48:07] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 10:48:07] Abrufen der Krankmeldungsdetails für den Typ 'Krank'.
+[2025-01-03 10:48:07] Krankmeldungen erfolgreich abgerufen.
+[2025-01-03 10:48:07] Anzahl der Krankmeldungen: 1
+[2025-01-03 10:48:07] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-03 10:48:07] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-03 10:48:07] Anzahl der Empfänger: 6
+[2025-01-03 10:48:07] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-03 10:48:07] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-03 10:48:07] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-03 10:48:07] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-03 10:48:07] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-03 10:48:07] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-03 10:48:07] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-03 10:48:07] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-03 10:48:07] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-03 10:48:07] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-03 10:48:07] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-03 10:48:07] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-03 10:48:07] Skript beendet.
+[2025-01-03 10:50:50] Konfigurationsdatei eingebunden.
+[2025-01-03 10:50:50] PHPMailer-Klassen eingebunden.
+[2025-01-03 10:50:50] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 10:50:50] Abrufen der Krankmeldungsdetails für den Typ 'Krank' mit Mitarbeiterdaten.
+[2025-01-03 10:50:50] Krankmeldungen erfolgreich abgerufen.
+[2025-01-03 10:50:50] Anzahl der Krankmeldungen: 1
+[2025-01-03 10:50:50] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-03 10:50:50] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-03 10:50:50] Anzahl der Empfänger: 6
+[2025-01-03 10:50:50] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-03 10:50:50] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-03 10:50:50] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-03 10:50:50] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-03 10:50:50] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-03 10:50:50] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-03 10:50:50] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-03 10:50:50] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-03 10:50:50] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-03 10:50:50] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-03 10:50:50] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-03 10:50:50] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-03 10:50:50] Skript beendet.
+[2025-01-03 10:54:41] Konfigurationsdatei eingebunden.
+[2025-01-03 10:54:41] PHPMailer-Klassen eingebunden.
+[2025-01-03 10:54:41] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 10:54:41] Abrufen der Krankmeldungsdetails für den Typ 'Krank' mit Mitarbeiterdaten.
+[2025-01-03 10:54:41] Krankmeldungen erfolgreich abgerufen.
+[2025-01-03 10:54:41] Anzahl der Krankmeldungen: 1
+[2025-01-03 10:54:41] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-03 10:54:41] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-03 10:54:41] Anzahl der Empfänger: 6
+[2025-01-03 10:54:41] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-03 10:54:41] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-03 10:54:41] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-03 10:54:41] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-03 10:54:41] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-03 10:54:41] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-03 10:54:41] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-03 10:54:41] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-03 10:54:41] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-03 10:54:41] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-03 10:54:41] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-03 10:54:41] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-03 10:54:41] Skript beendet.
+[2025-01-03 10:54:44] Konfigurationsdatei eingebunden.
+[2025-01-03 10:54:44] PHPMailer-Klassen eingebunden.
+[2025-01-03 10:54:44] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 10:54:44] Abrufen der Krankmeldungsdetails für den Typ 'Krank' mit Mitarbeiterdaten.
+[2025-01-03 10:54:44] Krankmeldungen erfolgreich abgerufen.
+[2025-01-03 10:54:44] Anzahl der Krankmeldungen: 1
+[2025-01-03 10:54:44] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-03 10:54:44] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-03 10:54:44] Anzahl der Empfänger: 6
+[2025-01-03 10:54:44] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-03 10:54:45] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-03 10:54:45] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-03 10:54:45] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-03 10:54:45] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-03 10:54:45] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-03 10:54:45] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-03 10:54:45] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-03 10:54:45] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-03 10:54:45] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-03 10:54:45] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-03 10:54:45] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-03 10:54:45] Skript beendet.
+[2025-01-03 10:55:26] Konfigurationsdatei eingebunden.
+[2025-01-03 10:55:26] PHPMailer-Klassen eingebunden.
+[2025-01-03 10:55:26] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 10:55:26] Abrufen der Krankmeldungsdetails für den Typ 'Krank' mit Mitarbeiterdaten.
+[2025-01-03 10:55:26] Krankmeldungen erfolgreich abgerufen.
+[2025-01-03 10:55:26] Anzahl der Krankmeldungen: 1
+[2025-01-03 10:55:26] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-03 10:55:26] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-03 10:55:26] Anzahl der Empfänger: 6
+[2025-01-03 10:55:26] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-03 10:55:26] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-03 10:55:26] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-03 10:55:26] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-03 10:55:26] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-03 10:55:26] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-03 10:55:26] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-03 10:55:26] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-03 10:55:26] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-03 10:55:26] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-03 10:55:26] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-03 10:55:26] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-03 10:55:26] Skript beendet.
+[2025-01-03 11:42:29] Konfigurationsdatei eingebunden.
+[2025-01-03 11:42:29] PHPMailer-Klassen eingebunden.
+[2025-01-03 11:42:29] Starte Hauptprozess für Krankmeldungen.
+[2025-01-03 11:42:29] Abrufen der Krankmeldungsdetails für den Typ 'Krank' mit Mitarbeiterdaten.
+[2025-01-03 11:42:29] Krankmeldungen erfolgreich abgerufen.
+[2025-01-03 11:42:29] Anzahl der Krankmeldungen: 1
+[2025-01-03 11:42:29] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-03 11:42:29] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-03 11:42:29] Anzahl der Empfänger: 6
+[2025-01-03 11:42:29] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-03 11:42:29] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-03 11:42:29] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-03 11:42:29] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-03 11:42:29] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-03 11:42:29] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-03 11:42:29] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-03 11:42:30] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-03 11:42:30] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-03 11:42:30] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-03 11:42:30] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-03 11:42:30] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-03 11:42:30] Skript beendet.
+[2025-01-03 12:31:15] Konfigurationsdatei eingebunden.
+[2025-01-03 12:31:15] PHPMailer-Klassen eingebunden.
+[2025-01-03 12:31:15] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-03 12:31:15] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-03 12:33:01] Konfigurationsdatei eingebunden.
+[2025-01-03 12:33:01] PHPMailer-Klassen eingebunden.
+[2025-01-03 12:33:01] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-03 12:33:01] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-03 12:33:01] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-03 12:33:01] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-03 12:33:01] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-03 12:33:01] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-03 12:33:01] Anzahl der Empfänger: 6
+[2025-01-03 12:33:01] Skript beendet.
+[2025-01-03 12:33:03] Konfigurationsdatei eingebunden.
+[2025-01-03 12:33:03] PHPMailer-Klassen eingebunden.
+[2025-01-03 12:33:03] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-03 12:33:03] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-03 12:33:03] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-03 12:33:03] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-03 12:33:03] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-03 12:33:03] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-03 12:33:03] Anzahl der Empfänger: 6
+[2025-01-03 12:33:03] Skript beendet.
+[2025-01-21 15:48:46] Konfigurationsdatei eingebunden.
+[2025-01-21 15:48:46] PHPMailer-Klassen eingebunden.
+[2025-01-21 15:48:46] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 15:48:46] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 15:48:46] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 15:48:46] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-21 15:48:46] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 15:48:46] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 15:48:46] Anzahl der Empfänger: 6
+[2025-01-21 15:48:46] Skript beendet.
+[2025-01-21 15:48:48] Konfigurationsdatei eingebunden.
+[2025-01-21 15:48:48] PHPMailer-Klassen eingebunden.
+[2025-01-21 15:48:48] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 15:48:48] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 15:48:48] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 15:48:48] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-21 15:48:48] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 15:48:48] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 15:48:48] Anzahl der Empfänger: 6
+[2025-01-21 15:48:48] Skript beendet.
+[2025-01-21 15:48:50] Konfigurationsdatei eingebunden.
+[2025-01-21 15:48:50] PHPMailer-Klassen eingebunden.
+[2025-01-21 15:48:50] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 15:48:50] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 15:48:50] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 15:48:50] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-21 15:48:50] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 15:48:50] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 15:48:50] Anzahl der Empfänger: 6
+[2025-01-21 15:48:50] Skript beendet.
+[2025-01-21 15:53:12] Konfigurationsdatei eingebunden.
+[2025-01-21 15:53:12] PHPMailer-Klassen eingebunden.
+[2025-01-21 15:53:12] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 15:53:12] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 15:53:12] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 15:53:12] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-21 15:53:12] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 15:53:12] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 15:53:12] Anzahl der Empfänger: 6
+[2025-01-21 15:53:12] Skript beendet.
+[2025-01-21 15:54:00] Konfigurationsdatei eingebunden.
+[2025-01-21 15:54:00] PHPMailer-Klassen eingebunden.
+[2025-01-21 15:54:00] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 15:54:00] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 15:54:00] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 15:54:00] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-21 15:54:00] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 15:54:00] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 15:54:00] Anzahl der Empfänger: 6
+[2025-01-21 15:54:00] Skript beendet.
+[2025-01-21 15:54:00] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-21 15:54:01] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-21 15:54:01] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-21 15:54:01] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-21 15:54:01] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-21 15:54:01] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-21 15:54:01] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-21 15:54:01] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-21 15:54:01] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-21 15:54:01] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-21 15:54:01] Bereite E-Mail für y.maudrich@taxi4884.de vor.
+[2025-01-21 15:54:01] E-Mail wurde erfolgreich an y.maudrich@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Konfigurationsdatei eingebunden.
+[2025-01-21 15:59:42] PHPMailer-Klassen eingebunden.
+[2025-01-21 15:59:42] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 15:59:42] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 15:59:42] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 15:59:42] Anzahl der heute neu gemeldeten Krankmeldungen: 1
+[2025-01-21 15:59:42] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 15:59:42] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 15:59:42] Anzahl der Empfänger: 6
+[2025-01-21 15:59:42] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Skript beendet.
+[2025-01-21 15:59:42] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-21 15:59:42] Bereite E-Mail für y.maudrich@taxi4884.de vor.
+[2025-01-21 15:59:42] E-Mail wurde erfolgreich an y.maudrich@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Konfigurationsdatei eingebunden.
+[2025-01-21 16:01:22] PHPMailer-Klassen eingebunden.
+[2025-01-21 16:01:22] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 16:01:22] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 16:01:22] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 16:01:22] Anzahl der heute neu gemeldeten Krankmeldungen: 2
+[2025-01-21 16:01:22] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 16:01:22] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 16:01:22] Anzahl der Empfänger: 6
+[2025-01-21 16:01:22] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-21 16:01:22] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-21 16:01:22] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-21 16:01:23] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-21 16:01:23] Skript beendet.
+[2025-01-21 16:01:25] Konfigurationsdatei eingebunden.
+[2025-01-21 16:01:25] PHPMailer-Klassen eingebunden.
+[2025-01-21 16:01:25] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 16:01:25] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 16:01:25] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 16:01:25] Anzahl der heute neu gemeldeten Krankmeldungen: 2
+[2025-01-21 16:01:25] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 16:01:25] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 16:01:25] Anzahl der Empfänger: 6
+[2025-01-21 16:01:25] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-21 16:01:25] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-21 16:01:25] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-21 16:01:25] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-21 16:01:25] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-21 16:01:25] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-21 16:01:25] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-21 16:01:25] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-21 16:01:25] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-21 16:01:25] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-21 16:01:25] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-21 16:01:25] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-21 16:01:25] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-21 16:01:25] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-21 16:01:25] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-21 16:01:25] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-21 16:01:25] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-21 16:01:25] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-21 16:01:25] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-21 16:01:26] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-21 16:01:26] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-21 16:01:26] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-21 16:01:26] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-21 16:01:26] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-21 16:01:26] Skript beendet.
+[2025-01-21 16:01:27] Konfigurationsdatei eingebunden.
+[2025-01-21 16:01:27] PHPMailer-Klassen eingebunden.
+[2025-01-21 16:01:27] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 16:01:27] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 16:01:27] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 16:01:27] Anzahl der heute neu gemeldeten Krankmeldungen: 2
+[2025-01-21 16:01:27] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 16:01:27] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 16:01:27] Anzahl der Empfänger: 6
+[2025-01-21 16:01:27] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-21 16:01:27] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-21 16:01:27] Bereite E-Mail für technik@taxi4884.de vor.
+[2025-01-21 16:01:27] E-Mail wurde erfolgreich an technik@taxi4884.de gesendet.
+[2025-01-21 16:01:27] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-21 16:01:27] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-21 16:01:27] Bereite E-Mail für t.buehnert@taxi4884.de vor.
+[2025-01-21 16:01:27] E-Mail wurde erfolgreich an t.buehnert@taxi4884.de gesendet.
+[2025-01-21 16:01:27] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-21 16:01:27] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-21 16:01:27] Bereite E-Mail für t.voigt@taxi4884.de vor.
+[2025-01-21 16:01:27] E-Mail wurde erfolgreich an t.voigt@taxi4884.de gesendet.
+[2025-01-21 16:01:27] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-21 16:01:27] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-21 16:01:27] Bereite E-Mail für abrechnung@taxi4884.de vor.
+[2025-01-21 16:01:27] E-Mail wurde erfolgreich an abrechnung@taxi4884.de gesendet.
+[2025-01-21 16:01:27] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-21 16:01:27] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-21 16:01:27] Bereite E-Mail für sv@taxi4884.de vor.
+[2025-01-21 16:01:27] E-Mail wurde erfolgreich an sv@taxi4884.de gesendet.
+[2025-01-21 16:01:27] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-21 16:01:28] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-21 16:01:28] Bereite E-Mail für m.pillwitz@taxi4884.de vor.
+[2025-01-21 16:01:28] E-Mail wurde erfolgreich an m.pillwitz@taxi4884.de gesendet.
+[2025-01-21 16:01:28] Skript beendet.
+[2025-01-21 16:01:58] Konfigurationsdatei eingebunden.
+[2025-01-21 16:01:58] PHPMailer-Klassen eingebunden.
+[2025-01-21 16:01:58] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 16:01:58] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 16:01:58] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 16:01:58] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-21 16:01:58] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 16:01:58] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 16:01:58] Anzahl der Empfänger: 6
+[2025-01-21 16:01:58] Skript beendet.
+[2025-01-21 16:02:00] Konfigurationsdatei eingebunden.
+[2025-01-21 16:02:00] PHPMailer-Klassen eingebunden.
+[2025-01-21 16:02:00] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 16:02:00] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 16:02:00] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 16:02:00] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-21 16:02:00] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 16:02:00] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 16:02:00] Anzahl der Empfänger: 6
+[2025-01-21 16:02:00] Skript beendet.
+[2025-01-21 16:02:26] Konfigurationsdatei eingebunden.
+[2025-01-21 16:02:26] PHPMailer-Klassen eingebunden.
+[2025-01-21 16:02:26] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 16:02:26] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 16:02:26] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 16:02:26] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-21 16:02:26] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 16:02:26] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 16:02:26] Anzahl der Empfänger: 6
+[2025-01-21 16:02:26] Skript beendet.
+[2025-01-21 16:02:43] Konfigurationsdatei eingebunden.
+[2025-01-21 16:02:43] PHPMailer-Klassen eingebunden.
+[2025-01-21 16:02:43] Starte Hauptprozess für neu gemeldete Krankmeldungen.
+[2025-01-21 16:02:43] Abrufen der heute neu gemeldeten Krankmeldungen.
+[2025-01-21 16:02:43] Neu gemeldete Krankmeldungen erfolgreich abgerufen.
+[2025-01-21 16:02:43] Anzahl der heute neu gemeldeten Krankmeldungen: 0
+[2025-01-21 16:02:43] Abrufen der E-Mail-Adressen für Benutzer mit AbwesenheitZentrale = 1.
+[2025-01-21 16:02:43] E-Mail-Empfänger erfolgreich abgerufen.
+[2025-01-21 16:02:43] Anzahl der Empfänger: 6
+[2025-01-21 16:02:43] Skript beendet.

@@ -1,0 +1,110 @@
+/* Hintergrund mit einem leichten Verlauf in dunkleren Tönen */
+/* Hintergrund mit Karte und dunkler Orientierung */
+body {
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+  background: linear-gradient(135deg, #2c2c2c, #3b3b3b);
+  background: url('/images/leipzig-dark-map.jpg') no-repeat center center fixed; /* Ersetze 'leipzig-dark-map.jpg' durch den tatsächlichen Dateipfad */
+  background-size: cover; /* Passt die Karte an den Bildschirm an */
+  color: #fff; /* Textfarbe für bessere Lesbarkeit */
+}
+
+/* Zentrierung des Inhalts */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Füllt den gesamten Bildschirm */
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+/* Logo */
+.logo {
+  display: block;
+  margin: 0 auto 1rem;
+  width: 250px; /* Größe des Logos anpassen */
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8))
+          drop-shadow(0 0 20px rgba(255, 215, 0, 1));
+  animation: glow-pulse 2s infinite alternate;
+}
+
+@keyframes glow-pulse {
+  0% {
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5))
+            drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+  }
+  100% {
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 1))
+            drop-shadow(0 0 30px rgba(255, 215, 0, 1));
+  }
+}
+
+/* Hauptbereich (Card-Layout) */
+main {
+  background-color: #fff; /* Halbtransparentes Weiß */
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+  color: #000;
+}
+
+/* Überschrift */
+h1 {
+  margin-top: 0;
+  color: #000;
+}
+
+/* Fehlermeldung */
+.error {
+  color: red;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Labels */
+label {
+  display: block;
+  text-align: left;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #000;
+}
+
+/* Eingabefelder */
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Button */
+button[type="submit"] {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #FFD700; /* Gold-Farbe */
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #FFC107; 
+}
+
+/* Medienabfrage für größere Bildschirme */
+@media (min-width: 768px) {
+  .wrapper {
+    max-width: 500px;
+  }
+}

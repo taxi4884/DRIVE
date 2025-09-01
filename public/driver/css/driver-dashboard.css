@@ -1,0 +1,413 @@
+/* Grundlegende Einstellungen */
+/* Mobile-First Styling */
+/* Reset für das Layout */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+}
+
+/* Header für das Burger-Menü */
+header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 20px;
+    background-color: transparent; /* Kein Balken */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+/* Main Content */
+main {
+    padding: 20px 20px 100px 20px; /* Platz für das fixe Menü */
+    text-align: center;
+}
+
+header {
+    background-color: #FFD700; /* Goldgelb */
+    color: #000; /* Schwarzer Text */
+    padding: 10px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Leichter Schatten */
+}
+
+/* Buttons */
+button {
+    display: block;
+    width: 100%;
+    background-color: #FFD700; /* Goldgelb */
+    color: #000; /* Schwarzer Text */
+    border: none;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+}
+
+button:hover {
+    background-color: #FFC107; /* Dunkleres Gelb */
+}
+
+/* Umsatz Container */
+.umsatz-container {
+    margin: 20px auto;
+    padding: 10px;
+    max-width: 800px;
+    background: #fdfd96;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.gesamtumsatz {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 10px;
+    background: #ffeb3b;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+/* Tabellen */
+.umsatz-tabelle {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.umsatz-tabelle th,
+.umsatz-tabelle td {
+    text-align: left;
+    padding: 10px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+}
+
+.umsatz-tabelle th {
+    background: #ffd700;
+    color: #000;
+    font-weight: bold;
+}
+
+/* Aktionen */
+.actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.actions .edit-btn,
+.actions .delete-btn {
+    text-decoration: none;
+    padding: 5px 15px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #fff;
+    transition: background-color 0.3s;
+}
+
+.edit-btn {
+    background-color: #4caf50; /* Grün */
+}
+
+.delete-btn {
+    background-color: #f44336; /* Rot */
+}
+
+.edit-btn:hover {
+    background-color: #45a049;
+}
+
+.delete-btn:hover {
+    background-color: #d32f2f;
+}
+
+/* Styling für das Formular */
+form {
+    background-color: #fdfd96; /* Heller Hintergrund */
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Schatteneffekt */
+    max-width: 600px;
+    margin: 20px auto; /* Zentriert das Formular */
+    padding: 20px;
+    font-size: 16px;
+}
+
+/* Überschriften */
+form h1 {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Labels */
+form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+/* Eingabefelder */
+form input[type="number"],
+form input[type="date"],
+form input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+form input[type="text"]:readonly {
+    background-color: #f9f9f9; /* Leicht grauer Hintergrund für Read-only-Feld */
+}
+
+/* Fokuszustand */
+form input:focus {
+    border-color: #ffd700; /* Goldgelb */
+    outline: none;
+}
+
+/* Buttons */
+form button {
+    width: 100%;
+    background-color: #ffd700; /* Goldgelber Button */
+    color: #000; /* Schwarzer Text */
+    border: none;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+form button:hover {
+    background-color: #ffc107; /* Etwas dunklerer Gelbton */
+}
+
+/* Fehler- und Erfolgsmeldungen */
+form p {
+    font-size: 14px;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+form p[style*="color: red;"] {
+    background-color: #ffe6e6; /* Heller Rotton */
+    border: 1px solid #ff4d4d; /* Roter Rand */
+}
+
+form p[style*="color: green;"] {
+    background-color: #e6ffe6; /* Heller Grünton */
+    border: 1px solid #4dff4d; /* Grüner Rand */
+}
+
+/* Floating Navigation Styling */
+.floating-nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 500px;
+    background-color: #fff; /* Weißer Hintergrund */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Schatten für Schwebeneffekt */
+    border-radius: 15px; /* Runde Ecken */
+    padding: 5px 0; /* Weniger vertikaler Abstand */
+    z-index: 1000;
+}
+
+.floating-nav nav ul {
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.floating-nav nav ul li {
+    text-align: center;
+    flex: 1; /* Alle Menüeinträge gleich breit */
+}
+
+.floating-nav nav ul li a {
+    text-decoration: none;
+    color: #333; /* Dunkelgrauer Text */
+    font-size: 10px; /* Kleinere Schriftgröße */
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px; /* Weniger Abstand zwischen Symbol und Text */
+    padding: 7px 0; /* Minimaler vertikaler Abstand */
+}
+
+.floating-nav nav ul li a i {
+    font-size: 14px; /* Symbolgröße anpassen */
+}
+
+.floating-nav nav ul li a.active {
+    color: #FFF; /* Weißer Text für aktives Element */
+    background-color: #FFD700; /* Goldgelber Hintergrund */
+    font-size: 14px; /* Größerer Text für aktive Seite */
+    padding: 6px 8px; /* Minimaler Padding für das aktive Menü */
+    border-radius: 10px; /* Runde Ecken für aktives Element */
+    position: relative;
+    top: -10px; /* Noch deutlicher über den Balken hinausragend */
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Leichter Schatten für aktive Seite */
+    transition: top 0.3s ease; /* Sanfte Bewegung bei Wechsel */
+}
+
+.floating-nav nav ul li a:hover {
+    color: #000000; /* Goldgelber Text bei Hover */
+}
+
+.floating-nav nav ul li a.active i {
+    font-size: 20px; /* Größeres Symbol für aktive Seite */
+}
+
+/* Tabelle für Desktop */
+.personal-data {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.personal-data th, .personal-data td {
+    text-align: left;
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.personal-data th {
+    background-color: #FFD700;
+    color: #000;
+}
+
+.personal-data tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Responsive Tabellen */
+@media (max-width: 768px) {
+    .umsatz-tabelle {
+        border: none;
+    }
+
+    .umsatz-tabelle thead {
+        display: none;
+    }
+
+    .umsatz-tabelle tr {
+        display: block;
+		padding: 5px;
+        margin-bottom: 10px;
+		background-color: #ffeb3b;
+		border-radius: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .umsatz-tabelle td {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border: none;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .umsatz-tabelle td:last-child {
+        border-bottom: none;
+    }
+
+    .umsatz-tabelle td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        flex: 1;
+        text-align: left;
+    }
+
+    .actions {
+        justify-content: center;
+        gap: 20px;
+        margin-top: 10px;
+    }
+	
+	form {
+        padding: 15px;
+        font-size: 14px;
+    }
+
+    form button {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .floating-nav {
+        width: 90%; /* Mehr Platz für kleinere Bildschirme */
+    }
+    
+    .personal-data {
+        border: none;
+        margin: 0;
+        width: 100%;
+    }
+
+    .personal-data th {
+        display: none;
+    }
+
+    .personal-data tr {
+        display: block;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+    }
+
+    .personal-data td {
+        display: block;
+        text-align: left;
+        padding: 8px 10px;
+        border: none;
+    }
+
+    .personal-data td::before {
+        content: attr(data-label);
+        display: block;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+}
+
+/* Anpassungen für größere Bildschirme */
+@media (min-width: 768px) {
+    button {
+        width: auto;
+        padding: 10px 20px;
+    }
+
+    main {
+        padding: 20px 20px 100px 20px;
+    }
+
+    .umsatz-tabelle {
+        font-size: 18px;
+    }
+}
