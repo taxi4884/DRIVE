@@ -2,6 +2,7 @@
 // Verbindungen und Konfigurationen einbinden
 require_once '../includes/head.php';
 require_once '../includes/config.php';
+require_once '../includes/logger.php';
 
 // PHPMailer-Klassen einbinden
 require_once __DIR__ . '/../phpmailer/Exception.php';
@@ -14,11 +15,6 @@ use PHPMailer\PHPMailer\Exception;
 // Logfile-Pfad
 define('LOGFILE', __DIR__ . '/send_schulung.log');
 
-// Funktion zum Schreiben ins Logfile
-function logMessage($message) {
-    $timestamp = date("Y-m-d H:i:s");
-    file_put_contents(LOGFILE, "[$timestamp] $message" . PHP_EOL, FILE_APPEND);
-}
 
 // Funktion zur Generierung des Benutzernamens
 function generateUsername($vorname, $nachname) {
@@ -29,8 +25,8 @@ function generateUsername($vorname, $nachname) {
 
 // Funktion zur Erstellung des Benutzers in WordPress
 function createWpUser($username, $password, $email, $vorname) {
-    logMessage("WordPress-Benutzer wird erstellt: $username");
-    logMessage("API-Daten: " . json_encode($data));
+    logMessage("WordPress-Benutzer wird erstellt: $username", LOGFILE);
+    logMessage("API-Daten: " . json_encode($data), LOGFILE);
     $api_url = 'https://funkschulung.taxi4884.de/wp-json/wp/v2/users';
     $api_username = 'createUser';
     $api_password = 'xDar xQbH scHU ARoM Vg45 LcFm';
@@ -54,14 +50,14 @@ function createWpUser($username, $password, $email, $vorname) {
     $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    logMessage("WordPress-Benutzer-Erstellung abgeschlossen mit Status: $http_status");
-    logMessage("API-Antwort: " . json_encode($response));
+    logMessage("WordPress-Benutzer-Erstellung abgeschlossen mit Status: $http_status", LOGFILE);
+    logMessage("API-Antwort: " . json_encode($response), LOGFILE);
     return [$http_status, json_decode($response, true)];
 }
 
 // Funktion zum Senden der E-Mail
 function sendEmail($vorname, $email, $username, $password) {
-    logMessage("Versende E-Mail an: $email");
+    logMessage("Versende E-Mail an: $email", LOGFILE);
     $mail = new PHPMailer(true);
 
     try {
@@ -112,30 +108,30 @@ function sendEmail($vorname, $email, $username, $password) {
         ";
 
         $mail->send();
-        logMessage("E-Mail erfolgreich an $vorname ($email) gesendet.");
+        logMessage("E-Mail erfolgreich an $vorname ($email) gesendet.", LOGFILE);
         return true;
     } catch (Exception $e) {
-        logMessage("Fehler beim Senden der E-Mail an $email: {$mail->ErrorInfo}");
+        logMessage("Fehler beim Senden der E-Mail an $email: {$mail->ErrorInfo}", LOGFILE);
         return false;
     }
 }
 
 // Hauptlogik
 function processNewUsers() {
-    logMessage("Starte die Verarbeitung neuer Benutzer...");
+    logMessage("Starte die Verarbeitung neuer Benutzer...", LOGFILE);
     try {
         global $pdo; // Verwendung der Verbindung aus head.php
 
-        logMessage("Datenbankabfrage wird gestartet...");
+        logMessage("Datenbankabfrage wird gestartet...", LOGFILE);
         $sql = "SELECT vorname, nachname, email FROM schulungsteilnehmer WHERE processed = 0";
         $stmt = $pdo->query($sql);
 
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        logMessage(count($users) . " Benutzer gefunden.");
+        logMessage(count($users) . " Benutzer gefunden.", LOGFILE);
 
         if (!empty($users)) {
             foreach ($users as $user) {
-                logMessage("Verarbeite Benutzer: " . json_encode($user));
+                logMessage("Verarbeite Benutzer: " . json_encode($user), LOGFILE);
                 $vorname = $user['vorname'];
                 $nachname = $user['nachname'];
                 $email = $user['email'];
@@ -146,26 +142,26 @@ function processNewUsers() {
                 list($status, $response) = createWpUser($username, $password, $email, $vorname);
 
                 if ($status == 201) {
-                    logMessage("Benutzer $vorname $nachname erfolgreich in WordPress erstellt.");
+                    logMessage("Benutzer $vorname $nachname erfolgreich in WordPress erstellt.", LOGFILE);
 
                     if (sendEmail($vorname, $email, $username, $password)) {
                         $update_sql = "UPDATE schulungsteilnehmer SET processed = 1 WHERE email = ?";
                         $update_stmt = $pdo->prepare($update_sql);
                         $update_stmt->execute([$email]);
-                        logMessage("Benutzer $vorname $nachname als verarbeitet markiert.");
+                        logMessage("Benutzer $vorname $nachname als verarbeitet markiert.", LOGFILE);
                     } else {
-                        logMessage("Fehler beim Senden der E-Mail an $vorname $nachname.");
+                        logMessage("Fehler beim Senden der E-Mail an $vorname $nachname.", LOGFILE);
                     }
                 } else {
                     $error_message = isset($response['message']) ? $response['message'] : "Unbekannter Fehler";
-                    logMessage("Fehler beim Erstellen des Benutzers $vorname $nachname: $error_message");
+                    logMessage("Fehler beim Erstellen des Benutzers $vorname $nachname: $error_message", LOGFILE);
                 }
             }
         } else {
-            logMessage("Keine neuen Benutzer in der Tabelle 'schulungsteilnehmer'.");
+            logMessage("Keine neuen Benutzer in der Tabelle 'schulungsteilnehmer'.", LOGFILE);
         }
     } catch (PDOException $e) {
-        logMessage("Datenbankfehler: " . $e->getMessage());
+        logMessage("Datenbankfehler: " . $e->getMessage(), LOGFILE);
     }
 }
 

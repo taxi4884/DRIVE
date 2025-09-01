@@ -9,19 +9,16 @@ error_reporting(E_ALL);
 header('Content-Type: text/plain; charset=utf-8');
 
 // Funktion zum Protokollieren von Nachrichten (für Cronjobs geeignet)
-function logMessage($message) {
-    $logFile = __DIR__ . '/send_urlaub_anfragen.log';
-    $timestamp = date('[Y-m-d H:i:s]');
-    file_put_contents($logFile, "{$timestamp} {$message}\n", FILE_APPEND);
-}
+require_once __DIR__ . '/../../includes/logger.php';
+$logFile = __DIR__ . '/send_urlaub_anfragen.log';
 
 // Log-Funktion initialisieren
-logMessage("Skript gestartet.");
+logMessage("Skript gestartet.", $logFile);
 
 // Lock-Datei erstellen, um parallele Ausführung zu verhindern
 $lockFile = '/tmp/send_urlaub_anfragen.lock';
 if (file_exists($lockFile)) {
-    logMessage("Skript läuft bereits.");
+    logMessage("Skript läuft bereits.", $logFile);
     exit;
 }
 file_put_contents($lockFile, 'locked');
@@ -35,9 +32,9 @@ register_shutdown_function(function() use ($lockFile) {
 $dbPath = __DIR__ . '/../../includes/db.php';
 if (file_exists($dbPath)) {
     require_once $dbPath;
-    logMessage("Datenbankverbindung eingebunden.");
+    logMessage("Datenbankverbindung eingebunden.", $logFile);
 } else {
-    logMessage("Fehler: Datenbankverbindungsdatei nicht gefunden: {$dbPath}");
+    logMessage("Fehler: Datenbankverbindungsdatei nicht gefunden: {$dbPath}", $logFile);
     exit;
 }
 
@@ -45,9 +42,9 @@ if (file_exists($dbPath)) {
 $configPath = __DIR__ . '/../../includes/config.php';
 if (file_exists($configPath)) {
     require_once $configPath;
-    logMessage("Konfigurationsdatei eingebunden.");
+    logMessage("Konfigurationsdatei eingebunden.", $logFile);
 } else {
-    logMessage("Fehler: Konfigurationsdatei nicht gefunden: {$configPath}");
+    logMessage("Fehler: Konfigurationsdatei nicht gefunden: {$configPath}", $logFile);
     exit;
 }
 
@@ -61,9 +58,9 @@ if (file_exists($exceptionPath) && file_exists($phpmailerClassPath) && file_exis
     require_once $exceptionPath;
     require_once $phpmailerClassPath;
     require_once $smtpPath;
-    logMessage("PHPMailer-Klassen eingebunden.");
+    logMessage("PHPMailer-Klassen eingebunden.", $logFile);
 } else {
-    logMessage("Fehler: PHPMailer-Klassen nicht gefunden. Prüfe die Pfade.");
+    logMessage("Fehler: PHPMailer-Klassen nicht gefunden. Prüfe die Pfade.", $logFile);
     exit;
 }
 
@@ -72,7 +69,7 @@ use PHPMailer\PHPMailer\Exception;
 
 // Funktion zum Senden von E-Mails
 function sendeEmail($empfaengerEmail, $empfaengerName, $subject, $body) {
-    logMessage("Senden einer E-Mail an: {$empfaengerEmail}");
+    logMessage("Senden einer E-Mail an: {$empfaengerEmail}", $logFile);
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
@@ -93,17 +90,17 @@ function sendeEmail($empfaengerEmail, $empfaengerName, $subject, $body) {
         $mail->AltBody = strip_tags($body);
 
         $mail->send();
-        logMessage("E-Mail erfolgreich gesendet an: {$empfaengerEmail}");
+        logMessage("E-Mail erfolgreich gesendet an: {$empfaengerEmail}", $logFile);
         return true;
     } catch (Exception $e) {
-        logMessage("Fehler beim Senden der E-Mail an {$empfaengerEmail}: {$mail->ErrorInfo}");
+        logMessage("Fehler beim Senden der E-Mail an {$empfaengerEmail}: {$mail->ErrorInfo}", $logFile);
         return false;
     }
 }
 
 // Abrufen aller beantragten Urlaube, die noch nicht verarbeitet wurden
 try {
-    logMessage("Abrufen unprocessed Urlaubsanträge.");
+    logMessage("Abrufen unprocessed Urlaubsanträge.", $logFile);
     $query = "
         SELECT fa.*, f.Vorname, f.Nachname
         FROM FahrerAbwesenheiten fa
@@ -115,16 +112,16 @@ try {
     $stmt = $pdo->prepare($query);
     $stmt->execute();
     $antraege = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    logMessage("Anzahl unprocessed Urlaubsanträge: " . count($antraege));
+    logMessage("Anzahl unprocessed Urlaubsanträge: " . count($antraege), $logFile);
 } catch (PDOException $e) {
-    logMessage("Fehler beim Abrufen der Urlaubsanträge: " . $e->getMessage());
+    logMessage("Fehler beim Abrufen der Urlaubsanträge: " . $e->getMessage(), $logFile);
     exit;
 }
 
 
 // Abrufen aller Benutzer, bei denen KrankFahrer = 1
 try {
-    logMessage("Abrufen der E-Mail-Adressen für Benutzer mit KrankFahrer = 1.");
+    logMessage("Abrufen der E-Mail-Adressen für Benutzer mit KrankFahrer = 1.", $logFile);
     $empfaengerStmt = $pdo->prepare("
         SELECT Email, Name 
         FROM Benutzer 
@@ -132,9 +129,9 @@ try {
     ");
     $empfaengerStmt->execute();
     $empfaengerListe = $empfaengerStmt->fetchAll(PDO::FETCH_ASSOC);
-    logMessage("Anzahl Empfänger: " . count($empfaengerListe));
+    logMessage("Anzahl Empfänger: " . count($empfaengerListe), $logFile);
 } catch (PDOException $e) {
-    logMessage("Fehler beim Abrufen der Empfänger: " . $e->getMessage());
+    logMessage("Fehler beim Abrufen der Empfänger: " . $e->getMessage(), $logFile);
     $empfaengerListe = [];
 }
 
@@ -166,11 +163,11 @@ foreach ($antraege as $antrag) {
             WHERE id = :id
         ");
         $updateStmt->execute(['id' => $antrag['id']]);
-        logMessage("Antrag ID " . $antrag['id'] . " als processed markiert.");
+        logMessage("Antrag ID " . $antrag['id'] . " als processed markiert.", $logFile);
     } catch (PDOException $e) {
-        logMessage("Fehler beim Aktualisieren des Antrags ID " . $antrag['id'] . ": " . $e->getMessage());
+        logMessage("Fehler beim Aktualisieren des Antrags ID " . $antrag['id'] . ": " . $e->getMessage(), $logFile);
     }
 }
 
-logMessage("Skript beendet.");
+logMessage("Skript beendet.", $logFile);
 ?>

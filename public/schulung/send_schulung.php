@@ -1,6 +1,7 @@
 <?php
 require_once '../../includes/db.php';
 require_once '../../includes/config.php';
+require_once '../../includes/logger.php';
 
 require_once __DIR__ . '/../../phpmailer/Exception.php';
 require_once __DIR__ . '/../../phpmailer/PHPMailer.php';
@@ -11,15 +12,10 @@ use PHPMailer\PHPMailer\Exception;
 
 define('LOGFILE', __DIR__ . '/send_schulung.log');
 
-logMessage("🔄 send_schulung.php wurde gestartet (Pfad: " . __FILE__ . ")");
-
-function logMessage($message) {
-    $timestamp = date("Y-m-d H:i:s");
-    file_put_contents(LOGFILE, "[$timestamp] $message" . PHP_EOL, FILE_APPEND);
-}
+logMessage("🔄 send_schulung.php wurde gestartet (Pfad: " . __FILE__ . ")", LOGFILE);
 
 function createSchulungsteilnehmerViaApi($vorname, $nachname, $email, $drive_id) {
-    logMessage("Erzeuge Schulungsteilnehmer über API: $vorname $nachname <$email>");
+    logMessage("Erzeuge Schulungsteilnehmer über API: $vorname $nachname <$email>", LOGFILE);
 
     $api_url = 'https://funkschulung.4884.de/api/create_schueler.php';
     $api_key = 'aT$93Lm!xY#7vB8eZ2@rFg5^TqW1oNcK'; // ggf. später aus .env laden
@@ -42,13 +38,13 @@ function createSchulungsteilnehmerViaApi($vorname, $nachname, $email, $drive_id)
     $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    logMessage("API-Antwort [$http_status]: $response");
+    logMessage("API-Antwort [$http_status]: $response", LOGFILE);
 
     return [$http_status, json_decode($response, true)];
 }
 
 function sendEmail($vorname, $email, $password) {
-    logMessage("Versende E-Mail an: $email");
+    logMessage("Versende E-Mail an: $email", LOGFILE);
     $mail = new PHPMailer(true);
 
     try {
@@ -107,29 +103,29 @@ function sendEmail($vorname, $email, $password) {
 		";
 
         $mail->send();
-        logMessage("E-Mail erfolgreich an $vorname ($email) gesendet.");
+        logMessage("E-Mail erfolgreich an $vorname ($email) gesendet.", LOGFILE);
         return true;
     } catch (Exception $e) {
-        logMessage("Fehler beim Senden der E-Mail an $email: {$mail->ErrorInfo}");
+        logMessage("Fehler beim Senden der E-Mail an $email: {$mail->ErrorInfo}", LOGFILE);
         return false;
     }
 }
 
 function processNewUsers() {
-    logMessage("Starte die Verarbeitung neuer Benutzer...");
+    logMessage("Starte die Verarbeitung neuer Benutzer...", LOGFILE);
     try {
         global $pdo;
 
-        logMessage("Datenbankabfrage wird gestartet...");
+        logMessage("Datenbankabfrage wird gestartet...", LOGFILE);
         $sql = "SELECT vorname, nachname, email FROM schulungsteilnehmer WHERE processed = 0";
         $stmt = $pdo->query($sql);
 
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        logMessage(count($users) . " Benutzer gefunden.");
+        logMessage(count($users) . " Benutzer gefunden.", LOGFILE);
 
         if (!empty($users)) {
             foreach ($users as $user) {
-                logMessage("Verarbeite Benutzer: " . json_encode($user));
+                logMessage("Verarbeite Benutzer: " . json_encode($user), LOGFILE);
                 $vorname = $user['vorname'];
                 $nachname = $user['nachname'];
                 $email = $user['email'];
@@ -139,26 +135,26 @@ function processNewUsers() {
                 list($status, $response) = createSchulungsteilnehmerViaApi($vorname, $nachname, $email, $drive_id);
 
                 if ($status == 201) {
-                    logMessage("Benutzer $vorname $nachname erfolgreich im Schulungstool erstellt.");
+                    logMessage("Benutzer $vorname $nachname erfolgreich im Schulungstool erstellt.", LOGFILE);
 
                     if (sendEmail($vorname, $email, $password)) {
                         $update_sql = "UPDATE schulungsteilnehmer SET processed = 1 WHERE email = ?";
                         $update_stmt = $pdo->prepare($update_sql);
                         $update_stmt->execute([$email]);
-                        logMessage("Benutzer $vorname $nachname als verarbeitet markiert.");
+                        logMessage("Benutzer $vorname $nachname als verarbeitet markiert.", LOGFILE);
                     } else {
-                        logMessage("Fehler beim Senden der E-Mail an $vorname $nachname.");
+                        logMessage("Fehler beim Senden der E-Mail an $vorname $nachname.", LOGFILE);
                     }
                 } else {
                     $error_message = $response['message'] ?? "Unbekannter Fehler";
-                    logMessage("Fehler beim Erstellen des Benutzers $vorname $nachname: $error_message");
+                    logMessage("Fehler beim Erstellen des Benutzers $vorname $nachname: $error_message", LOGFILE);
                 }
             }
         } else {
-            logMessage("Keine neuen Benutzer in der Tabelle 'schulungsteilnehmer'.");
+            logMessage("Keine neuen Benutzer in der Tabelle 'schulungsteilnehmer'.", LOGFILE);
         }
     } catch (PDOException $e) {
-        logMessage("Datenbankfehler: " . $e->getMessage());
+        logMessage("Datenbankfehler: " . $e->getMessage(), LOGFILE);
     }
 }
 

@@ -9,18 +9,15 @@ error_reporting(E_ALL);
 header('Content-Type: text/plain; charset=utf-8');
 
 // Funktion zum Protokollieren von Nachrichten (für Cronjobs geeignet)
-function logMessage($message) {
-    $logFile   = __DIR__ . '/send_daily_sales.log';
-    $timestamp = date('[Y-m-d H:i:s]');
-    file_put_contents($logFile, "{$timestamp} {$message}\n", FILE_APPEND);
-}
+require_once __DIR__ . '/../../includes/logger.php';
+$logFile = __DIR__ . '/send_daily_sales.log';
 
-logMessage("Skript gestartet.");
+logMessage("Skript gestartet.", $logFile);
 
 // Lock-Datei erstellen, um parallele Ausführung zu verhindern
 $lockFile = '/tmp/send_daily_sales.lock';
 if (file_exists($lockFile)) {
-    logMessage("Skript läuft bereits.");
+    logMessage("Skript läuft bereits.", $logFile);
     exit;
 }
 file_put_contents($lockFile, 'locked');
@@ -34,9 +31,9 @@ register_shutdown_function(function() use ($lockFile) {
 $dbPath = __DIR__ . '/../../includes/db.php';
 if (file_exists($dbPath)) {
     require_once $dbPath;
-    logMessage("Datenbankverbindung eingebunden.");
+    logMessage("Datenbankverbindung eingebunden.", $logFile);
 } else {
-    logMessage("Fehler: Datenbankverbindungsdatei nicht gefunden: {$dbPath}");
+    logMessage("Fehler: Datenbankverbindungsdatei nicht gefunden: {$dbPath}", $logFile);
     exit;
 }
 
@@ -44,9 +41,9 @@ if (file_exists($dbPath)) {
 $configPath = __DIR__ . '/../../includes/config.php';
 if (file_exists($configPath)) {
     require_once $configPath;
-    logMessage("Konfigurationsdatei eingebunden.");
+    logMessage("Konfigurationsdatei eingebunden.", $logFile);
 } else {
-    logMessage("Fehler: Konfigurationsdatei nicht gefunden: {$configPath}");
+    logMessage("Fehler: Konfigurationsdatei nicht gefunden: {$configPath}", $logFile);
     exit;
 }
 
@@ -60,9 +57,9 @@ if (file_exists($exceptionPath) && file_exists($phpmailerClassPath) && file_exis
     require_once $exceptionPath;
     require_once $phpmailerClassPath;
     require_once $smtpPath;
-    logMessage("PHPMailer-Klassen eingebunden.");
+    logMessage("PHPMailer-Klassen eingebunden.", $logFile);
 } else {
-    logMessage("Fehler: PHPMailer-Klassen nicht gefunden. Prüfe die Pfade.");
+    logMessage("Fehler: PHPMailer-Klassen nicht gefunden. Prüfe die Pfade.", $logFile);
     exit;
 }
 
@@ -71,23 +68,23 @@ use PHPMailer\PHPMailer\Exception;
 
 // Funktion zum Abrufen der E-Mail-Empfänger
 function getEmailRecipients(PDO $pdo) {
-    logMessage("Abrufen der E-Mail-Adressen für Benutzer mit UmsatzMails = 1.");
+    logMessage("Abrufen der E-Mail-Adressen für Benutzer mit UmsatzMails = 1.", $logFile);
     $stmt = $pdo->prepare("
         SELECT Email, Name
         FROM Benutzer
         WHERE UmsatzMails = 1
     ");
     if ($stmt->execute()) {
-        logMessage("E-Mail-Empfänger erfolgreich abgerufen.");
+        logMessage("E-Mail-Empfänger erfolgreich abgerufen.", $logFile);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    logMessage("Fehler: E-Mail-Empfänger konnten nicht abgerufen werden.");
+    logMessage("Fehler: E-Mail-Empfänger konnten nicht abgerufen werden.", $logFile);
     return [];
 }
 
 // Funktion zum Abrufen der Umsätze und Arbeitszeiten des Vortages (mit Sub-Query zur Aggregation)
 function getYesterdaySalesWithWorktime(PDO $pdo) {
-    logMessage("Abrufen der Umsätze und Arbeitszeiten des Vortages (mit Unter-Query).");
+    logMessage("Abrufen der Umsätze und Arbeitszeiten des Vortages (mit Unter-Query).", $logFile);
     $yesterdayDate  = date('Y-m-d', strtotime('yesterday'));
     $yesterdayStart = "{$yesterdayDate} 00:00:00";
     $yesterdayEnd   = "{$yesterdayDate} 23:59:59";
@@ -146,7 +143,7 @@ function getYesterdaySalesWithWorktime(PDO $pdo) {
 
 // Funktion zum Senden von E-Mails
 function sendeEmail($to, $name, $subject, $body) {
-    logMessage("Senden einer E-Mail an: {$to}");
+    logMessage("Senden einer E-Mail an: {$to}", $logFile);
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
@@ -167,15 +164,15 @@ function sendeEmail($to, $name, $subject, $body) {
         $mail->AltBody = strip_tags($body);
 
         $mail->send();
-        logMessage("E-Mail erfolgreich gesendet an: {$to}");
+        logMessage("E-Mail erfolgreich gesendet an: {$to}", $logFile);
     } catch (Exception $e) {
-        logMessage("Fehler beim Senden der E-Mail: {$mail->ErrorInfo}");
+        logMessage("Fehler beim Senden der E-Mail: {$mail->ErrorInfo}", $logFile);
     }
 }
 
 // Hauptprozess
 try {
-    logMessage("Starte den Hauptprozess.");
+    logMessage("Starte den Hauptprozess.", $logFile);
     $yesterdayData = getYesterdaySalesWithWorktime($pdo);
 
     // Gesamten Umsatz aus den gruppierten Daten ermitteln
@@ -267,7 +264,7 @@ try {
     }
 
 } catch (Exception $e) {
-    logMessage("Fehler: " . $e->getMessage());
+    logMessage("Fehler: " . $e->getMessage(), $logFile);
 }
 
-logMessage("Skript beendet.");
+logMessage("Skript beendet.", $logFile);
