@@ -37,21 +37,7 @@ if (!file_exists($configPath)) { logMessage("Config include fehlt: {$configPath}
 require_once $configPath;
 logMessage("Config geladen.", $logFile);
 
-// --- PHPMailer ---
-$phpmailerPath      = __DIR__ . '/../../phpmailer/';
-$exceptionPath      = $phpmailerPath . 'Exception.php';
-$phpmailerClassPath = $phpmailerPath . 'PHPMailer.php';
-$smtpPath           = $phpmailerPath . 'SMTP.php';
-if (!file_exists($exceptionPath) || !file_exists($phpmailerClassPath) || !file_exists($smtpPath)) {
-    logMessage("PHPMailer-Klassen nicht gefunden.", $logFile);
-    exit;
-}
-require_once $exceptionPath;
-require_once $phpmailerClassPath;
-require_once $smtpPath;
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require_once __DIR__ . '/../../includes/mailer.php';
 
 // --- Hilfsfunktionen Zeit / Format ---
 /**
@@ -196,37 +182,6 @@ function buildCsv(array $rows): string {
 }
 
 // --- Email senden ---
-function sendeEmail($to, $name, $subject, $htmlBody, $csvString, $csvFilename) {
-    logMessage("Sende Mail an {$to} …", $logFile);
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host       = SMTP_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = SMTP_USER;
-        $mail->Password   = SMTP_PASS;
-        $mail->SMTPSecure = SMTP_SECURE;
-        $mail->Port       = SMTP_PORT;
-
-        $mail->CharSet    = 'UTF-8';
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($to, $name);
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body    = $htmlBody;
-        $mail->AltBody = strip_tags($htmlBody);
-
-        if ($csvString !== '') {
-            $mail->addStringAttachment($csvString, $csvFilename, 'base64', 'text/csv');
-        }
-
-        $mail->send();
-        logMessage("Mail OK: {$to}", $logFile);
-    } catch (Exception $e) {
-        logMessage("Mail-Fehler an {$to}: " . $mail->ErrorInfo, $logFile);
-    }
-}
-
 // --- Haupt ---
 try {
     logMessage("Starte Hauptlauf …", $logFile);
@@ -296,7 +251,15 @@ try {
         </div>
         ";
 
-        sendeEmail($rcpt['Email'], $rcpt['Name'], $subject, $emailBody, $csv, $csvFilename);
+        sendEmail(
+            $rcpt['Email'],
+            $rcpt['Name'],
+            $subject,
+            $emailBody,
+            [
+                ['string' => $csv, 'filename' => $csvFilename, 'type' => 'text/csv']
+            ]
+        );
     }
 
     logMessage("Mails versendet. Empfänger: ".count($recipients).", Fahrerzeilen: ".count($data), $logFile);

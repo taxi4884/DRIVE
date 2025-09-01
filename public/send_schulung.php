@@ -3,14 +3,7 @@
 require_once '../includes/head.php';
 require_once '../includes/config.php';
 require_once '../includes/logger.php';
-
-// PHPMailer-Klassen einbinden
-require_once __DIR__ . '/../phpmailer/Exception.php';
-require_once __DIR__ . '/../phpmailer/PHPMailer.php';
-require_once __DIR__ . '/../phpmailer/SMTP.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require_once '../includes/mailer.php';
 
 // Logfile-Pfad
 define('LOGFILE', __DIR__ . '/send_schulung.log');
@@ -55,67 +48,6 @@ function createWpUser($username, $password, $email, $vorname) {
     return [$http_status, json_decode($response, true)];
 }
 
-// Funktion zum Senden der E-Mail
-function sendEmail($vorname, $email, $username, $password) {
-    logMessage("Versende E-Mail an: $email", LOGFILE);
-    $mail = new PHPMailer(true);
-
-    try {
-        // Servereinstellungen
-        $mail->isSMTP();
-        $mail->Host = SMTP_HOST;
-        $mail->SMTPAuth = true;
-        $mail->Username = SMTP_USER;
-        $mail->Password = SMTP_PASS;
-        $mail->SMTPSecure = SMTP_SECURE;
-        $mail->Port = SMTP_PORT;
-
-        // Absenderinformationen
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-
-        // Testmodus beachten
-        if (TEST_MODE) {
-            $mail->addAddress(TEST_EMAIL, TEST_NAME);
-        } else {
-            $mail->addAddress($email, $vorname);
-        }
-
-        // Inhalt der E-Mail
-        $mail->isHTML(true);
-        $mail->CharSet = 'UTF-8'; // UTF-8 für korrekte Zeichencodierung
-        $mail->Subject = "Herzlich willkommen bei der 4884 – Ihr Funktaxi GmbH!";
-        $mail->Body = "
-            Hallo $vorname,<br><br>
-            herzlich willkommen bei der 4884 – Ihr Funktaxi GmbH! Wir freuen uns darauf, dich bald als neuen Chauffeur bei uns begrüßen zu dürfen.<br><br>
-            Um sicherzustellen, dass du bestens vorbereitet bist, ist die Teilnahme an unserer Funkschulung essenziell. Hier findest du alle Informationen:<br><br>
-            Funkschulung Zugang: <a href='https://taxi4884.de/funkschulung'>taxi4884.de/funkschulung</a><br>
-            Benutzername: $username<br>
-            Passwort: $password<br><br>
-            Bitte absolviere die Schulung gewissenhaft. Anschließend findet ein Praxistag statt an dem wir die Themen abfragen, den Abschlusstest schreiben und die Funkanlage gezeigt wird:<br><br>
-            Der Termin für den Praxistag wird dir frühzeitig bekanntgegeben.<br><br>
-            Wir stehen dir für alle Fragen zur Verfügung und freuen uns, dich an einem der Praxistage persönlich kennenzulernen. Nach erfolgreichem Abschluss des Abschlusstests bist du offiziell ein Teil unseres Fahrerteams!<br><br>
-            Viel Erfolg und bis bald,<br>
-            Philipp Gausmann | Technik<br>
-            technik@taxi4884.de<br><br> 
-            E-Mail:  info@taxi4884.de <br>
-            Tel:     (+49) 0341 / 4949306<br><br>
-            4884 – Ihr Funktaxi Älteste Leipziger Funktaxenzentrale GmbH | Lützner Straße 179 | 04179 Leipzig<br>
-            Geschäftsf. Gesellschafter: Thomas Bühnert,Thomas Voigt<br><br>
-            Der Taxiruf: (0341) 4884<br>
-            270 Taxen und mehr ...<br>
-            Limousinen, Kombis, Großraumtaxen<br>
-            Wir kommen wie gerufen!<br>
-        ";
-
-        $mail->send();
-        logMessage("E-Mail erfolgreich an $vorname ($email) gesendet.", LOGFILE);
-        return true;
-    } catch (Exception $e) {
-        logMessage("Fehler beim Senden der E-Mail an $email: {$mail->ErrorInfo}", LOGFILE);
-        return false;
-    }
-}
-
 // Hauptlogik
 function processNewUsers() {
     logMessage("Starte die Verarbeitung neuer Benutzer...", LOGFILE);
@@ -144,7 +76,29 @@ function processNewUsers() {
                 if ($status == 201) {
                     logMessage("Benutzer $vorname $nachname erfolgreich in WordPress erstellt.", LOGFILE);
 
-                    if (sendEmail($vorname, $email, $username, $password)) {
+                    $subject = "Herzlich willkommen bei der 4884 – Ihr Funktaxi GmbH!";
+                    $body = "Hallo $vorname,<br><br>"
+                        . "herzlich willkommen bei der 4884 – Ihr Funktaxi GmbH! Wir freuen uns darauf, dich bald als neuen Chauffeur bei uns begrüßen zu dürfen.<br><br>"
+                        . "Um sicherzustellen, dass du bestens vorbereitet bist, ist die Teilnahme an unserer Funkschulung essenziell. Hier findest du alle Informationen:<br><br>"
+                        . "Funkschulung Zugang: <a href='https://taxi4884.de/funkschulung'>taxi4884.de/funkschulung</a><br>"
+                        . "Benutzername: $username<br>"
+                        . "Passwort: $password<br><br>"
+                        . "Bitte absolviere die Schulung gewissenhaft. Anschließend findet ein Praxistag statt an dem wir die Themen abfragen, den Abschlusstest schreiben und die Funkanlage gezeigt wird:<br><br>"
+                        . "Der Termin für den Praxistag wird dir frühzeitig bekanntgegeben.<br><br>"
+                        . "Wir stehen dir für alle Fragen zur Verfügung und freuen uns, dich an einem der Praxistage persönlich kennenzulernen. Nach erfolgreichem Abschluss des Abschlusstests bist du offiziell ein Teil unseres Fahrerteams!<br><br>"
+                        . "Viel Erfolg und bis bald,<br>"
+                        . "Philipp Gausmann | Technik<br>"
+                        . "technik@taxi4884.de<br><br>"
+                        . "E-Mail:  info@taxi4884.de <br>"
+                        . "Tel:     (+49) 0341 / 4949306<br><br>"
+                        . "4884 – Ihr Funktaxi Älteste Leipziger Funktaxenzentrale GmbH | Lützner Straße 179 | 04179 Leipzig<br>"
+                        . "Geschäftsf. Gesellschafter: Thomas Bühnert,Thomas Voigt<br><br>"
+                        . "Der Taxiruf: (0341) 4884<br>"
+                        . "270 Taxen und mehr ...<br>"
+                        . "Limousinen, Kombis, Großraumtaxen<br>"
+                        . "Wir kommen wie gerufen!<br>";
+
+                    if (sendEmail($email, $vorname, $subject, $body)) {
                         $update_sql = "UPDATE schulungsteilnehmer SET processed = 1 WHERE email = ?";
                         $update_stmt = $pdo->prepare($update_sql);
                         $update_stmt->execute([$email]);
