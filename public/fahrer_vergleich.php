@@ -58,6 +58,7 @@ $result_wochentagsumsatz = $stmt_wochentagsumsatz->fetchAll(PDO::FETCH_ASSOC);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="js/modal.js"></script>
 </head>
 <body>
   	<?php include 'nav.php'; ?>
@@ -127,14 +128,5 @@ $result_wochentagsumsatz = $stmt_wochentagsumsatz->fetchAll(PDO::FETCH_ASSOC);
         });
     </script>
   </main>
-  <script>
-	function openModal(modalId) {
-		document.getElementById(modalId).style.display = 'flex';
-	}
-
-	function closeModal(modalId) {
-		document.getElementById(modalId).style.display = 'none';
-	}
-</script>
 </body>
 </html>

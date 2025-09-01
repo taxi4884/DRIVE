@@ -83,6 +83,7 @@ $wartung_kommend = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fahrzeuge | DRIVE</title>
     <link rel="stylesheet" href="css/styles.css">
+    <script src="js/modal.js"></script>
     <style>
         .fahrzeug.limousine {
             background-color: #d4edda; /* Leichtes Grün */
@@ -193,18 +194,9 @@ $wartung_kommend = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php include 'modals/modals.php'; ?>
 
     <script>
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-	</script>
-	<script>	
-		document.querySelector('.burger-menu').addEventListener('click', () => {
-			document.querySelector('.nav-links').classList.toggle('active');
-		});
+                document.querySelector('.burger-menu').addEventListener('click', () => {
+                        document.querySelector('.nav-links').classList.toggle('active');
+                });
     </script>
 </body>
 </html>

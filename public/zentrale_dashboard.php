@@ -196,8 +196,9 @@ $unreadCount = count($unreadAbwesenheiten);
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Bisheriges CSS -->
     <link rel="stylesheet" href="css/styles.css">
-    <style>      
-		/* Krankheitszellen */
+    <script src="js/modal.js"></script>
+    <style>
+                /* Krankheitszellen */
 		.dashboard-table .absent-sick {
 		  background-color: #d4edda;
 		  color: #155724;
@@ -367,16 +368,7 @@ $unreadCount = count($unreadAbwesenheiten);
 			</ul>
 		</section>
 	</aside>
-	<?php include 'modals/add_abwesenheit_modal.php'; ?>
-	<script>
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-    </script>
+        <?php include 'modals/add_abwesenheit_modal.php'; ?>
 	<script>
 		function markAsRead(abwesenheitId) {
 			fetch("mark_as_read.php?abwesenheit_id=" + abwesenheitId)

@@ -13,6 +13,7 @@ $fahrzeuge = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fahrzeugübersicht | DRIVE</title>
     <link rel="stylesheet" href="css/styles.css">
+    <script src="js/modal.js"></script>
 </head>
 <body>
     <?php include 'nav.php'; ?>
@@ -57,14 +58,5 @@ $fahrzeuge = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </table>
     </main>
     <?php include 'modals/add_vehicle_modal.php'; ?>
-    <script>
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-    </script>
 </body>
 </html>

@@ -142,8 +142,9 @@ $result_fahrer_unter_264 = $stmt_fahrer_unter_264->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fahrerstatistik | Drive</title>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="js/modal.js"></script>
 </head>
 <body>
 	<?php include 'nav.php'; ?>
@@ -257,14 +258,6 @@ $result_fahrer_unter_264 = $stmt_fahrer_unter_264->fetchAll(PDO::FETCH_ASSOC);
         <?php endforeach; ?>
     </table>
 </main>
-<script>
-	function openModal(modalId) {
-		document.getElementById(modalId).style.display = 'flex';
-	}
-
-	function closeModal(modalId) {
-		document.getElementById(modalId).style.display = 'none';
-	}
-</script>
+</main>
 </body>
 </html>

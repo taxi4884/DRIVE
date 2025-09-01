@@ -47,6 +47,7 @@ $mitteilung = $stmtMsg->fetch(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fahrerübersicht | DRIVE</title>
     <link rel="stylesheet" href="css/styles.css">
+    <script src="js/modal.js"></script>
 </head>
 <body>
     <?php include 'nav.php'; ?>
@@ -132,14 +133,6 @@ $mitteilung = $stmtMsg->fetch(PDO::FETCH_ASSOC);
     </div>
 
     <script>
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
         document.querySelector('.burger-menu')?.addEventListener('click', () => {
             document.querySelector('.nav-links')?.classList.toggle('active');
         });
