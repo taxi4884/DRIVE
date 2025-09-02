@@ -91,16 +91,17 @@ unset($birthday); // Referenz zurücksetzen
 
 // Urlaube abfragen und gruppieren
 $upcomingVacationsStmt = $pdo->prepare("
-    SELECT mz.vorname, mz.nachname, mz.geburtsdatum, az.startdatum, az.enddatum
+    SELECT mz.mitarbeiter_id, mz.vorname, mz.nachname, mz.geburtsdatum, az.startdatum, az.enddatum
     FROM abwesenheiten_zentrale az
     JOIN mitarbeiter_zentrale mz ON az.mitarbeiter_id = mz.mitarbeiter_id
     WHERE az.typ = 'Urlaub'
     AND az.startdatum BETWEEN CURDATE() AND CURDATE() + INTERVAL 3 MONTH
-    ORDER BY az.startdatum
+    ORDER BY mz.mitarbeiter_id, az.startdatum
 ");
 $upcomingVacationsStmt->execute();
 $upcomingVacations = $upcomingVacationsStmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Gruppierung vorbereiten
 $groupedVacations = [];
 $currentVacation = null;
 
@@ -110,6 +111,7 @@ foreach ($upcomingVacations as $vacation) {
 
     if (!$currentVacation) {
         $currentVacation = [
+            'mitarbeiter_id' => $vacation['mitarbeiter_id'],
             'vorname' => $vacation['vorname'],
             'nachname' => $vacation['nachname'],
             'geburtsdatum' => $vacation['geburtsdatum'],
@@ -118,14 +120,14 @@ foreach ($upcomingVacations as $vacation) {
         ];
     } else {
         if (
-            $currentVacation['nachname'] === $vacation['nachname'] &&
-            $currentVacation['vorname'] === $vacation['vorname'] &&
+            $currentVacation['mitarbeiter_id'] === $vacation['mitarbeiter_id'] &&
             $currentVacation['enddatum'] >= date('Y-m-d', strtotime($start . ' -1 day'))
         ) {
             $currentVacation['enddatum'] = max($currentVacation['enddatum'], $end);
         } else {
             $groupedVacations[] = $currentVacation;
             $currentVacation = [
+                'mitarbeiter_id' => $vacation['mitarbeiter_id'],
                 'vorname' => $vacation['vorname'],
                 'nachname' => $vacation['nachname'],
                 'geburtsdatum' => $vacation['geburtsdatum'],
