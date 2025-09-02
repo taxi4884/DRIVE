@@ -6,26 +6,31 @@ $menuEntries = [
         'label' => 'Dashboard',
         'url' => 'dashboard.php',
         'roles' => ['Admin', 'Mitarbeiter', 'Fahrer', 'Zentrale', 'Abrechnung'],
+        'icon' => 'bi-house',
     ],
     [
         'label' => 'Besetzung',
         'url' => 'fahrzeuge.php',
         'roles' => ['Admin', 'Mitarbeiter'],
+        'icon' => 'bi-people',
     ],
     [
         'label' => 'Fahrerdashboard',
         'url' => 'fahrer.php',
         'roles' => ['Admin', 'Mitarbeiter'],
+        'icon' => 'bi-person-badge',
         'children' => [
             [
                 'label' => 'Abwesenheit',
                 'url' => 'abwesenheit_fahrer.php',
                 'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-calendar-x',
             ],
             [
                 'label' => 'Bußgelder',
                 'url' => 'fines_management.php',
                 'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-exclamation-octagon',
             ],
         ],
     ],
@@ -33,21 +38,25 @@ $menuEntries = [
         'label' => 'Fahrzeugdashboard',
         'url' => 'fahrzeug_overview.php',
         'roles' => ['Admin', 'Mitarbeiter'],
+        'icon' => 'bi-truck',
         'children' => [
             [
                 'label' => 'Fahrzeugübergaben',
                 'url' => 'vehicle_transfer.php',
                 'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-arrow-left-right',
             ],
             [
                 'label' => 'Service',
                 'url' => 'service.php',
                 'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-tools',
             ],
             [
                 'label' => 'Sauberkeit',
                 'url' => 'sauberkeit.php',
                 'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-droplet',
             ],
         ],
     ],
@@ -55,92 +64,110 @@ $menuEntries = [
         'label' => 'Zentralendashboard',
         'url' => 'zentrale_dashboard.php',
         'roles' => ['Admin', 'Mitarbeiter'],
+        'icon' => 'bi-speedometer',
     ],
     [
         'label' => 'Schulung',
         'url' => 'schulungsverwaltung.php',
         'roles' => ['Admin'],
+        'icon' => 'bi-journal-text',
     ],
     [
         'label' => 'XRechnung',
         'url' => 'xrechnung_viewer.php',
         'roles' => ['Admin', 'Mitarbeiter'],
+        'icon' => 'bi-file-earmark-text',
     ],
     [
         'label' => 'Postfach',
         'url' => 'messages/inbox.php',
         'roles' => ['Admin', 'Mitarbeiter', 'Fahrer', 'Zentrale', 'Abrechnung'],
+        'icon' => 'bi-envelope',
     ],
     [
         'label' => 'Verwaltung',
         'url'   => 'verwaltung_abwesenheit.php',
         'roles' => ['Admin', 'Mitarbeiter', 'Zentrale', 'Abrechnung'], // ggf. erweitern
+        'icon' => 'bi-gear',
     ],
     [
         'label' => 'Abrechnung',
         'roles' => ['Abrechnung'],
+        'icon' => 'bi-cash-coin',
         'children' => [
             [
                 'label' => 'Umsatzdashboard',
                 'url' => 'umsatz_dashboard.php',
                 'roles' => ['Abrechnung'],
+                'icon' => 'bi-graph-up',
             ],
             [
                 'label' => 'Fahrerabrechnung',
                 'url' => 'fahrer_umsatz.php',
                 'roles' => ['Abrechnung'],
+                'icon' => 'bi-receipt',
             ],
             [
                 'label' => 'Statistik',
                 'url' => 'statistik.php',
                 'roles' => ['Abrechnung'],
+                'icon' => 'bi-bar-chart',
             ],
             [
                 'label' => 'Vergleich',
                 'url' => 'fahrer_vergleich.php',
                 'roles' => ['Abrechnung'],
+                'icon' => 'bi-diagram-3',
             ],
         ],
     ],
     [
         'label' => 'Zentrale',
         'roles' => ['Zentrale'],
+        'icon' => 'bi-building',
         'children' => [
             [
                 'label' => 'Dienstplan',
                 'url' => 'dienstplan_erstellung.php',
                 'roles' => ['Zentrale'],
+                'icon' => 'bi-calendar',
             ],
             [
                 'label' => 'Schichten',
                 'url' => 'shift_control.php',
                 'roles' => ['Zentrale'],
+                'icon' => 'bi-clock',
             ],
             [
                 'label' => 'Mitarbeiter',
                 'url' => 'mitarbeiter_management.php',
                 'roles' => ['Zentrale'],
+                'icon' => 'bi-people',
             ],
         ],
     ],
     [
         'label' => 'Admin',
         'roles' => ['Admin'],
+        'icon' => 'bi-shield-lock',
         'children' => [
             [
                 'label' => 'Benutzerverwaltung',
                 'url' => 'benutzerverwaltung.php',
                 'roles' => ['Admin'],
+                'icon' => 'bi-people',
             ],
             [
                 'label' => 'Schulung',
                 'url' => 'schulungsverwaltung.php',
                 'roles' => ['Admin'],
+                'icon' => 'bi-journal-text',
             ],
             [
                 'label' => 'Nachrichtenrechte',
                 'url' => 'message_permissions.php',
                 'roles' => ['Admin'],
+                'icon' => 'bi-envelope-lock',
             ],
         ],
     ],
@@ -148,6 +175,7 @@ $menuEntries = [
         'label' => 'Logout',
         'url' => 'logout.php',
         'roles' => [],
+        'icon' => 'bi-box-arrow-right',
     ],
     // Bottom navigation for drivers
     [
@@ -155,36 +183,42 @@ $menuEntries = [
         'url' => 'personal.php',
         'roles' => ['Fahrer'],
         'context' => 'bottom',
+        'icon' => 'bi-person',
     ],
     [
         'label' => 'Fahrzeug',
         'url' => 'fahrzeug.php',
         'roles' => ['Fahrer'],
         'context' => 'bottom',
+        'icon' => 'bi-truck',
     ],
     [
         'label' => 'Dashboard',
         'url' => 'dashboard.php',
         'roles' => ['Fahrer'],
         'context' => 'bottom',
+        'icon' => 'bi-house',
     ],
     [
         'label' => 'Umsatz',
         'url' => 'umsatz_erfassen.php',
         'roles' => ['Fahrer'],
         'context' => 'bottom',
+        'icon' => 'bi-currency-euro',
     ],
     [
         'label' => 'Postfach',
         'url' => 'messages/inbox.php',
         'roles' => ['Fahrer'],
         'context' => 'bottom',
+        'icon' => 'bi-envelope',
     ],
     [
         'label' => 'Logout',
         'url' => 'logout.php',
         'roles' => ['Fahrer'],
         'context' => 'bottom',
+        'icon' => 'bi-box-arrow-right',
     ],
 ];
 
@@ -238,7 +272,12 @@ function buildMenu(array $items, array $userRoles, string $currentPath = ''): st
             $aClasses[] = 'active';
         }
         $aClassAttr = $aClasses ? ' class="' . implode(' ', $aClasses) . '"' : '';
-        $html .= '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $aClassAttr . '>' . $label . '</a>';
+        $iconHtml = '';
+        if (!empty($item['icon'])) {
+            $iconClass = htmlspecialchars($item['icon'], ENT_QUOTES, 'UTF-8');
+            $iconHtml = '<i class="bi ' . $iconClass . '"></i> ';
+        }
+        $html .= '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $aClassAttr . '>' . $iconHtml . $label . '</a>';
         if ($hasChildren) {
             $childHtml = buildMenu($item['children'], $userRoles, $currentPath);
             $html .= str_replace('<ul class="nav-links">', '<ul class="dropdown-menu">', $childHtml);
