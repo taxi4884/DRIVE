@@ -1,6 +1,6 @@
 <?php
 // Verbindungen und Konfigurationen einbinden
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 require_once '../includes/config.php';
 require_once '../includes/logger.php';
 require_once '../includes/mailer.php';
@@ -52,7 +52,7 @@ function createWpUser($username, $password, $email, $vorname) {
 function processNewUsers() {
     logMessage("Starte die Verarbeitung neuer Benutzer...", LOGFILE);
     try {
-        global $pdo; // Verwendung der Verbindung aus head.php
+        global $pdo; // Verwendung der Verbindung aus bootstrap.php
 
         logMessage("Datenbankabfrage wird gestartet...", LOGFILE);
         $sql = "SELECT vorname, nachname, email FROM schulungsteilnehmer WHERE processed = 0";

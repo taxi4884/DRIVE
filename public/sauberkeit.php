@@ -1,6 +1,6 @@
 <?php
 // Verbindung zur Datenbank herstellen
-require_once '../includes/head.php'; // Hier sicherstellen, dass $pdo korrekt definiert ist
+require_once '../includes/bootstrap.php'; // Hier sicherstellen, dass $pdo korrekt definiert ist
 
 // Monat und Jahr aus GET-Parameter oder aktuelles Datum verwenden
 $monat = isset($_GET['monat']) ? intval($_GET['monat']) : date('m');

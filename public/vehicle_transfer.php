@@ -1,6 +1,6 @@
 <?php
 // Verbindung zur Datenbank herstellen
-require_once '../includes/head.php'; // Verbindung und Authentifizierung
+require_once '../includes/bootstrap.php'; // Verbindung und Authentifizierung
 
 // FahrzeugÜbergaben aus der Datenbank abrufen
 $query = "

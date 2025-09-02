@@ -1,5 +1,5 @@
 <?php
-require_once '../../includes/head.php';
+require_once '../../includes/bootstrap.php';
 
 if ($_SESSION['user_role'] !== 'fahrer') {
     header("Location: ../index.php");

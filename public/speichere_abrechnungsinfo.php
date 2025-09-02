@@ -1,6 +1,6 @@
 <?php
 // public/speichere_abrechungsinfo.php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 $datum = $_POST['datum'] ?? null;
 $uhrzeit = trim($_POST['uhrzeit'] ?? '');

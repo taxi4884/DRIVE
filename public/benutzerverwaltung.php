@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php'; // DB-Verbindung, $pdo etc.
+require_once '../includes/bootstrap.php'; // DB-Verbindung, $pdo etc.
 
 // Benutzer aktualisieren
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {

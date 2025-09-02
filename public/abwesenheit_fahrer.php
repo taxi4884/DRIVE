@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 // PHP-Fehleranzeige aktivieren
 ini_set('display_errors', 1);

@@ -2,7 +2,7 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 	
-require_once '../../includes/head.php'; // Datenbankverbindung und Authentifizierung
+require_once '../../includes/bootstrap.php'; // Datenbankverbindung und Authentifizierung
 
 if (!isset($_SESSION['user_id'])) {
     die('Fehler: Keine gültige Session. Bitte erneut anmelden.');

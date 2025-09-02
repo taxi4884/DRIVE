@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 $start = $_POST['start_date'] ?? null;
 $end = $_POST['end_date'] ?? null;

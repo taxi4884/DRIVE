@@ -1,6 +1,6 @@
 <?php
 // Verbindung zur Datenbank herstellen
-require_once '../includes/head.php'; 
+require_once '../includes/bootstrap.php'; 
 
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("Ungültige Anfrage.");

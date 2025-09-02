@@ -1,6 +1,6 @@
 <?php
 // public/umsatz_verlauf.php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 $umsatzid = $_GET['umsatzid'] ?? null;
 

@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['umsatzid'])) {
     $umsatzid = (int) $_POST['umsatzid'];

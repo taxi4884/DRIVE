@@ -1,5 +1,5 @@
 <?php
-require_once '../../includes/head.php'; // Lädt Authentifizierung und Datenbankverbindung
+require_once '../../includes/bootstrap.php'; // Lädt Authentifizierung und Datenbankverbindung
 
 // Überprüfung, ob der Benutzer eingeloggt ist
 if (!isset($_SESSION['user_id'])) {

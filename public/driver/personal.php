@@ -3,7 +3,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once '../../includes/head.php'; // Verbindung und Authentifizierung
+require_once '../../includes/bootstrap.php'; // Verbindung und Authentifizierung
 
 // Session prüfen
 if (session_status() === PHP_SESSION_NONE) {

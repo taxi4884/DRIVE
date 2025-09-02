@@ -1,7 +1,7 @@
 <?php
 // zentrale_dashboard.php
 
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 require_once '../includes/date_utils.php';
 require_once 'modals/process_abwesenheit.php';
 

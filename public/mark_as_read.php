@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php'; 
+require_once '../includes/bootstrap.php'; 
 
 // Prüfen, ob der Benutzer eingeloggt ist
 if (!isset($_SESSION['user_id'])) {

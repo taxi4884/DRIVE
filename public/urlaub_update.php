@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 $fahrer_id = $_POST['fahrer_id'];
 $original_start = $_POST['original_start'];
