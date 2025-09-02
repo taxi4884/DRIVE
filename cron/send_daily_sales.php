@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 header('Content-Type: text/plain; charset=utf-8');
 
 // Funktion zum Protokollieren von Nachrichten (für Cronjobs geeignet)
-require_once __DIR__ . '/../../includes/logger.php';
+require_once __DIR__ . '/../includes/logger.php';
 $logFile = __DIR__ . '/send_daily_sales.log';
 
 logMessage("Skript gestartet.", $logFile);
@@ -28,7 +28,7 @@ register_shutdown_function(function() use ($lockFile) {
 });
 
 // Datenbankverbindung einbinden
-$dbPath = __DIR__ . '/../../includes/db.php';
+$dbPath = __DIR__ . '/../includes/db.php';
 if (file_exists($dbPath)) {
     require_once $dbPath;
     logMessage("Datenbankverbindung eingebunden.", $logFile);
@@ -38,7 +38,7 @@ if (file_exists($dbPath)) {
 }
 
 // Konfigurationsdatei einbinden
-$configPath = __DIR__ . '/../../includes/config.php';
+$configPath = __DIR__ . '/../includes/config.php';
 if (file_exists($configPath)) {
     require_once $configPath;
     logMessage("Konfigurationsdatei eingebunden.", $logFile);
@@ -47,7 +47,7 @@ if (file_exists($configPath)) {
     exit;
 }
 
-require_once __DIR__ . '/../../includes/mailer.php';
+require_once __DIR__ . '/../includes/mailer.php';
 
 // Funktion zum Abrufen der E-Mail-Empfänger
 function getEmailRecipients(PDO $pdo) {
