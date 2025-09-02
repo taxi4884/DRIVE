@@ -5,6 +5,32 @@ use App\Models\Message;
 
 class MessageController
 {
+    public function index(): void
+    {
+        session_start();
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: /login.php');
+            exit;
+        }
+
+        $userId = (int) $_SESSION['user_id'];
+        $conversations = Message::getConversationsByUser($userId);
+        include __DIR__ . '/../Views/messages/index.php';
+    }
+
+    public function show(int $otherId): void
+    {
+        session_start();
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: /login.php');
+            exit;
+        }
+
+        $userId = (int) $_SESSION['user_id'];
+        $messages = Message::getMessagesBetween($userId, $otherId);
+        include __DIR__ . '/../Views/messages/show.php';
+    }
+
     public function inbox(): void
     {
         session_start();
