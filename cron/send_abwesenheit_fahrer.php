@@ -29,7 +29,7 @@ register_shutdown_function(function() use ($lockFile) {
 });
 
 // Datenbankverbindung einbinden
-$dbPath = __DIR__ . '/../includes/db_connection.php';
+$dbPath = __DIR__ . '/../includes/db.php';
 if (file_exists($dbPath)) {
     require_once $dbPath;
     logMessage("Datenbankverbindung eingebunden.", $logFile);
