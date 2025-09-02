@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_role'])) {
 if ($_SESSION['user_role'] === 'fahrer') {
     header("Location: ../driver/dashboard.php");
     exit();
-} elseif ($_SESSION['user_role'] === 'benutzer') {
+} elseif ($_SESSION['user_role'] === 'admin') {
     header("Location: dashboard.php");
     exit();
 } else {
