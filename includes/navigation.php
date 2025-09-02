@@ -67,6 +67,11 @@ $menuEntries = [
         'roles' => ['Admin', 'Mitarbeiter'],
     ],
     [
+        'label' => 'Verwaltung',
+        'url'   => 'verwaltung_abwesenheit.php',
+        'roles' => ['Admin', 'Mitarbeiter', 'Zentrale', 'Abrechnung'], // ggf. erweitern
+    ],
+    [
         'label' => 'Abrechnung',
         'roles' => ['Abrechnung'],
         'children' => [
