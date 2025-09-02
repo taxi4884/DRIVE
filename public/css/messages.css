@@ -1,0 +1,38 @@
+.messages-container {
+    display: flex;
+    height: 80vh;
+}
+
+.messages-container .conversations {
+    flex: 0 0 30%;
+    max-width: 300px;
+    border-right: 1px solid #ccc;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.messages-container .conversations ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.messages-container .conversations li + li {
+    margin-top: 0.5rem;
+}
+
+.messages-container .conversation {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.messages-container .message {
+    margin-bottom: 1rem;
+}
+
+.messages-container .timestamp {
+    font-size: 0.8rem;
+    color: #666;
+}
+
