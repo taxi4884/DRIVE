@@ -133,7 +133,7 @@ foreach ($spalten as $spalte) {
                     <td>
                         <select name="sekundar_rolle[<?= $row['BenutzerID'] ?>][]" multiple>
                             <?php
-                            $alleSekundarRollen = ['Abrechnung', 'Werkstatt', 'Admin', 'Zentrale'];
+                            $alleSekundarRollen = ['Abrechnung', 'Werkstatt', 'Admin', 'Zentrale', 'Verwaltung'];
                             $aktiveRollen = explode(',', $row['SekundarRolle']);
                             foreach ($alleSekundarRollen as $rolle) {
                                 $selected = in_array($rolle, $aktiveRollen) ? 'selected' : '';
