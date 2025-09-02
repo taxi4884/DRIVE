@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/bootstrap.php';
+require_once '../includes/absencetypes.php';
 session_start();
 
 // PHP-Fehleranzeige aktivieren
@@ -171,13 +172,17 @@ function getAbwesenheitsKuerzel($typ) {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="css/styles.css">
   <script>
+    const typesWithPeriod = <?= json_encode($ABSENCE_TYPES['period']); ?>;
+    const typesWithTimePoint = <?= json_encode($ABSENCE_TYPES['time_point']); ?>;
+    const typesWithTimeRange = <?= json_encode($ABSENCE_TYPES['time_range']); ?>;
+
     function updateFormFields() {
       const typ = document.getElementById('typ').value;
-      document.getElementById('zeitraum').style.display = (typ === 'Urlaub' || typ === 'Krank' || typ === 'Kind Krank') ? 'block' : 'none';
-      const showTime = (typ === 'Kommt später' || typ === 'Geht eher');
+      document.getElementById('zeitraum').style.display = typesWithPeriod.includes(typ) ? 'block' : 'none';
+      const showTime = typesWithTimePoint.includes(typ);
       document.getElementById('uhrzeit_eintrag').style.display = showTime ? 'block' : 'none';
       document.getElementById('zeitpunkt_datum').style.display = showTime ? 'inline-block' : 'none';
-      document.getElementById('zeitspanne').style.display = (typ === 'Unterbrechung') ? 'block' : 'none';
+      document.getElementById('zeitspanne').style.display = typesWithTimeRange.includes(typ) ? 'block' : 'none';
     }
   </script>
   <style>
@@ -306,15 +311,12 @@ function getAbwesenheitsKuerzel($typ) {
 			<?php endforeach; ?>
 		  </select><br><br>
 
-		  <label for="typ">Typ:</label>
-		  <select name="typ" id="typ" onchange="updateFormFields()" required>
-			<option value="Urlaub">Urlaub</option>
-			<option value="Krank">Krank</option>
-			<option value="Kind Krank">Kind Krank</option>
-			<option value="Kommt später">Kommt später</option>
-			<option value="Geht eher">Geht eher</option>
-			<option value="Unterbrechung">Abwesend über den Tag</option>
-		  </select><br><br>
+                  <label for="typ">Typ:</label>
+                  <select name="typ" id="typ" onchange="updateFormFields()" required>
+                        <?php foreach ($ALL_ABSENCE_TYPES as $type): ?>
+                          <option value="<?= $type ?>"><?= htmlspecialchars($ABSENCE_TYPE_LABELS[$type]) ?></option>
+                        <?php endforeach; ?>
+                  </select><br><br>
 
 		  <div id="zeitraum" style="display:none">
 			<label>Von (Datum):</label>
