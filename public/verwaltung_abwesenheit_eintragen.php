@@ -37,11 +37,18 @@ if (in_array($typ, ['Urlaub', 'Krank', 'Kind Krank'])) {
         ];
     }
 } elseif (in_array($typ, ['Kommt später', 'Geht eher'])) {
-    $datum = $_POST['von_datum'] ?? $_POST['tag_zeitspanne'];
+    $datum = $_POST['zeitpunkt_datum'] ?? null;
     $zeit = $_POST['zeitpunkt'] ?? null;
 
     if (!$datum || !$zeit) {
         die("Fehlendes Datum oder Uhrzeit.");
+    }
+
+    $datumObj = DateTime::createFromFormat('Y-m-d', $datum);
+    $zeitObj = DateTime::createFromFormat('H:i', $zeit);
+
+    if (!$datumObj || $datumObj->format('Y-m-d') !== $datum || !$zeitObj || $zeitObj->format('H:i') !== $zeit) {
+        die("Ungültiges Datum oder Uhrzeit.");
     }
 
     $eintraege[] = [
@@ -57,6 +64,14 @@ if (in_array($typ, ['Urlaub', 'Krank', 'Kind Krank'])) {
 
     if (!$datum || !$von || !$bis) {
         die("Fehlende Zeitangaben.");
+    }
+
+    $datumObj = DateTime::createFromFormat('Y-m-d', $datum);
+    $vonObj = DateTime::createFromFormat('H:i', $von);
+    $bisObj = DateTime::createFromFormat('H:i', $bis);
+
+    if (!$datumObj || $datumObj->format('Y-m-d') !== $datum || !$vonObj || $vonObj->format('H:i') !== $von || !$bisObj || $bisObj->format('H:i') !== $bis) {
+        die("Ungültiges Datum oder Uhrzeit.");
     }
 
     $eintraege[] = [

@@ -149,7 +149,9 @@ function getAbwesenheitsKlasse($typ) {
     function updateFormFields() {
       const typ = document.getElementById('typ').value;
       document.getElementById('zeitraum').style.display = (typ === 'Urlaub' || typ === 'Krank' || typ === 'Kind Krank') ? 'block' : 'none';
-      document.getElementById('uhrzeit_eintrag').style.display = (typ === 'Kommt später' || typ === 'Geht eher') ? 'block' : 'none';
+      const showTime = (typ === 'Kommt später' || typ === 'Geht eher');
+      document.getElementById('uhrzeit_eintrag').style.display = showTime ? 'block' : 'none';
+      document.getElementById('zeitpunkt_datum').style.display = showTime ? 'inline-block' : 'none';
       document.getElementById('zeitspanne').style.display = (typ === 'Unterbrechung') ? 'block' : 'none';
     }
   </script>
@@ -296,10 +298,12 @@ function getAbwesenheitsKlasse($typ) {
 			<input type="date" name="bis_datum"><br><br>
 		  </div>
 
-		  <div id="uhrzeit_eintrag" style="display:none">
-			<label>Uhrzeit:</label>
-			<input type="time" name="zeitpunkt"><br><br>
-		  </div>
+                  <div id="uhrzeit_eintrag" style="display:none">
+                        <label>Datum:</label>
+                        <input type="date" name="zeitpunkt_datum" id="zeitpunkt_datum"><br>
+                        <label>Uhrzeit:</label>
+                        <input type="time" name="zeitpunkt"><br><br>
+                  </div>
 
 		  <div id="zeitspanne" style="display:none">
 			<label>Datum:</label>
