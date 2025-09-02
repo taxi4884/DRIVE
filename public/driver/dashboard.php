@@ -454,7 +454,8 @@ $fahrerHinweis = $stmtHinweis->fetch(PDO::FETCH_ASSOC);
 		
         <p>Hier findest du eine Übersicht deiner Umsätze.</p>
         
-        <section>
+        <section class="card mb-3">
+            <div class="card-body">
             <h2>Umsatzübersicht</h2>
             <form method="GET" action="dashboard.php">
                 <label for="zeitraum">Zeitraum:</label>
@@ -526,7 +527,8 @@ $fahrerHinweis = $stmtHinweis->fetch(PDO::FETCH_ASSOC);
                     <?php endif; ?>
                 </tbody>
             </table>
-			<a href="statistics.php">Statistik</a>
+                        <a href="statistics.php">Statistik</a>
+            </div>
         </section>
     </main>
 	<script>
