@@ -2,6 +2,7 @@
 // zentrale_dashboard.php
 
 require_once '../includes/head.php';
+require_once '../includes/date_utils.php';
 require_once 'modals/process_abwesenheit.php';
 
 // PHP-Fehleranzeige aktivieren
@@ -137,23 +138,6 @@ foreach ($upcomingVacations as $vacation) {
 
 if ($currentVacation) {
     $groupedVacations[] = $currentVacation;
-}
-
-function calculateWorkdays($startDate, $endDate) {
-    $start = new DateTime($startDate);
-    $end = new DateTime($endDate);
-    $workdays = 0;
-
-    // Schleife über alle Tage im Zeitraum
-    while ($start <= $end) {
-        // Prüfen, ob der Tag ein Arbeitstag ist (kein Wochenende)
-        if (!in_array($start->format('N'), [6, 7])) { // 6 = Samstag, 7 = Sonntag
-            $workdays++;
-        }
-        $start->modify('+1 day'); // Zum nächsten Tag
-    }
-
-    return $workdays;
 }
 
 // Ungelesene Krankmeldungen für den aktuellen Benutzer ermitteln
@@ -341,7 +325,7 @@ $unreadCount = count($unreadAbwesenheiten);
 			<ul>
 				<?php foreach ($groupedVacations as $vacation): ?>
 					<?php 
-						$workdays = calculateWorkdays($vacation['startdatum'], $vacation['enddatum']); 
+                                            $workdays = workdaysBetween($vacation['startdatum'], $vacation['enddatum']);
 						$age = $vacation['geburtsdatum'] 
 							? calculateAge($vacation['geburtsdatum'], $vacation['startdatum']) 
 							: '-'; 
