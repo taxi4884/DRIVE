@@ -133,29 +133,7 @@ try {
 			background-color: #0056b3;
 		}
 
-		.modal {
-			display: none;
-			position: fixed;
-			z-index: 1000;
-			left: 0;
-			top: 0;
-			width: 100%;
-			height: 100%;
-			background-color: rgba(0,0,0,0.5);
-			justify-content: center;
-			align-items: center;
-		}
-
-		.modal-content {
-			background-color: #fff;
-			padding: 30px;
-			border-radius: 10px;
-			width: 90%;
-			max-width: 500px;
-			box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-			animation: fadeIn 0.4s ease;
-			position: relative;
-		}
+                /* Modal styles are handled globally in public/css/styles.css */
 
 		.close {
 			position: absolute;

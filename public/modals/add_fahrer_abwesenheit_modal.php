@@ -1,5 +1,5 @@
 <!-- modals/add_fahrer_abwesenheit_modal.php -->
-<div id="fahrerAbwesenheitModal" class="modal" style="display: none;">
+<div id="fahrerAbwesenheitModal" class="modal">
   <div class="modal-content">
     <span onclick="closeModal('fahrerAbwesenheitModal')" class="close">&times;</span>
     <h2>Abwesenheit eintragen</h2>
@@ -77,28 +77,7 @@
 </script>
 
 <style>
-  /* Einfaches Modal-Design */
-  .modal {
-    display: none; /* Hidden by default */
-    position: fixed; 
-    z-index: 1; 
-    left: 0;
-    top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-  }
-
-  .modal-content {
-    background-color: #fefefe;
-    margin: 10% auto; 
-    padding: 20px;
-    border: 1px solid #888;
-    width: 50%; 
-    border-radius: 8px;
-  }
-
+  /* Modal styles now handled globally */
   .close {
     color: #aaa;
     float: right;
