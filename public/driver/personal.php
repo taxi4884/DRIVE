@@ -133,7 +133,7 @@ try {
 			background-color: #0056b3;
 		}
 
-                /* Modal styles are handled globally in public/css/styles.css */
+                /* Modal styles are handled globally in public/css/custom.css */
 
 		.close {
 			position: absolute;

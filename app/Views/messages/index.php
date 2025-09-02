@@ -14,7 +14,7 @@ if ($selectedUserId && isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <title>Nachrichten</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/custom.css">
     <link rel="stylesheet" href="/css/messages.css">
 </head>
 <body>

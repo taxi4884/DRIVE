@@ -46,7 +46,7 @@ $mitteilung = $stmtMsg->fetch(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fahrerübersicht | DRIVE</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/custom.css">
     <script src="js/modal.js"></script>
 </head>
 <body>

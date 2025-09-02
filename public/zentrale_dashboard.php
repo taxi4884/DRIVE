@@ -181,7 +181,7 @@ $unreadCount = count($unreadAbwesenheiten);
     <!-- Font Awesome Einbindung -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Bisheriges CSS -->
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/custom.css">
     <script src="js/modal.js"></script>
     <style>
                 /* Krankheitszellen */

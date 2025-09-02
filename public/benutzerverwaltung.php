@@ -70,7 +70,7 @@ foreach ($spalten as $spalte) {
 <head>
     <meta charset="UTF-8">
     <title>Benutzerverwaltung | DRIVE</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/custom.css">
     <style>
         .switch {
             position: relative;
