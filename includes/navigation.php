@@ -191,7 +191,7 @@ function hasRole(string $role, $sekundarRolle): bool
 /**
  * Build a menu from the provided items filtering by user roles.
  */
-function buildMenu(array $items, array $userRoles): string
+function buildMenu(array $items, array $userRoles, string $currentPath = ''): string
 {
     $html = '<ul>';
     foreach ($items as $item) {
@@ -214,10 +214,17 @@ function buildMenu(array $items, array $userRoles): string
         $html .= "<li$liClass>";
         $url = $item['url'] ?? '#';
         $label = htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8');
-        $aClass = $hasChildren ? ' class="dropdown-toggle"' : '';
-        $html .= '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $aClass . '>' . $label . '</a>';
+        $aClasses = [];
         if ($hasChildren) {
-            $childHtml = buildMenu($item['children'], $userRoles);
+            $aClasses[] = 'dropdown-toggle';
+        }
+        if ($currentPath !== '' && basename($url) === $currentPath) {
+            $aClasses[] = 'active';
+        }
+        $aClassAttr = $aClasses ? ' class="' . implode(' ', $aClasses) . '"' : '';
+        $html .= '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $aClassAttr . '>' . $label . '</a>';
+        if ($hasChildren) {
+            $childHtml = buildMenu($item['children'], $userRoles, $currentPath);
             $html .= str_replace('<ul>', '<ul class="dropdown-menu">', $childHtml);
         }
         $html .= '</li>';
@@ -230,7 +237,7 @@ function buildMenu(array $items, array $userRoles): string
 /**
  * Render navigation menu for the given role context.
  */
-function renderMenu($currentRole, $secondaryRoles, $context = 'top')
+function renderMenu($currentRole, $secondaryRoles, $context = 'top', $currentPath = '')
 {
     global $menuEntries;
 
@@ -251,7 +258,7 @@ function renderMenu($currentRole, $secondaryRoles, $context = 'top')
         return ($item['context'] ?? 'top') === $context;
     });
 
-    echo '<nav>' . buildMenu($items, $userRoles) . '</nav>';
+    echo '<nav>' . buildMenu($items, $userRoles, $currentPath) . '</nav>';
 }
 
 ?>
