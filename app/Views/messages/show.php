@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Nachrichtenverlauf</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/custom.css">
 </head>
 <body>
     <?php include __DIR__ . '/../../../public/nav.php'; ?>

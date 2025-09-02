@@ -71,7 +71,7 @@ $formatter->setPattern('MMMM yyyy');
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fahrer Abwesenheiten | DRIVE</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/custom.css">
   <script src="js/modal.js"></script>
   <style>
     /* Basisstil für Kalenderzellen */

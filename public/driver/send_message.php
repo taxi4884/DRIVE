@@ -48,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Nachricht senden</title>
+    <link rel="stylesheet" href="css/custom.css">
     <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
