@@ -396,6 +396,25 @@ input:focus, select:focus {
   background-color: rgba(0,0,0,0.5);
 }
 
+/* Abwesenheitstypen */
+.absent-yellow {
+  background-color: #fff3cd;
+  color: #856404;
+  font-weight: bold;
+}
+
+.absent-orange {
+  background-color: #ffe5b4;
+  color: #7a3e00;
+  font-weight: bold;
+}
+
+.absent-purple {
+  background-color: #e2d6f5;
+  color: #4b0082;
+  font-weight: bold;
+}
+
 .modal-content {
   background-color: #ffffff;
   margin: 5% auto;
