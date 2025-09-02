@@ -12,8 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user && password_verify($password, $user['Passwort'])) {
-        // Benutzer erfolgreich eingeloggt
-        $_SESSION['user_role'] = 'benutzer';
+        // Admin erfolgreich eingeloggt
+        $_SESSION['user_role'] = 'admin';
         $_SESSION['user_id'] = $user['BenutzerID'];
         header("Location: dashboard.php");
         exit();

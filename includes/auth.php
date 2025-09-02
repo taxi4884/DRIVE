@@ -8,11 +8,11 @@ function isLoggedIn() {
 }
 
 function isDriver() {
-    return isLoggedIn() && $_SESSION['user_type'] === 'Fahrer';
+    return isLoggedIn() && ($_SESSION['user_role'] ?? '') === 'fahrer';
 }
 
 function isAdmin() {
-    return isLoggedIn() && $_SESSION['user_type'] === 'Benutzer';
+    return isLoggedIn() && ($_SESSION['user_role'] ?? '') === 'admin';
 }
 
 function redirectToDashboard() {
