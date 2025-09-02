@@ -132,8 +132,33 @@ function getAbwesenheitsKlasse($typ) {
             return 'absent-green';
         case 'Urlaub':
             return 'absent-blue';
+        case 'Kommt später':
+            return 'absent-yellow';
+        case 'Geht eher':
+            return 'absent-orange';
+        case 'Unterbrechung':
+            return 'absent-purple';
         default:
             return 'absent-red';
+    }
+}
+
+function getAbwesenheitsKuerzel($typ) {
+    switch ($typ) {
+        case 'Krank':
+            return 'KR';
+        case 'Kind Krank':
+            return 'KK';
+        case 'Urlaub':
+            return 'UR';
+        case 'Kommt später':
+            return 'LS';
+        case 'Geht eher':
+            return 'GE';
+        case 'Unterbrechung':
+            return 'UB';
+        default:
+            return '?';
     }
 }
 ?>
@@ -255,8 +280,8 @@ function getAbwesenheitsKlasse($typ) {
 
 				foreach ($abwesenheiten as $a) {
 				  if ($a['mitarbeiter_id'] == $person['BenutzerID'] && $a['datum'] == $date['date']) {
-					$cellClass = getAbwesenheitsKlasse($a['typ']);
-					$cellText = $a['typ'][0];
+                                        $cellClass = getAbwesenheitsKlasse($a['typ']);
+                                        $cellText = getAbwesenheitsKuerzel($a['typ']);
 					break;
 				  }
 				}
