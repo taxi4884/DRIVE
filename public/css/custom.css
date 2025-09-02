@@ -1,0 +1,6 @@
+/* Minimal custom styles extending Bootstrap */
+.weekend { background-color: #f8d7da; color: #721c24; }
+.early-shift { background-color: #d4edda; color: #155724; }
+.mid-shift { background-color: #fff3cd; color: #856404; }
+.late-shift { background-color: #d1ecf1; color: #0c5460; }
+.night-shift { background-color: #d6d8db; color: #343a40; }
