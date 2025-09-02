@@ -1,7 +1,7 @@
 <?php
 
 // Menu definition
-$MENU_ITEMS = [
+$menuEntries = [
     [
         'label' => 'Dashboard',
         'url' => 'dashboard.php',
@@ -172,11 +172,68 @@ $MENU_ITEMS = [
     ],
 ];
 
+/**
+ * Check if a user has a given secondary role.
+ */
+function hasRole(string $role, $sekundarRolle): bool
+{
+    if (is_array($sekundarRolle)) {
+        $secondary = $sekundarRolle;
+    } elseif (is_string($sekundarRolle)) {
+        $secondary = array_filter(array_map('trim', explode(',', $sekundarRolle)));
+    } else {
+        $secondary = [];
+    }
+
+    return in_array($role, $secondary, true);
+}
+
+/**
+ * Build a menu from the provided items filtering by user roles.
+ */
+function buildMenu(array $items, array $userRoles): string
+{
+    $html = '<ul>';
+    foreach ($items as $item) {
+        $roles = $item['roles'] ?? [];
+        $allowed = empty($roles);
+        if (!$allowed) {
+            foreach ($roles as $role) {
+                if ($userRoles['primary'] === $role || hasRole($role, $userRoles['secondary'])) {
+                    $allowed = true;
+                    break;
+                }
+            }
+        }
+        if (!$allowed) {
+            continue;
+        }
+
+        $hasChildren = !empty($item['children']);
+        $liClass = $hasChildren ? ' class="dropdown"' : '';
+        $html .= "<li$liClass>";
+        $url = $item['url'] ?? '#';
+        $label = htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8');
+        $aClass = $hasChildren ? ' class="dropdown-toggle"' : '';
+        $html .= '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $aClass . '>' . $label . '</a>';
+        if ($hasChildren) {
+            $childHtml = buildMenu($item['children'], $userRoles);
+            $html .= str_replace('<ul>', '<ul class="dropdown-menu">', $childHtml);
+        }
+        $html .= '</li>';
+    }
+
+    $html .= '</ul>';
+    return $html;
+}
+
+/**
+ * Render navigation menu for the given role context.
+ */
 function renderMenu($currentRole, $secondaryRoles, $context = 'top')
 {
-    global $MENU_ITEMS;
+    global $menuEntries;
 
-    // Normalize secondary roles to array
     if (is_string($secondaryRoles)) {
         $secondary = array_filter(array_map('trim', explode(',', $secondaryRoles)));
     } elseif (is_array($secondaryRoles)) {
@@ -185,52 +242,16 @@ function renderMenu($currentRole, $secondaryRoles, $context = 'top')
         $secondary = [];
     }
 
-    $hasRole = function(array $roles) use ($currentRole, $secondary) {
-        if (empty($roles)) {
-            return true;
-        }
-        if (!empty($currentRole) && in_array($currentRole, $roles, true)) {
-            return true;
-        }
-        foreach ($secondary as $role) {
-            if (in_array($role, $roles, true)) {
-                return true;
-            }
-        }
-        return false;
-    };
+    $userRoles = [
+        'primary' => $currentRole,
+        'secondary' => $secondary,
+    ];
 
-    $renderItems = function(array $items) use (&$renderItems, $hasRole, $context) {
-        echo '<ul>';
-        foreach ($items as $item) {
-            $itemContext = $item['context'] ?? 'top';
-            if ($itemContext !== $context) {
-                continue;
-            }
-            $roles = $item['roles'] ?? [];
-            if (!$hasRole($roles)) {
-                continue;
-            }
-            $hasChildren = !empty($item['children']);
-            $liClass = $hasChildren ? ' class="dropdown"' : '';
-            echo "<li$liClass>";
-            $url = $item['url'] ?? '#';
-            $label = htmlspecialchars($item['label']);
-            $aClass = $hasChildren ? ' class="dropdown-toggle"' : '';
-            echo "<a href=\"$url\"$aClass>$label</a>";
-            if ($hasChildren) {
-                echo '<ul class="dropdown-menu">';
-                $renderItems($item['children']);
-                echo '</ul>';
-            }
-            echo '</li>';
-        }
-        echo '</ul>';
-    };
+    $items = array_filter($menuEntries, static function ($item) use ($context) {
+        return ($item['context'] ?? 'top') === $context;
+    });
 
-    echo '<nav>';
-    $renderItems($MENU_ITEMS);
-    echo '</nav>';
+    echo '<nav>' . buildMenu($items, $userRoles) . '</nav>';
 }
 
 ?>
