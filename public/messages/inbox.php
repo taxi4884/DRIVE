@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/bootstrap.php';
+require_once '../../includes/bootstrap.php';
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../login.php');
