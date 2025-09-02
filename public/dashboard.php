@@ -140,28 +140,29 @@ include 'head.php';
 						$firmenGruppiert[$anzeigeName][] = $eintrag;
 					}
 
-					if (!empty($firmenGruppiert)) {
-						foreach ($firmenGruppiert as $firma => $fahrerListe) {
-							echo "<section class='widget'>";
-							echo "<h2>" . htmlspecialchars($firma) . "</h2>";
-							echo "<ul>";
-							foreach ($fahrerListe as $fahrer) {
-								echo "<li><strong>" . htmlspecialchars($fahrer['fahrer_vorname']) . " " . htmlspecialchars($fahrer['fahrer_nachname']) . "</strong>";
-								echo " – Kennzeichen: " . htmlspecialchars($fahrer['kennzeichen']);
-								echo "</li>";
-							}
-							echo "</ul>";
-							echo "</section>";
-						}
-					} else {
-						echo "<section class='widget'><p>Aktuell sind keine Fahrer angemeldet.</p></section>";
-					}
-				} catch (PDOException $e) {
-					echo "<section class='widget'><p>Fehler bei der Fahrerabfrage: " . htmlspecialchars($e->getMessage()) . "</p></section>";
-				}
-				?>
+                                        if (!empty($firmenGruppiert)) {
+                                                foreach ($firmenGruppiert as $firma => $fahrerListe) {
+                                                        echo "<section class='widget card mb-3'><div class='card-body'>";
+                                                        echo "<h2>" . htmlspecialchars($firma) . "</h2>";
+                                                        echo "<ul>";
+                                                        foreach ($fahrerListe as $fahrer) {
+                                                                echo "<li><strong>" . htmlspecialchars($fahrer['fahrer_vorname']) . " " . htmlspecialchars($fahrer['fahrer_nachname']) . "</strong>";
+                                                                echo " – Kennzeichen: " . htmlspecialchars($fahrer['kennzeichen']);
+                                                                echo "</li>";
+                                                        }
+                                                        echo "</ul>";
+                                                        echo "</div></section>";
+                                                }
+                                        } else {
+                                                echo "<section class='widget card mb-3'><div class='card-body'><p>Aktuell sind keine Fahrer angemeldet.</p></div></section>";
+                                        }
+                                } catch (PDOException $e) {
+                                        echo "<section class='widget card mb-3'><div class='card-body'><p>Fehler bei der Fahrerabfrage: " . htmlspecialchars($e->getMessage()) . "</p></div></section>";
+                                }
+                                ?>
 
-            <section id="tageshighlights" class="widget">
+            <section id="tageshighlights" class="widget card mb-3">
+                <div class="card-body">
                 <h2>Tageshighlights</h2>
                 <div id="birthdays">
                     <h3>Geburtstage</h3>
@@ -225,9 +226,11 @@ include 'head.php';
                         ?>
                     </ul>
                 </div>
+                </div>
             </section>
 
-            <section id="krank-urlaub" class="widget">
+            <section id="krank-urlaub" class="widget card mb-3">
+                <div class="card-body">
                 <h2>Krank/Urlaub</h2>
                 <div id="abteilungen">
                     <div class='department'>
@@ -286,9 +289,11 @@ include 'head.php';
                         </ul>
                     </div>
                 </div>
+                </div>
             </section>
 
-            <section id="tuev" class="widget">
+            <section id="tuev" class="widget card mb-3">
+                <div class="card-body">
                 <h2>Fällige TÜV</h2>
                 <ul>
                     <?php
@@ -309,9 +314,11 @@ include 'head.php';
                     }
                     ?>
                 </ul>
+                </div>
             </section>
 
-            <section id="eichung" class="widget">
+            <section id="eichung" class="widget card mb-3">
+                <div class="card-body">
                 <h2>Wartungstermine</h2>
                 <ul>
                     <?php
@@ -333,11 +340,13 @@ include 'head.php';
                     }
                     ?>
                 </ul>
+                </div>
             </section>
 
-            <section id="pschein" class="widget">
-				<h2>Bald ablaufende P-Scheine</h2>
-				<ul>
+            <section id="pschein" class="widget card mb-3">
+                                <div class="card-body">
+                                <h2>Bald ablaufende P-Scheine</h2>
+                                <ul>
 					<?php
 					try {
 						$stmt = $pdo->prepare("SELECT CONCAT(Vorname, ' ', Nachname) AS Name, DATE_FORMAT(PScheinGueltigkeit, '%d.%m.%Y') AS PScheinGueltigkeit FROM Fahrer WHERE PScheinGueltigkeit BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 3 MONTH) ORDER BY PScheinGueltigkeit ASC");
@@ -355,12 +364,14 @@ include 'head.php';
 						echo "<li>Fehler bei der Abfrage: " . htmlspecialchars($e->getMessage()) . "</li>";
 					}
 					?>
-				</ul>
-			</section>
+                                </ul>
+                                </div>
+                        </section>
 			
-			<section id="zentraler-dienstplan" class="widget">
-				<h2>Zentraler Dienstplan</h2>
-				<div id="heutige-schicht">
+                        <section id="zentraler-dienstplan" class="widget card mb-3">
+                                <div class="card-body">
+                                <h2>Zentraler Dienstplan</h2>
+                                <div id="heutige-schicht">
 					<h3>Heutige Schicht</h3>
 					<ul>
 						<?php
@@ -387,10 +398,12 @@ include 'head.php';
 						}
 						?>
 					</ul>
-				</div>
-			</section>
+                                </div>
+                                </div>
+                        </section>
 
-            <section id="dienstplan-zentrale" class="widget">
+            <section id="dienstplan-zentrale" class="widget card mb-3">
+                <div class="card-body">
                 <h2>Schichtplan Zentrale</h2>
                 <table class="table">
                     <thead>
@@ -446,6 +459,7 @@ include 'head.php';
                         <?php endif; ?>
                     </tbody>
                 </table>
+                </div>
             </section>
 
         </main>
