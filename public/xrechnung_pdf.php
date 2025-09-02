@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 require_once '../fpdf/fpdf.php'; 
 
 if (!isset($_FILES['xmlFile'])) {

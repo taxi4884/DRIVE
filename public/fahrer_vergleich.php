@@ -1,5 +1,5 @@
 <?php
-include '../includes/head.php';
+include '../includes/bootstrap.php';
 
 // PHP-Fehleranzeige aktivieren
 ini_set('display_errors', 1);

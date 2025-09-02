@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 session_start();
 
 // PHP-Fehleranzeige aktivieren

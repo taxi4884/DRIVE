@@ -1,6 +1,6 @@
 <?php
 // public/fines_management.php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 require_once '../includes/config.php';
 
 use PHPMailer\PHPMailer\PHPMailer;

@@ -1,6 +1,6 @@
 <?php
 // urlaub_loeschen.php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 $fahrer_id = $_GET['id'];
 $von = $_GET['von'];

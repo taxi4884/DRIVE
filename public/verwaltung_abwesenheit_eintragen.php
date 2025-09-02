@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php'; // deine PDO-Verbindung
+require_once '../includes/bootstrap.php'; // deine PDO-Verbindung
 
 // Fehleranzeige für Debug
 ini_set('display_errors', 1);

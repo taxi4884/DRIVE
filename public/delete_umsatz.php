@@ -1,7 +1,7 @@
 <?php
 // delete_umsatz.php
 
-require_once '../includes/head.php'; // Stellt die PDO-Verbindung und weitere Einstellungen bereit.
+require_once '../includes/bootstrap.php'; // Stellt die PDO-Verbindung und weitere Einstellungen bereit.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Werte aus dem POST-Request abrufen

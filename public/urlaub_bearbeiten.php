@@ -1,5 +1,5 @@
 // urlaub_bearbeiten.php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 requireLogin();
 
 $fahrer_id = $_GET['id'];

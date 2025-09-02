@@ -1,6 +1,6 @@
 <?php
 // public/fahrer_umsatz.php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 // Fahrer aus der Datenbank laden (nur aktive Fahrer, sortiert nach Personalnummer & Nachname)
 $stmtAlleFahrer = $pdo->query("

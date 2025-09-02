@@ -1,5 +1,5 @@
 <?php
-require_once '../../includes/head.php';
+require_once '../../includes/bootstrap.php';
 
 // Fehleranzeige aktivieren (nur für Debugging, in Produktion entfernen)
 ini_set('display_errors', 1);

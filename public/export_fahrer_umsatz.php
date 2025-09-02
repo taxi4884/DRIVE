@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 require('../fpdf/fpdf.php');
 require_once '../includes/date_utils.php';
 

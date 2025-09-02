@@ -1,7 +1,7 @@
 <?php
 // service.php
 // Verbindung zur Datenbank herstellen
-require_once '../includes/head.php'; // Inklusive Authentifizierung und PDO-Datenbankverbindung
+require_once '../includes/bootstrap.php'; // Inklusive Authentifizierung und PDO-Datenbankverbindung
 
 // Daten aus der Tabelle Wartung abrufen
 $query = "

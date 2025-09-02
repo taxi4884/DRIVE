@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 require_once 'modals/process_driver.php';
 
 if (!isLoggedIn()) {

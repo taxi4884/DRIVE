@@ -1,6 +1,6 @@
 <?php
 // Include authentication and database connection
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 // Get user information for greeting
 $user_name = $_SESSION['user_name'] ?? 'Gast';

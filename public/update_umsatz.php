@@ -1,7 +1,7 @@
 <?php
 // public/update_umsatz.php
 
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Formularfelder auslesen

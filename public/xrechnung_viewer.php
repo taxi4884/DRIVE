@@ -1,6 +1,6 @@
 <?php
 // xrechnung_viewer.php
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 ?>
 
 <!DOCTYPE html>

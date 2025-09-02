@@ -1,7 +1,7 @@
 <?php
 // insert_umsatz.php
 
-require_once '../includes/head.php'; // Stellt die PDO-Verbindung und weitere notwendige Einstellungen bereit.
+require_once '../includes/bootstrap.php'; // Stellt die PDO-Verbindung und weitere notwendige Einstellungen bereit.
 
 // Sicherstellen, dass das Formular per POST abgesendet wurde.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

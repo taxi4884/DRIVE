@@ -1,7 +1,7 @@
 <?php
 // public/umsatz_dashboard.php
 
-require_once '../includes/head.php';
+require_once '../includes/bootstrap.php';
 
 // Zeitbereich festlegen (Standard: aktueller Monat)
 $zeitraum = $_GET['zeitraum'] ?? 'aktuell';
