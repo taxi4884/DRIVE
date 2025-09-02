@@ -86,36 +86,8 @@ foreach ($dienstplan as $entry) {
 ?>
 <?php
 $title = 'Dashboard';
-include 'head.php';
+include '../includes/layout.php';
 ?>
-<body>
-    <?php
-        require_once '../includes/navigation.php';
-        $currentPage = basename($_SERVER['PHP_SELF']);
-
-        $secondaryRoles = $sekundarRolle ?? '';
-        if (is_string($secondaryRoles)) {
-            $secondary = array_filter(array_map('trim', explode(',', $secondaryRoles)));
-        } elseif (is_array($secondaryRoles)) {
-            $secondary = $secondaryRoles;
-        } else {
-            $secondary = [];
-        }
-
-        $userRoles = [
-            'primary' => $_SESSION['rolle'] ?? '',
-            'secondary' => $secondary,
-        ];
-
-        $items = array_filter($menuEntries, static function ($item) {
-            return ($item['context'] ?? 'top') === 'top';
-        });
-
-        echo '<nav><div class="burger-menu"><i class="bi bi-list"></i></div>' .
-            buildMenu($items, $userRoles, $currentPage) .
-            '</nav>';
-    ?>
-
     <div class="container">
         <header>
 			<h1 id="greeting"></h1>

@@ -43,10 +43,8 @@ while ($row = $permStmt->fetch(PDO::FETCH_ASSOC)) {
 }
 
 $title = 'Nachrichtenberechtigungen';
-include 'head.php';
+include '../includes/layout.php';
 ?>
-<body>
-<?php include 'nav.php'; ?>
 <div class="container my-4">
     <h1>Nachrichtenberechtigungen</h1>
     <form method="post">
