@@ -9,17 +9,12 @@ if ($selectedUserId && isset($_SESSION['user_id'])) {
     $messages = Message::getMessagesBetween((int) $_SESSION['user_id'], $selectedUserId);
 }
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Nachrichten</title>
-    <link rel="stylesheet" href="/css/custom.css">
-    <link rel="stylesheet" href="/css/messages.css">
-</head>
-<body>
-    <?php include __DIR__ . '/../../../public/nav.php'; ?>
-    <main class="messages-container">
+<?php
+$title = 'Nachrichten';
+include __DIR__ . '/../../../includes/layout.php';
+?>
+<link rel="stylesheet" href="/css/messages.css">
+<main class="messages-container">
         <aside class="conversations">
             <h2>Gesprächspartner</h2>
             <?php if (empty($conversations)): ?>
