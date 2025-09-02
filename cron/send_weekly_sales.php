@@ -11,7 +11,7 @@ if (!headers_sent()) {
 }
 
 // --- Logging ---
-require_once __DIR__ . '/../../includes/logger.php';
+require_once __DIR__ . '/../includes/logger.php';
 $logFile = __DIR__ . '/send_weekly_sales.log';
 logMessage("Skript gestartet.", $logFile);
 
@@ -27,17 +27,17 @@ register_shutdown_function(function() use ($lockFile) {
 });
 
 // --- Includes ---
-$dbPath = __DIR__ . '/../../includes/db.php';
+$dbPath = __DIR__ . '/../includes/db.php';
 if (!file_exists($dbPath)) { logMessage("DB include fehlt: {$dbPath}", $logFile); exit; }
 require_once $dbPath;
 logMessage("DB geladen.", $logFile);
 
-$configPath = __DIR__ . '/../../includes/config.php';
+$configPath = __DIR__ . '/../includes/config.php';
 if (!file_exists($configPath)) { logMessage("Config include fehlt: {$configPath}", $logFile); exit; }
 require_once $configPath;
 logMessage("Config geladen.", $logFile);
 
-require_once __DIR__ . '/../../includes/mailer.php';
+require_once __DIR__ . '/../includes/mailer.php';
 
 // --- Hilfsfunktionen Zeit / Format ---
 /**

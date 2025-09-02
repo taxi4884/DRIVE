@@ -4,7 +4,12 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-require_once '../../includes/db.php'; // Verbindung zur Datenbank
+require_once __DIR__ . '/../includes/logger.php';
+require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/../includes/db.php'; // Verbindung zur Datenbank
+
+$logFile = __DIR__ . '/dienstplan-api.log';
+logMessage('Skript gestartet.', $logFile);
 
 try {
     $heute = date('Y-m-d');
@@ -144,6 +149,10 @@ try {
         'urlaub_current_month' => $urlaubeAktuellerMonat,
         'urlaub_next_month' => $urlaubeNaechsterMonat
     ]);
+
+    logMessage('Skript beendet.', $logFile);
 } catch (Exception $e) {
+    logMessage('Fehler: ' . $e->getMessage(), $logFile);
+    sendEmail(MAIL_FROM, MAIL_FROM_NAME, 'Dienstplan API Fehler', 'Fehler: ' . $e->getMessage());
     echo json_encode(['error' => $e->getMessage()]);
 }
