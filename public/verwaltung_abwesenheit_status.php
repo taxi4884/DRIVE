@@ -5,6 +5,11 @@ if (!isLoggedIn()) {
     die("Nicht eingeloggt.");
 }
 
+$rollen = array_map('trim', explode(',', $sekundarRolle ?? ''));
+if (!in_array('Verwaltung', $rollen, true)) {
+    die("Keine Berechtigung.");
+}
+
 if (!isset($_POST['action'], $_POST['abwesenheit_ids']) || !in_array($_POST['action'], ['approve', 'reject'])) {
     die("Ungültige Anfrage.");
 }
