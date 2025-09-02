@@ -22,6 +22,7 @@ $menuEntries = [
                     <div class="dropdown-menu">
                         <a href="benutzerverwaltung.php">Benutzerverwaltung</a>
                         <a href="schulungsverwaltung.php">Schulung</a>
+                        <a href="message_permissions.php">Nachrichtenrechte</a>
                     </div>
                 </div>',
 ];
