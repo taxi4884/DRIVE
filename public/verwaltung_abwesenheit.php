@@ -61,19 +61,9 @@ $formatter = new IntlDateFormatter('de_DE', IntlDateFormatter::LONG, IntlDateFor
 $formatter->setPattern('MMMM yyyy');
 
 // Ungenehmigte Abwesenheiten anzeigen, wenn Benutzer Zugriff hat
-$anzeigenAbwesenheiten = false;
+$rollen = array_map('trim', explode(',', $sekundarRolle));
+$anzeigenAbwesenheiten = in_array('Verwaltung', $rollen, true);
 $offeneAbwesenheiten = [];
-
-try {
-    $stmt = $pdo->prepare("SELECT AbwesenheitVerwaltung FROM Benutzer WHERE BenutzerID = :id");
-    $stmt->execute([':id' => $_SESSION['user_id']]);
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($result && $result['AbwesenheitVerwaltung'] == 1) {
-        $anzeigenAbwesenheiten = true;
-    }
-} catch (PDOException $e) {
-    die("Fehler beim Prüfen der Berechtigung: " . $e->getMessage());
-}
 
 if ($anzeigenAbwesenheiten) {
     try {
@@ -215,47 +205,49 @@ function getAbwesenheitsKuerzel($typ) {
   <?php include 'nav.php'; ?>
   <main>
     <h1>Abwesenheiten Verwaltung</h1>
-	
-	<h2>Offene Abwesenheiten</h2>
 
-	<?php if ($anzeigenAbwesenheiten && !empty($offeneAbwesenheiten)): ?>
-		<table>
-			<thead>
-				<tr>
-					<th>Mitarbeiter</th>
-					<th>Zeitraum</th>
-					<th>Typ</th>
-					<th>Von</th>
-					<th>Bis</th>
-					<th>Beschreibung</th>
-					<th>Aktion</th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach ($offeneAbwesenheiten as $eintrag): ?>
-					<tr>
-						<td><?= htmlspecialchars((string)$eintrag['Name']) ?></td>
-						<td><?= htmlspecialchars($eintrag['start']) ?> bis <?= htmlspecialchars($eintrag['end']) ?></td>
-						<td><?= htmlspecialchars($eintrag['typ']) ?></td>
-						<td><?= htmlspecialchars((string)$eintrag['von']) ?></td>
-						<td><?= htmlspecialchars((string)$eintrag['bis']) ?></td>
-						<td><?= htmlspecialchars((string)$eintrag['beschreibung']) ?></td>
-						<td>
-							<form action="verwaltung_abwesenheit_status.php" method="post" style="display:inline-block;">
-								<?php foreach ($eintrag['ids'] as $id): ?>
-									<input type="hidden" name="abwesenheit_ids[]" value="<?= $id ?>">
-								<?php endforeach; ?>
-								<button type="submit" name="action" value="approve">Genehmigen</button>
-								<button type="submit" name="action" value="reject">Ablehnen</button>
-							</form>
-						</td>
-					</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-	<?php elseif ($anzeigenAbwesenheiten): ?>
-    <p>Keine offenen Abwesenheiten vorhanden.</p>
-	<?php endif; ?>
+    <?php if ($anzeigenAbwesenheiten): ?>
+        <h2>Offene Abwesenheiten</h2>
+
+        <?php if (!empty($offeneAbwesenheiten)): ?>
+                <table>
+                        <thead>
+                                <tr>
+                                        <th>Mitarbeiter</th>
+                                        <th>Zeitraum</th>
+                                        <th>Typ</th>
+                                        <th>Von</th>
+                                        <th>Bis</th>
+                                        <th>Beschreibung</th>
+                                        <th>Aktion</th>
+                                </tr>
+                        </thead>
+                        <tbody>
+                                <?php foreach ($offeneAbwesenheiten as $eintrag): ?>
+                                        <tr>
+                                                <td><?= htmlspecialchars((string)$eintrag['Name']) ?></td>
+                                                <td><?= htmlspecialchars($eintrag['start']) ?> bis <?= htmlspecialchars($eintrag['end']) ?></td>
+                                                <td><?= htmlspecialchars($eintrag['typ']) ?></td>
+                                                <td><?= htmlspecialchars((string)$eintrag['von']) ?></td>
+                                                <td><?= htmlspecialchars((string)$eintrag['bis']) ?></td>
+                                                <td><?= htmlspecialchars((string)$eintrag['beschreibung']) ?></td>
+                                                <td>
+                                                        <form action="verwaltung_abwesenheit_status.php" method="post" style="display:inline-block;">
+                                                                <?php foreach ($eintrag['ids'] as $id): ?>
+                                                                        <input type="hidden" name="abwesenheit_ids[]" value="<?= $id ?>">
+                                                                <?php endforeach; ?>
+                                                                <button type="submit" name="action" value="approve">Genehmigen</button>
+                                                                <button type="submit" name="action" value="reject">Ablehnen</button>
+                                                        </form>
+                                                </td>
+                                        </tr>
+                                <?php endforeach; ?>
+                        </tbody>
+                </table>
+        <?php else: ?>
+            <p>Keine offenen Abwesenheiten vorhanden.</p>
+        <?php endif; ?>
+    <?php endif; ?>
 
     <button onclick="document.getElementById('abwesenheitModal').style.display='block'">Abwesenheit eintragen</button>
 
