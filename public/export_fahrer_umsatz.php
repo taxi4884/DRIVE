@@ -1,6 +1,7 @@
 <?php
 require_once '../includes/head.php';
 require('../fpdf/fpdf.php');
+require_once '../includes/date_utils.php';
 
 ob_start(); // Output Buffering starten
 
@@ -95,22 +96,6 @@ foreach ($umsatzDaten as $eintrag) {
 	unset($summe);
 }
 
-function getWorkdays($start_date, $end_date) {
-    $workdays = 0;
-    $current = strtotime($start_date);
-    $end_ts = strtotime($end_date);
-
-    while ($current <= $end_ts) {
-        $dayOfWeek = date('N', $current);
-        // Arbeitstage: Montag (1) bis Freitag (5)
-        if ($dayOfWeek < 6) {
-            $workdays++;
-        }
-        $current = strtotime('+1 day', $current);
-    }
-    return $workdays;
-}
-
 // Krankheits- und Urlaubsstatus mit Zeitraum abrufen
 try {
     // Krankheiten im Zeitraum gruppiert nach Grund mit Min/Max-Daten
@@ -139,7 +124,7 @@ try {
     $urlaubDetails = [];
 }
 
-$werktage = getWorkdays($start_date, $end_date);
+$werktage = workdaysBetween($start_date, $end_date);
 $startDatumFormat = date('d.m.Y', strtotime($start_date));
 $endDatumFormat = date('d.m.Y', strtotime($end_date));
 
