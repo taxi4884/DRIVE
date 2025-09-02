@@ -67,6 +67,11 @@ $menuEntries = [
         'roles' => ['Admin', 'Mitarbeiter'],
     ],
     [
+        'label' => 'Postfach',
+        'url' => 'messages/inbox.php',
+        'roles' => ['Admin', 'Mitarbeiter', 'Fahrer', 'Zentrale', 'Abrechnung'],
+    ],
+    [
         'label' => 'Verwaltung',
         'url'   => 'verwaltung_abwesenheit.php',
         'roles' => ['Admin', 'Mitarbeiter', 'Zentrale', 'Abrechnung'], // ggf. erweitern
@@ -166,6 +171,12 @@ $menuEntries = [
     [
         'label' => 'Umsatz',
         'url' => 'umsatz_erfassen.php',
+        'roles' => ['Fahrer'],
+        'context' => 'bottom',
+    ],
+    [
+        'label' => 'Postfach',
+        'url' => 'messages/inbox.php',
         'roles' => ['Fahrer'],
         'context' => 'bottom',
     ],
