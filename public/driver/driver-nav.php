@@ -10,6 +10,7 @@
     <ul>
         <li><a href="dashboard.php">Dashboard</a></li>
         <li><a href="umsatz_erfassen.php">Umsatz erfassen</a></li>
+        <li><a href="../messages/inbox.php">Postfach</a></li>
         <li><a href="../logout.php">Logout</a></li>
     </ul>
 </nav>
