@@ -19,7 +19,10 @@ $stmt = $pdo->prepare("
   SELECT DISTINCT b.BenutzerID, b.Name
   FROM Benutzer b
   JOIN verwaltung_abwesenheit va ON b.BenutzerID = va.mitarbeiter_id
-  WHERE va.datum BETWEEN :start_date AND :end_date
+  WHERE (
+      (va.startdatum IS NOT NULL AND va.enddatum IS NOT NULL AND va.startdatum <= :end_date AND va.enddatum >= :start_date)
+      OR (va.datum BETWEEN :start_date AND :end_date)
+  )
   ORDER BY b.Name ASC
 ");
 $stmt->execute(['start_date' => $start_date, 'end_date' => $end_date]);
@@ -44,7 +47,10 @@ for ($day = 1; $day <= date('t', strtotime($start_date)); $day++) {
 $abwesenheitenStmt = $pdo->prepare("
   SELECT *
   FROM verwaltung_abwesenheit
-  WHERE datum BETWEEN :start_date AND :end_date
+  WHERE (
+      (startdatum IS NOT NULL AND enddatum IS NOT NULL AND startdatum <= :end_date AND enddatum >= :start_date)
+      OR (datum BETWEEN :start_date AND :end_date)
+  )
 ");
 $abwesenheitenStmt->execute(['start_date' => $start_date, 'end_date' => $end_date]);
 $abwesenheiten = $abwesenheitenStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -67,48 +73,21 @@ $offeneAbwesenheiten = [];
 
 if ($anzeigenAbwesenheiten) {
     try {
-        $stmt = $pdo->prepare("SELECT va.*, b.Name FROM verwaltung_abwesenheit va JOIN Benutzer b ON va.mitarbeiter_id = b.BenutzerID WHERE va.typ NOT IN ('Krank', 'Kind Krank') AND va.genehmigt_am IS NULL ORDER BY b.Name, va.typ, va.datum ASC");
+        $stmt = $pdo->prepare("SELECT va.*, b.Name FROM verwaltung_abwesenheit va JOIN Benutzer b ON va.mitarbeiter_id = b.BenutzerID WHERE va.typ NOT IN ('Krank', 'Kind Krank') AND va.genehmigt_am IS NULL ORDER BY b.Name, va.typ, COALESCE(va.startdatum, va.datum) ASC");
         $stmt->execute();
         $rohdaten = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Abwesenheiten nach Benutzer, Typ und zusammenhängenden Tagen gruppieren
         foreach ($rohdaten as $eintrag) {
-            $key = $eintrag['mitarbeiter_id'] . '|' . $eintrag['typ'] . '|' . $eintrag['beschreibung'];
-            $datum = $eintrag['datum'];
-
-            if (!isset($offeneAbwesenheiten[$key])) {
-                $offeneAbwesenheiten[$key] = [
-                    'Name' => $eintrag['Name'],
-                    'typ' => $eintrag['typ'],
-                    'beschreibung' => $eintrag['beschreibung'],
-                    'von' => $eintrag['von'],
-                    'bis' => $eintrag['bis'],
-                    'start' => $datum,
-                    'end' => $datum,
-                    'ids' => [$eintrag['id']]
-                ];
-            } else {
-                $prevDate = new DateTime($offeneAbwesenheiten[$key]['end']);
-                $currentDate = new DateTime($datum);
-                $diff = $prevDate->diff($currentDate)->days;
-
-                if ($diff <= 1) {
-                    $offeneAbwesenheiten[$key]['end'] = $datum;
-                    $offeneAbwesenheiten[$key]['ids'][] = $eintrag['id'];
-                } else {
-                    $key .= uniqid();
-                    $offeneAbwesenheiten[$key] = [
-                        'Name' => $eintrag['Name'],
-                        'typ' => $eintrag['typ'],
-                        'beschreibung' => $eintrag['beschreibung'],
-                        'von' => $eintrag['von'],
-                        'bis' => $eintrag['bis'],
-                        'start' => $datum,
-                        'end' => $datum,
-                        'ids' => [$eintrag['id']]
-                    ];
-                }
-            }
+            $offeneAbwesenheiten[] = [
+                'Name' => $eintrag['Name'],
+                'typ' => $eintrag['typ'],
+                'beschreibung' => $eintrag['beschreibung'],
+                'von' => $eintrag['startzeit'],
+                'bis' => $eintrag['endzeit'],
+                'start' => $eintrag['startdatum'] ?? $eintrag['datum'],
+                'end' => $eintrag['enddatum'] ?? $eintrag['datum'],
+                'ids' => [$eintrag['id']]
+            ];
         }
     } catch (PDOException $e) {
         die("Fehler beim Abrufen der Abwesenheiten: " . $e->getMessage());
@@ -168,12 +147,24 @@ function getAbwesenheitsKuerzel($typ) {
 
     function updateFormFields() {
       const typ = document.getElementById('typ').value;
-      document.getElementById('zeitraum').style.display = typesWithPeriod.includes(typ) ? 'block' : 'none';
-      const showTime = typesWithTimePoint.includes(typ);
-      document.getElementById('uhrzeit_eintrag').style.display = showTime ? 'block' : 'none';
-      document.getElementById('zeitpunkt_datum').style.display = showTime ? 'inline-block' : 'none';
-      document.getElementById('zeitspanne').style.display = typesWithTimeRange.includes(typ) ? 'block' : 'none';
+      const isPeriod = typesWithPeriod.includes(typ);
+      const isTimePoint = typesWithTimePoint.includes(typ);
+      const isTimeRange = typesWithTimeRange.includes(typ);
+
+      document.getElementById('zeitraum').style.display = isPeriod ? 'block' : 'none';
+      document.getElementById('zeitpunkt').style.display = isTimePoint ? 'block' : 'none';
+      document.getElementById('zeitspanne').style.display = isTimeRange ? 'block' : 'none';
+
+      document.getElementById('startdatum').disabled = !isPeriod;
+      document.getElementById('enddatum').disabled = !isPeriod;
+      document.getElementById('tag_zeitpunkt').disabled = !isTimePoint;
+      document.getElementById('zeit').disabled = !isTimePoint;
+      document.getElementById('tag_zeitspanne').disabled = !isTimeRange;
+      document.getElementById('von_uhrzeit').disabled = !isTimeRange;
+      document.getElementById('bis_uhrzeit').disabled = !isTimeRange;
     }
+
+    window.addEventListener('load', updateFormFields);
   </script>
   <style>
     .dashboard-table td {
@@ -270,21 +261,24 @@ function getAbwesenheitsKuerzel($typ) {
 		<?php foreach ($mitarbeiter as $person): ?>
 		  <tr>
 			<td><?= htmlspecialchars($person['Name']) ?></td>
-			<?php foreach ($dates as $date): ?>
-			  <?php
-				$cellClass = $date['isWeekend'] ? 'weekend' : '';
-				$cellText = '-';
-
-				foreach ($abwesenheiten as $a) {
-				  if ($a['mitarbeiter_id'] == $person['BenutzerID'] && $a['datum'] == $date['date']) {
-                                        $cellClass = getAbwesenheitsKlasse($a['typ']);
-                                        $cellText = getAbwesenheitsKuerzel($a['typ']);
-					break;
-				  }
-				}
-			  ?>
-			  <td class="<?= $cellClass ?>"><?= htmlspecialchars($cellText) ?></td>
-			<?php endforeach; ?>
+                        <?php foreach ($dates as $date): ?>
+                          <?php
+                                $cellClass = $date['isWeekend'] ? 'weekend' : '';
+                                $cellText = '-';
+                                foreach ($abwesenheiten as $a) {
+                                  if ($a['mitarbeiter_id'] == $person['BenutzerID']) {
+                                        $currentDate = $date['date'];
+                                        if ((isset($a['datum']) && $a['datum'] === $currentDate) ||
+                                            (isset($a['startdatum'], $a['enddatum']) && $currentDate >= $a['startdatum'] && $currentDate <= $a['enddatum'])) {
+                                            $cellClass = getAbwesenheitsKlasse($a['typ']);
+                                            $cellText = getAbwesenheitsKuerzel($a['typ']);
+                                            break;
+                                        }
+                                  }
+                                }
+                          ?>
+                          <td class="<?= $cellClass ?>"><?= htmlspecialchars($cellText) ?></td>
+                        <?php endforeach; ?>
 		  </tr>
 		<?php endforeach; ?>
 	  </tbody>
@@ -310,28 +304,28 @@ function getAbwesenheitsKuerzel($typ) {
                         <?php endforeach; ?>
                   </select><br><br>
 
-		  <div id="zeitraum" style="display:none">
-			<label>Von (Datum):</label>
-			<input type="date" name="von_datum"><br>
-			<label>Bis (Datum):</label>
-			<input type="date" name="bis_datum"><br><br>
-		  </div>
-
-                  <div id="uhrzeit_eintrag" style="display:none">
-                        <label>Datum:</label>
-                        <input type="date" name="zeitpunkt_datum" id="zeitpunkt_datum"><br>
-                        <label>Uhrzeit:</label>
-                        <input type="time" name="zeitpunkt"><br><br>
+                  <div id="zeitraum" style="display:none">
+                        <label>Von (Datum):</label>
+                        <input type="date" name="startdatum" id="startdatum" disabled><br>
+                        <label>Bis (Datum):</label>
+                        <input type="date" name="enddatum" id="enddatum" disabled><br><br>
                   </div>
 
-		  <div id="zeitspanne" style="display:none">
-			<label>Datum:</label>
-			<input type="date" name="tag_zeitspanne"><br>
-			<label>Von (Uhrzeit):</label>
-			<input type="time" name="von_uhrzeit"><br>
-			<label>Bis (Uhrzeit):</label>
-			<input type="time" name="bis_uhrzeit"><br><br>
-		  </div>
+                  <div id="zeitpunkt" style="display:none">
+                        <label>Tag:</label>
+                        <input type="date" name="tag" id="tag_zeitpunkt" disabled><br>
+                        <label>Zeit:</label>
+                        <input type="time" name="zeit" id="zeit" disabled><br><br>
+                  </div>
+
+                  <div id="zeitspanne" style="display:none">
+                        <label>Tag:</label>
+                        <input type="date" name="tag" id="tag_zeitspanne" disabled><br>
+                        <label>Von (Uhrzeit):</label>
+                        <input type="time" name="von_uhrzeit" id="von_uhrzeit" disabled><br>
+                        <label>Bis (Uhrzeit):</label>
+                        <input type="time" name="bis_uhrzeit" id="bis_uhrzeit" disabled><br><br>
+                  </div>
 
 		  <label for="beschreibung">Beschreibung:</label>
 		  <textarea name="beschreibung" rows="3"></textarea><br><br>

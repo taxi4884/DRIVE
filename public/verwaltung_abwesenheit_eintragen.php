@@ -13,96 +13,75 @@ $typ = $_POST['typ'];
 $beschreibung = $_POST['beschreibung'] ?? null;
 $erstellt_von = $_SESSION['user_id']; // Aktuell eingeloggter Benutzer
 
-// Initialisierung
-$eintraege = [];
+// Initialisierung der Daten für die Speicherung
+$daten = [
+    'mitarbeiter_id' => $mitarbeiter_id,
+    'typ' => $typ,
+    'beschreibung' => $beschreibung,
+    'erstellt_von' => $erstellt_von,
+    'datum' => null,
+    'startdatum' => null,
+    'enddatum' => null,
+    'startzeit' => null,
+    'endzeit' => null,
+];
 
 if (in_array($typ, $ABSENCE_TYPES['period'], true)) {
-    $von = $_POST['von_datum'];
-    $bis = $_POST['bis_datum'];
-
-    if (!$von || !$bis) {
+    $startdatum = $_POST['startdatum'] ?? null;
+    $enddatum = $_POST['enddatum'] ?? null;
+    if (!$startdatum || !$enddatum) {
         die("Fehlendes Datum.");
     }
-
-    $start = new DateTime($von);
-    $end = new DateTime($bis);
-    $interval = new DateInterval('P1D');
-    $period = new DatePeriod($start, $interval, $end->modify('+1 day'));
-
-    foreach ($period as $day) {
-        $eintraege[] = [
-            'datum' => $day->format('Y-m-d'),
-            'typ' => $typ,
-            'von' => null,
-            'bis' => null
-        ];
+    $startObj = DateTime::createFromFormat('Y-m-d', $startdatum);
+    $endObj = DateTime::createFromFormat('Y-m-d', $enddatum);
+    if (!$startObj || $startObj->format('Y-m-d') !== $startdatum || !$endObj || $endObj->format('Y-m-d') !== $enddatum || $startdatum > $enddatum) {
+        die("Ungültiger Zeitraum.");
     }
+    $daten['startdatum'] = $startdatum;
+    $daten['enddatum'] = $enddatum;
 } elseif (in_array($typ, $ABSENCE_TYPES['time_point'], true)) {
-    $datum = $_POST['zeitpunkt_datum'] ?? null;
-    $zeit = $_POST['zeitpunkt'] ?? null;
-
-    if (!$datum || !$zeit) {
+    $tag = $_POST['tag'] ?? null;
+    $zeit = $_POST['zeit'] ?? null;
+    if (!$tag || !$zeit) {
         die("Fehlendes Datum oder Uhrzeit.");
     }
-
-    $datumObj = DateTime::createFromFormat('Y-m-d', $datum);
+    $tagObj = DateTime::createFromFormat('Y-m-d', $tag);
     $zeitObj = DateTime::createFromFormat('H:i', $zeit);
-
-    if (!$datumObj || $datumObj->format('Y-m-d') !== $datum || !$zeitObj || $zeitObj->format('H:i') !== $zeit) {
+    if (!$tagObj || $tagObj->format('Y-m-d') !== $tag || !$zeitObj || $zeitObj->format('H:i') !== $zeit) {
         die("Ungültiges Datum oder Uhrzeit.");
     }
-
-    $eintraege[] = [
-        'datum' => $datum,
-        'typ' => $typ,
-        'von' => ($typ === 'Kommt später') ? $zeit : null,
-        'bis' => ($typ === 'Geht eher') ? $zeit : null
-    ];
+    $daten['datum'] = $tag;
+    if ($typ === 'Kommt später') {
+        $daten['startzeit'] = $zeit;
+    } else {
+        $daten['endzeit'] = $zeit;
+    }
 } elseif (in_array($typ, $ABSENCE_TYPES['time_range'], true)) {
-    $datum = $_POST['tag_zeitspanne'];
-    $von = $_POST['von_uhrzeit'];
-    $bis = $_POST['bis_uhrzeit'];
-
-    if (!$datum || !$von || !$bis) {
+    $tag = $_POST['tag'] ?? null;
+    $von = $_POST['von_uhrzeit'] ?? null;
+    $bis = $_POST['bis_uhrzeit'] ?? null;
+    if (!$tag || !$von || !$bis) {
         die("Fehlende Zeitangaben.");
     }
-
-    $datumObj = DateTime::createFromFormat('Y-m-d', $datum);
+    $tagObj = DateTime::createFromFormat('Y-m-d', $tag);
     $vonObj = DateTime::createFromFormat('H:i', $von);
     $bisObj = DateTime::createFromFormat('H:i', $bis);
-
-    if (!$datumObj || $datumObj->format('Y-m-d') !== $datum || !$vonObj || $vonObj->format('H:i') !== $von || !$bisObj || $bisObj->format('H:i') !== $bis) {
+    if (!$tagObj || $tagObj->format('Y-m-d') !== $tag || !$vonObj || $vonObj->format('H:i') !== $von || !$bisObj || $bisObj->format('H:i') !== $bis) {
         die("Ungültiges Datum oder Uhrzeit.");
     }
-
-    $eintraege[] = [
-        'datum' => $datum,
-        'typ' => $typ,
-        'von' => $von,
-        'bis' => $bis
-    ];
+    $daten['datum'] = $tag;
+    $daten['startzeit'] = $von;
+    $daten['endzeit'] = $bis;
 } else {
     die("Unbekannter Typ.");
 }
 
 // In Datenbank speichern
-$stmt = $pdo->prepare("
-    INSERT INTO verwaltung_abwesenheit 
-    (mitarbeiter_id, datum, typ, von, bis, beschreibung, erstellt_von)
-    VALUES (:mitarbeiter_id, :datum, :typ, :von, :bis, :beschreibung, :erstellt_von)
-");
-
-foreach ($eintraege as $entry) {
-    $stmt->execute([
-        'mitarbeiter_id' => $mitarbeiter_id,
-        'datum' => $entry['datum'],
-        'typ' => $entry['typ'],
-        'von' => $entry['von'],
-        'bis' => $entry['bis'],
-        'beschreibung' => $beschreibung,
-        'erstellt_von' => $erstellt_von
-    ]);
-}
+$stmt = $pdo->prepare(
+    "INSERT INTO verwaltung_abwesenheit (mitarbeiter_id, datum, startdatum, enddatum, startzeit, endzeit, typ, beschreibung, erstellt_von)
+     VALUES (:mitarbeiter_id, :datum, :startdatum, :enddatum, :startzeit, :endzeit, :typ, :beschreibung, :erstellt_von)"
+);
+$stmt->execute($daten);
 
 header("Location: verwaltung_abwesenheit.php?success=1");
 exit;
