@@ -4,3 +4,59 @@
 .mid-shift { background-color: #fff3cd; color: #856404; }
 .late-shift { background-color: #d1ecf1; color: #0c5460; }
 .night-shift { background-color: #d6d8db; color: #343a40; }
+
+/* Navigation links */
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 1rem;
+    background-color: #333;
+    padding: 0.5rem 1rem;
+    margin: 0;
+}
+
+.nav-links li a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.nav-links li a:hover {
+    background-color: #444;
+}
+
+/* Hamburger menu */
+.burger-menu {
+    display: none;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.burger-menu span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        right: -100%;
+        width: 200px;
+        transition: right 0.3s ease;
+    }
+
+    .nav-links.active {
+        right: 0;
+    }
+
+    .burger-menu {
+        display: flex;
+    }
+}
