@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/bootstrap.php'; // deine PDO-Verbindung
+require_once '../includes/absencetypes.php';
 
 // Fehleranzeige für Debug
 ini_set('display_errors', 1);
@@ -15,7 +16,7 @@ $erstellt_von = $_SESSION['user_id']; // Aktuell eingeloggter Benutzer
 // Initialisierung
 $eintraege = [];
 
-if (in_array($typ, ['Urlaub', 'Krank', 'Kind Krank'])) {
+if (in_array($typ, $ABSENCE_TYPES['period'], true)) {
     $von = $_POST['von_datum'];
     $bis = $_POST['bis_datum'];
 
@@ -36,7 +37,7 @@ if (in_array($typ, ['Urlaub', 'Krank', 'Kind Krank'])) {
             'bis' => null
         ];
     }
-} elseif (in_array($typ, ['Kommt später', 'Geht eher'])) {
+} elseif (in_array($typ, $ABSENCE_TYPES['time_point'], true)) {
     $datum = $_POST['zeitpunkt_datum'] ?? null;
     $zeit = $_POST['zeitpunkt'] ?? null;
 
@@ -57,7 +58,7 @@ if (in_array($typ, ['Urlaub', 'Krank', 'Kind Krank'])) {
         'von' => ($typ === 'Kommt später') ? $zeit : null,
         'bis' => ($typ === 'Geht eher') ? $zeit : null
     ];
-} elseif ($typ === 'Unterbrechung') {
+} elseif (in_array($typ, $ABSENCE_TYPES['time_range'], true)) {
     $datum = $_POST['tag_zeitspanne'];
     $von = $_POST['von_uhrzeit'];
     $bis = $_POST['bis_uhrzeit'];
