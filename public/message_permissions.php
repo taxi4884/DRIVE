@@ -41,20 +41,16 @@ $permissions = [];
 while ($row = $permStmt->fetch(PDO::FETCH_ASSOC)) {
     $permissions[$row['driver_id']][] = $row['recipient_id'];
 }
+
+$title = 'Nachrichtenberechtigungen';
+include 'head.php';
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Nachrichtenberechtigungen</title>
-    <link rel="stylesheet" href="css/index.css">
-</head>
 <body>
 <?php include 'nav.php'; ?>
-<div class="wrapper">
+<div class="container my-4">
     <h1>Nachrichtenberechtigungen</h1>
     <form method="post">
-        <table>
+        <table class="table">
             <thead>
                 <tr>
                     <th>Fahrer</th>
@@ -66,7 +62,7 @@ while ($row = $permStmt->fetch(PDO::FETCH_ASSOC)) {
                 <tr>
                     <td><?= htmlspecialchars($driver['name']) ?></td>
                     <td>
-                        <select name="recipients[<?= $driver['FahrerID'] ?>][]" multiple size="5">
+                        <select name="recipients[<?= $driver['FahrerID'] ?>][]" multiple size="5" class="form-select">
                             <?php
                             $selected = $permissions[$driver['FahrerID']] ?? [];
                             foreach ($users as $user):
@@ -80,7 +76,7 @@ while ($row = $permStmt->fetch(PDO::FETCH_ASSOC)) {
             <?php endforeach; ?>
             </tbody>
         </table>
-        <button type="submit">Speichern</button>
+        <button type="submit" class="btn btn-primary">Speichern</button>
     </form>
 </div>
 </body>

@@ -84,58 +84,10 @@ foreach ($dienstplan as $entry) {
     $dienstplanMap[$entry['mitarbeiter_id']][$entry['datum']] = $entry['schicht_name'];
 }
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="css/dashboard.css">
-    <style>
-        .dashboard-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-
-        .dashboard-table th, .dashboard-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        .dashboard-table th {
-            background-color: #f4f4f4;
-            font-weight: bold;
-        }
-
-        .dashboard-table .weekend {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .dashboard-table .early-shift {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .dashboard-table .mid-shift {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .dashboard-table .late-shift {
-            background-color: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .dashboard-table .night-shift {
-            background-color: #d6d8db;
-            color: #343a40;
-        }
-    </style>
-</head>
+<?php
+$title = 'Dashboard';
+include 'head.php';
+?>
 <body>
     <?php include 'nav.php'; ?>
 
@@ -440,7 +392,7 @@ foreach ($dienstplan as $entry) {
 
             <section id="dienstplan-zentrale" class="widget">
                 <h2>Schichtplan Zentrale</h2>
-                <table class="dashboard-table">
+                <table class="table">
                     <thead>
                         <tr>
                             <th>Mitarbeiter</th>
