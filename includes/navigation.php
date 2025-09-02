@@ -193,7 +193,7 @@ function hasRole(string $role, $sekundarRolle): bool
  */
 function buildMenu(array $items, array $userRoles, string $currentPath = ''): string
 {
-    $html = '<ul>';
+    $html = '<ul class="nav-links">';
     foreach ($items as $item) {
         $roles = $item['roles'] ?? [];
         $allowed = empty($roles);
@@ -225,7 +225,7 @@ function buildMenu(array $items, array $userRoles, string $currentPath = ''): st
         $html .= '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $aClassAttr . '>' . $label . '</a>';
         if ($hasChildren) {
             $childHtml = buildMenu($item['children'], $userRoles, $currentPath);
-            $html .= str_replace('<ul>', '<ul class="dropdown-menu">', $childHtml);
+            $html .= str_replace('<ul class="nav-links">', '<ul class="dropdown-menu">', $childHtml);
         }
         $html .= '</li>';
     }
