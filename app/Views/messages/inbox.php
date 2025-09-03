@@ -7,6 +7,12 @@
     <?php include __DIR__ . '/../../../public/nav.php'; ?>
     <main>
         <h1>Ungelesene Nachrichten</h1>
+
+        <p><a href="/postfach.php?action=compose">Neue Nachricht</a></p>
+
+        <?php if (!empty($success)): ?>
+            <p class="success">Nachricht gesendet.</p>
+        <?php endif; ?>
         <?php if (empty($messages)): ?>
             <p>Keine ungelesenen Nachrichten.</p>
         <?php else: ?>
