@@ -148,17 +148,15 @@ $naechsteAbrechnung = $stmtAbrechnung->fetch(PDO::FETCH_ASSOC);
 // Mitteilung an alle Fahrer abrufen
 $stmtHinweis = $pdo->query("SELECT * FROM fahrer_mitteilungen WHERE sichtbar = TRUE AND gueltig_bis >= CURDATE() ORDER BY erstellt_am DESC LIMIT 1");
 $fahrerHinweis = $stmtHinweis->fetch(PDO::FETCH_ASSOC);
-?>
 
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Fahrer</title>
-    <link rel="stylesheet" href="css/driver-dashboard.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-	<style>
+$title = 'Fahrer Dashboard';
+$extraCss = [
+    'css/driver-dashboard.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'
+];
+include __DIR__ . '/../../includes/layout.php';
+?>
+        <style>
 	/* Grundlayout */
 	body {
 		font-family: 'Arial', sans-serif;
@@ -419,11 +417,8 @@ $fahrerHinweis = $stmtHinweis->fetch(PDO::FETCH_ASSOC);
 	a[href="statistics.php"]:hover {
 		text-decoration: underline;
 	}
-	</style>
+        </style>
 
-</head>
-<body>
-    <?php include 'bottom_nav.php'; ?>
     <main>
         <h1>Willkommen, <?= htmlspecialchars($fahrer['Vorname'] ?? 'Unbekannt') ?></h1>
 		
