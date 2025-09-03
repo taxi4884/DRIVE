@@ -39,6 +39,7 @@ function showInbox(): void
 
     $success = ($_GET['success'] ?? '') !== '';
 
+    $extraCss = 'css/messages.css';
     $title = 'Postfach';
     include __DIR__ . '/../includes/layout.php';
     include __DIR__ . '/../app/Views/messages/inbox.php';
@@ -66,6 +67,7 @@ function showCompose(): void
 
     $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    $extraCss = 'css/messages.css';
     $title = 'Neue Nachricht';
     include __DIR__ . '/../includes/layout.php';
     include __DIR__ . '/../app/Views/messages/compose.php';
@@ -116,3 +118,5 @@ if ($action === 'store') {
 } else {
     showInbox();
 }
+
+echo '</body></html>';

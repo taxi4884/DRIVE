@@ -1,7 +1,6 @@
 <?php
 // expects $conversations and optional $conversation
 ?>
-<link rel="stylesheet" href="/css/messages.css">
 <main>
         <h1>Nachrichten</h1>
         <div style="text-align: right;">
@@ -41,6 +40,4 @@
     </main>
     <script src="/js/modal.js"></script>
     <script src="/js/messages.js"></script>
-</body>
-</html>
 

@@ -23,6 +23,4 @@
             <button type="submit">Senden</button>
         </form>
     </main>
-</body>
-</html>
 
