@@ -17,7 +17,12 @@ function showInbox(): void
     }
 
     $userId = (int) $_SESSION['user_id'];
-    $messages = Message::getUnreadByUser($userId);
+    $conversations = Message::getConversationsByUser($userId);
+    $conversation = [];
+    if (isset($_GET['with'])) {
+        $otherId = (int) $_GET['with'];
+        $conversation = Message::getMessagesBetween($userId, $otherId);
+    }
     $success = ($_GET['success'] ?? '') !== '';
     include __DIR__ . '/../app/Views/messages/inbox.php';
 }
