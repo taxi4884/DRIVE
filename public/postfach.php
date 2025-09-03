@@ -18,17 +18,27 @@ function showInbox(): void
 
     $userId = (int) $_SESSION['user_id'];
     $messages = Message::getUnreadByUser($userId);
+    $success = ($_GET['success'] ?? '') !== '';
     include __DIR__ . '/../app/Views/messages/inbox.php';
+}
+
+function showCompose(): void
+{
+    global $sekundarRolle;
+
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: /login.php');
+        exit;
+    }
+
+    include __DIR__ . '/../app/Views/messages/compose.php';
 }
 
 function saveMessage(): void
 {
-    header('Content-Type: application/json');
-
     if (!isset($_SESSION['user_id'])) {
-        http_response_code(401);
-        echo json_encode(['error' => 'Nicht angemeldet']);
-        return;
+        header('Location: /login.php');
+        exit;
     }
 
     $senderId = (int) $_SESSION['user_id'];
@@ -37,9 +47,8 @@ function saveMessage(): void
     $body = trim($_POST['body'] ?? '');
 
     if ($recipientId === 0 || $subject === '' || $body === '') {
-        http_response_code(422);
-        echo json_encode(['error' => 'Ungültige Eingabe']);
-        return;
+        header('Location: /postfach.php?action=compose');
+        exit;
     }
 
     global $pdo;
@@ -49,22 +58,24 @@ function saveMessage(): void
         $check = $pdo->prepare('SELECT 1 FROM message_permissions WHERE driver_id = ? AND recipient_id = ?');
         $check->execute([$senderId, $recipientId]);
         if (!$check->fetchColumn()) {
-            http_response_code(403);
-            echo json_encode(['error' => 'Empfänger nicht erlaubt']);
-            return;
+            header('Location: /postfach.php?action=compose');
+            exit;
         }
     }
 
     $stmt = $pdo->prepare('INSERT INTO messages (sender_id, recipient_id, subject, body) VALUES (?, ?, ?, ?)');
     $stmt->execute([$senderId, $recipientId, $subject, $body]);
 
-    echo json_encode(['status' => 'ok']);
+    header('Location: /postfach.php?success=1');
+    exit;
 }
 
 $action = $_GET['action'] ?? '';
 
 if ($action === 'store') {
     saveMessage();
+} elseif ($action === 'compose') {
+    showCompose();
 } else {
     showInbox();
 }
