@@ -72,18 +72,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Fehler beim Aktualisieren des Eintrags: ' . $e->getMessage();
     }
 }
-?>
 
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Umsatz bearbeiten | DRIVE</title>
-    <link rel="stylesheet" href="css/driver-dashboard.css">
-</head>
-<body>
+$title = 'Umsatz bearbeiten';
+$extraCss = [
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
+    'css/driver-dashboard.css'
+];
+include __DIR__ . '/../../includes/layout.php';
+?>
     <main>
         <h1>Umsatz bearbeiten</h1>
         <?php if ($error): ?>
@@ -164,6 +160,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('gesamtumsatz').value = total.toFixed(2);
         }
     </script>
-    <?php include 'bottom_nav.php'; ?>
 </body>
 </html>

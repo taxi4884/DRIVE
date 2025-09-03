@@ -97,17 +97,15 @@ function formatDateTime($datetime) {
     $date = new DateTime($datetime);
     return $date->format('d.m.Y');
 }
-?>
 
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine Fahrzeuge | DRIVE</title>
-    <link rel="stylesheet" href="css/driver-dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-	<style>
+$title = 'Meine Fahrzeuge';
+$extraCss = [
+    'css/driver-dashboard.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'
+];
+include __DIR__ . '/../../includes/layout.php';
+?>
+        <style>
 		body {
 			background: #f6f8fa;
 			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -223,11 +221,7 @@ function formatDateTime($datetime) {
 				padding: 10px;
 			}
 		}
-	</style>
-
-</head>
-<body>
-    <?php include 'bottom_nav.php'; ?>
+        </style>
 
     <main>
         <h1>🚗 Meine Fahrzeuge</h1>

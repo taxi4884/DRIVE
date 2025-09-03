@@ -118,15 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Fehler: " . $e->getMessage();
     }
 }
-?>
 
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Umsatz erfassen | DRIVE</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/driver-dashboard.css">
+$title = 'Umsatz erfassen';
+$extraCss = ['css/driver-dashboard.css'];
+include __DIR__ . '/../../includes/layout.php';
+?>
     <style>
         fieldset {
             border: 2px solid #ccc;
@@ -231,10 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			margin-top: 20px;
 		}
     </style>
-</head>
-<body>
-	<?php include 'bottom_nav.php'; ?>
-	<main>
+        <main>
 		<h1>Umsatz erfassen</h1>
 		<?php if ($error): ?>
 			<p style="color: red;"><?= htmlspecialchars($error) ?></p>

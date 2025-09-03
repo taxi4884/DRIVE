@@ -45,17 +45,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: dashboard.php?message_sent=1');
     exit;
 }
+
+$title = 'Nachricht senden';
+$extraCss = ['css/custom.css', 'css/index.css'];
+include __DIR__ . '/../../includes/layout.php';
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Nachricht senden</title>
-    <link rel="stylesheet" href="css/custom.css">
-    <link rel="stylesheet" href="css/index.css">
-</head>
-<body>
-<?php include 'driver-nav.php'; ?>
 <div class="wrapper">
     <h1>Nachricht senden</h1>
     <form method="post">
