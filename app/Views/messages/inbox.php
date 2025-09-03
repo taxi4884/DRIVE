@@ -21,7 +21,8 @@
                     <?php foreach ($conversations as $conv): ?>
                         <li data-other-id="<?= htmlspecialchars($conv['other_id']) ?>">
                             <strong><?= htmlspecialchars($conv['other_name']) ?></strong><br>
-                            <span><?= htmlspecialchars($conv['subject']) ?></span>
+                            <span><?= htmlspecialchars($conv['subject']) ?></span><br>
+                            <span class="preview"><?= htmlspecialchars(mb_strimwidth($conv['body'], 0, 40, '…')) ?></span>
                         </li>
                     <?php endforeach; ?>
                 </ul>
