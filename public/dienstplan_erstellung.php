@@ -96,14 +96,10 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     }
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dienstplan erstellen | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
+<?php
+$title = 'Dienstplan erstellen';
+include __DIR__ . '/../includes/layout.php';
+?>
     <style>
         .success {
             color: green;
@@ -160,10 +156,8 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             margin-left: 10px;
         }
     </style>
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main>
+
+        <main>
       <h1>Dienstplan erstellen</h1>
   
       <?php if (isset($success)): ?><div class="success"><?= $success ?></div><?php endif; ?>
@@ -215,5 +209,6 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
           <button type="submit">Speichern</button>
       </form>
     </main>
+
 </body>
 </html>

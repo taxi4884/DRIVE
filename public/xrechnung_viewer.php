@@ -2,16 +2,12 @@
 // xrechnung_viewer.php
 require_once '../includes/bootstrap.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XRechnung-Viewer</title>
+<?php
+$title = 'XRechnung-Viewer';
+include __DIR__ . '/../includes/layout.php';
+?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/custom.css">
 	<style>
 		.upload-area {
 			border: 2px dashed #00aaff;
@@ -22,18 +18,14 @@ require_once '../includes/bootstrap.php';
 			cursor: pointer;
 			transition: background-color 0.3s ease;
 		}
-
 		.upload-area.dragover {
 			background-color: #d0efff;
 		}
-
 		.upload-icon {
 			color: #007acc;
 		}
 	</style>
-</head>
-<body>
-<?php include 'nav.php'; ?>
+
 
 <main class="container py-5">
     <h1 class="mb-4">XRechnung-Viewer</h1>
@@ -336,6 +328,7 @@ uploadArea.addEventListener('drop', function(e) {
     }
 });
 </script>
+
 
 </body>
 </html>

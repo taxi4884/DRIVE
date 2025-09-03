@@ -97,18 +97,13 @@ $historieStmt = $pdo->prepare("
 $historieStmt->execute([$id]);
 $historie = $historieStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+<?php
+$title = 'Fahrzeug bearbeiten';
+include __DIR__ . '/../includes/layout.php';
+?>
 
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fahrzeug bearbeiten | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main>
+
+        <main>
         <h1>Fahrzeug bearbeiten</h1>
         <section>
             <h2>Fahrzeugdaten</h2>
@@ -203,5 +198,6 @@ $historie = $historieStmt->fetchAll(PDO::FETCH_ASSOC);
             </table>
         </section>
     </main>
+
 </body>
 </html>

@@ -40,18 +40,13 @@ $stmtMsg = $pdo->prepare("SELECT * FROM fahrer_mitteilungen WHERE gueltig_bis >=
 $stmtMsg->execute();
 $mitteilung = $stmtMsg->fetch(PDO::FETCH_ASSOC);
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fahrerübersicht | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
+<?php
+$title = 'Fahrerübersicht';
+include __DIR__ . '/../includes/layout.php';
+?>
     <script src="js/modal.js"></script>
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main>
+
+        <main>
         <h1>Fahrerübersicht</h1>
 
         <?php if (!empty($mitteilung)): ?>
@@ -137,5 +132,6 @@ $mitteilung = $stmtMsg->fetch(PDO::FETCH_ASSOC);
             document.querySelector('.nav-links')?.classList.toggle('active');
         });
     </script>
+
 </body>
 </html>

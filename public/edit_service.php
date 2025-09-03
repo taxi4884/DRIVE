@@ -60,16 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+<?php
+$title = 'Wartung bearbeiten';
+include __DIR__ . '/../includes/layout.php';
+?>
 
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wartung bearbeiten | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
-</head>
-<body>
+
     <main>
         <h1>Wartung bearbeiten</h1>
         <form method="POST">
@@ -88,5 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <button type="submit">Speichern</button>
         </form>
     </main>
+
 </body>
 </html>

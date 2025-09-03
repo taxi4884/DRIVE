@@ -115,14 +115,11 @@ $stmt->execute([$fahrer_id]);
 $gesamt_urlaubstage = $stmt->fetchColumn();
 
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fahrer bearbeiten | DRIVE</title>
+<?php
+$title = 'Fahrer bearbeiten';
+include __DIR__ . '/../includes/layout.php';
+?>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/custom.css">
     <script src="js/modal.js"></script>
     <style>
         .form-section {
@@ -230,10 +227,8 @@ $gesamt_urlaubstage = $stmt->fetchColumn();
             border-collapse: collapse;
         }
     </style>
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main class="grid-container">
+
+        <main class="grid-container">
         <section class="section">
             <h2>Persönliche Daten</h2>
             <?php if ($error): ?>
@@ -401,5 +396,6 @@ $gesamt_urlaubstage = $stmt->fetchColumn();
 			});
 		});
     </script>
+
 </body>
 </html>

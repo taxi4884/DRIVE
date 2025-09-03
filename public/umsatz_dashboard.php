@@ -91,18 +91,13 @@ $totalFirmen = count($gesamtProFirma); // Anzahl der Firmen
 $itemWidth = 200; // Breite pro Eintrag in Pixel
 $totalWidth = $totalFirmen * $itemWidth; // Gesamtbreite
 ?>
+<?php
+$title = 'Umsatz nach Firma';
+include __DIR__ . '/../includes/layout.php';
+?>
 
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Umsatz nach Firma | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main>
+
+        <main>
         <h1>Umsatz-Dashboard nach Firma</h1>
         
         <!-- Zeitraum auswählen -->
@@ -250,5 +245,6 @@ $totalWidth = $totalFirmen * $itemWidth; // Gesamtbreite
 		}
 	}
 	</script>
+
 </body>
 </html>

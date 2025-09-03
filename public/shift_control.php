@@ -52,14 +52,10 @@ if (isset($_GET['edit'])) {
 $stmt = $pdo->query("SELECT * FROM schichten ORDER BY startzeit ASC");
 $schichtenListe = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schichtenverwaltung | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
+<?php
+$title = 'Schichtenverwaltung';
+include __DIR__ . '/../includes/layout.php';
+?>
     <style>
         .form-wrapper {
             max-width: 500px;
@@ -135,10 +131,8 @@ $schichtenListe = $stmt->fetchAll(PDO::FETCH_ASSOC);
             text-decoration: underline;
         }
     </style>
-</head>
-<body>
-	<?php include 'nav.php'; ?>
-	<main>
+
+		<main>
 		<div class="form-wrapper">
 			<h2><?= $editSchicht ? 'Schicht bearbeiten' : 'Schicht hinzufügen' ?></h2>
 			<?php if ($error): ?><div class="error"><?= $error ?></div><?php endif; ?>
@@ -204,5 +198,6 @@ $schichtenListe = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			</tbody>
 		</table>
 	</main>
+
 </body>
 </html>

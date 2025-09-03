@@ -135,20 +135,14 @@ $stmt_fahrer_unter_264 = $pdo->prepare($sql_fahrer_unter_264);
 $stmt_fahrer_unter_264->execute();
 $result_fahrer_unter_264 = $stmt_fahrer_unter_264->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fahrerstatistik | Drive</title>
+<?php
+$title = 'Fahrerstatistik';
+include __DIR__ . '/../includes/layout.php';
+?>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/custom.css">
     <script src="js/modal.js"></script>
-</head>
-<body>
-	<?php include 'nav.php'; ?>
-    <main>
+
+	    <main>
     <h2>Fahrerstatistik</h2>
     <p>Hier sind die Statistiken zu den Fahrern basierend auf Umsatz, Effizienz und Arbeitstagen.</p>
     
@@ -259,5 +253,6 @@ $result_fahrer_unter_264 = $stmt_fahrer_unter_264->fetchAll(PDO::FETCH_ASSOC);
     </table>
 </main>
 </main>
+
 </body>
 </html>

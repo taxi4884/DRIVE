@@ -132,29 +132,23 @@ function getAbwesenheitsKuerzel($typ) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Verwaltung Abwesenheiten | DRIVE</title>
+<?php
+$title = 'Verwaltung Abwesenheiten';
+include __DIR__ . '/../includes/layout.php';
+?>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="css/custom.css">
   <script>
     const typesWithPeriod = <?= json_encode($ABSENCE_TYPES['period']); ?>;
     const typesWithTimePoint = <?= json_encode($ABSENCE_TYPES['time_point']); ?>;
     const typesWithTimeRange = <?= json_encode($ABSENCE_TYPES['time_range']); ?>;
-
     function updateFormFields() {
       const typ = document.getElementById('typ').value;
       const isPeriod = typesWithPeriod.includes(typ);
       const isTimePoint = typesWithTimePoint.includes(typ);
       const isTimeRange = typesWithTimeRange.includes(typ);
-
       document.getElementById('zeitraum').style.display = isPeriod ? 'block' : 'none';
       document.getElementById('zeitpunkt').style.display = isTimePoint ? 'block' : 'none';
       document.getElementById('zeitspanne').style.display = isTimeRange ? 'block' : 'none';
-
       document.getElementById('startdatum').disabled = !isPeriod;
       document.getElementById('enddatum').disabled = !isPeriod;
       document.getElementById('tag_zeitpunkt').disabled = !isTimePoint;
@@ -163,7 +157,6 @@ function getAbwesenheitsKuerzel($typ) {
       document.getElementById('von_uhrzeit').disabled = !isTimeRange;
       document.getElementById('bis_uhrzeit').disabled = !isTimeRange;
     }
-
     window.addEventListener('load', updateFormFields);
   </script>
   <style>
@@ -191,10 +184,8 @@ function getAbwesenheitsKuerzel($typ) {
         font-weight: bold;
     }
 	</style>
-</head>
-<body>
-  <?php include 'nav.php'; ?>
-  <main>
+
+    <main>
     <h1>Abwesenheiten Verwaltung</h1>
 
     <?php if ($anzeigenAbwesenheiten): ?>
@@ -335,6 +326,7 @@ function getAbwesenheitsKuerzel($typ) {
 		</form>
 	  </div>
 	</div>
+
 
 </body>
 </html>

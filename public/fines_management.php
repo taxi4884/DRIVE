@@ -117,19 +117,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_fine'])) {
 
 $drivers = fetchDriversWithFines($pdo);
 ?>
-
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<?php
+$title = 'Bußgeldverwaltung';
+include __DIR__ . '/../includes/layout.php';
+?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/custom.css">
-    <title>Bußgeldverwaltung | Drive</title>
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main>
+
+        <main>
     <h1>Bußgeldverwaltung</h1>
 
     <?php if (!empty($successMessage)): ?>
@@ -279,5 +273,6 @@ $drivers = fetchDriversWithFines($pdo);
 			}
 		});
     </script>
+
 </body>
 </html>
