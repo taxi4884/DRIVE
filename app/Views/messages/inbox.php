@@ -1,33 +1,44 @@
 <?php
-// expects $messages
+// expects $conversations and optional $conversation
 ?>
 <?php include __DIR__ . '/../../../public/head.php'; ?>
 <link rel="stylesheet" href="/css/messages.css">
 <body>
     <?php include __DIR__ . '/../../../public/nav.php'; ?>
     <main>
-        <h1>Ungelesene Nachrichten</h1>
-
-        <p><a href="/postfach.php?action=compose">Neue Nachricht</a></p>
+        <h1>Nachrichten</h1>
 
         <?php if (!empty($success)): ?>
             <p class="success">Nachricht gesendet.</p>
         <?php endif; ?>
-        <?php if (empty($messages)): ?>
-            <p>Keine ungelesenen Nachrichten.</p>
-        <?php else: ?>
-            <?php foreach ($messages as $msg): ?>
-                <div class="message">
-                    <h2><?= htmlspecialchars($msg['subject']) ?></h2>
-                    <p><em>Von <?= htmlspecialchars($msg['sender_name']) ?> am <?= htmlspecialchars($msg['created_at']) ?></em></p>
-                    <p><?= nl2br(htmlspecialchars($msg['body'])) ?></p>
-                    <form method="post" action="/messages/mark-as-read">
-                        <input type="hidden" name="id" value="<?= $msg['id'] ?>">
-                        <button type="submit">Als gelesen markieren</button>
-                    </form>
+
+        <div class="inbox-container">
+            <div class="conversation-list">
+                <ul>
+                    <?php foreach ($conversations as $conv): ?>
+                        <li data-other-id="<?= htmlspecialchars($conv['other_id']) ?>">
+                            <strong><?= htmlspecialchars($conv['other_name']) ?></strong><br>
+                            <span><?= htmlspecialchars($conv['subject']) ?></span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <div class="conversation-panel" id="conversation-panel">
+                <a href="/postfach.php?action=compose" class="new-message-btn">Neue Nachricht</a>
+                <div id="conversation-content">
+                    <?php if (!empty($conversation)): ?>
+                        <?php foreach ($conversation as $msg): ?>
+                            <div class="message">
+                                <p><strong><?= htmlspecialchars($msg['sender_name']) ?></strong> am <?= htmlspecialchars($msg['created_at']) ?></p>
+                                <p><?= nl2br(htmlspecialchars($msg['body'])) ?></p>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+            </div>
+        </div>
     </main>
+    <script src="/js/messages.js"></script>
 </body>
 </html>
+
