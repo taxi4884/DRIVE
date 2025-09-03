@@ -215,7 +215,7 @@ $menuEntries = [
     ],
     [
         'label' => 'Postfach',
-        'url' => 'messages/inbox.php',
+        'url' => 'messages/inbox',
         'roles' => ['Fahrer'],
         'context' => 'bottom',
         'icon' => 'bi-envelope',
