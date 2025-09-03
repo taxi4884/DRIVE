@@ -1,7 +1,7 @@
 <?php
 require_once 'db.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 
 function isLoggedIn() {
     return isset($_SESSION['user_id']);
