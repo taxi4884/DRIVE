@@ -13,15 +13,13 @@
 
     <div class="inbox-container">
         <div class="conversation-list">
-            <ul>
-                <?php foreach ($conversations as $conv): ?>
-                    <li data-other-id="<?= htmlspecialchars($conv['other_id']) ?>">
-                        <strong><?= htmlspecialchars($conv['other_name']) ?></strong><br>
-                        <span><?= htmlspecialchars($conv['subject']) ?></span><br>
-                        <span class="preview"><?= htmlspecialchars(mb_strimwidth($conv['body'], 0, 40, '…')) ?></span>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
+            <?php foreach ($conversations as $conv): ?>
+                <div class="card conversation-item" data-other-id="<?= htmlspecialchars($conv['other_id']) ?>" data-subject="<?= htmlspecialchars($conv['subject']) ?>">
+                    <strong><?= htmlspecialchars($conv['other_name']) ?></strong><br>
+                    <span><?= htmlspecialchars($conv['subject']) ?></span><br>
+                    <span class="preview"><?= htmlspecialchars(mb_strimwidth($conv['body'], 0, 40, '…')) ?></span>
+                </div>
+            <?php endforeach; ?>
         </div>
         <div class="conversation-panel" id="conversation-panel">
             <div id="conversation-content">
