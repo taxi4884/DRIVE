@@ -7,79 +7,14 @@ require_once __DIR__ . '/../app/Models/Message.php';
 
 use App\Models\Message;
 
-function showInbox(): void
-{
-    global $sekundarRolle;
-
-    if (!isset($_SESSION['user_id'])) {
-        header('Location: /login.php');
-        exit;
-    }
-
-    $userId = (int) $_SESSION['user_id'];
-    $conversations = Message::getConversationsByUser($userId);
-    $conversation = [];
-    if (isset($_GET['with'])) {
-        $otherId = (int) $_GET['with'];
-        $conversation = Message::getMessagesBetween($userId, $otherId);
-    }
-    
-    global $pdo;
-
-    $isDriver = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'fahrer';
-
-    if ($isDriver) {
-        $stmt = $pdo->prepare('SELECT b.BenutzerID, b.Name FROM Benutzer b JOIN message_permissions mp ON b.BenutzerID = mp.recipient_id WHERE mp.driver_id = ? ORDER BY b.Name');
-        $stmt->execute([$userId]);
-    } else {
-        $stmt = $pdo->query('SELECT BenutzerID, Name FROM Benutzer ORDER BY Name');
-    }
-
-    $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $success = ($_GET['success'] ?? '') !== '';
-
-    $extraCss = 'css/messages.css';
-    $title = 'Postfach';
-    include __DIR__ . '/../includes/layout.php';
-    include __DIR__ . '/../app/Views/messages/inbox.php';
+if (!isset($_SESSION['user_id'])) {
+    header('Location: /login.php');
+    exit;
 }
 
-function showCompose(): void
-{
-    global $sekundarRolle;
+$action = $_GET['action'] ?? '';
 
-    if (!isset($_SESSION['user_id'])) {
-        header('Location: /login.php');
-        exit;
-    }
-
-    global $pdo;
-
-    $isDriver = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'fahrer';
-
-    if ($isDriver) {
-        $stmt = $pdo->prepare('SELECT b.BenutzerID, b.Name FROM Benutzer b JOIN message_permissions mp ON b.BenutzerID = mp.recipient_id WHERE mp.driver_id = ? ORDER BY b.Name');
-        $stmt->execute([(int) $_SESSION['user_id']]);
-    } else {
-        $stmt = $pdo->query('SELECT BenutzerID, Name FROM Benutzer ORDER BY Name');
-    }
-
-    $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $extraCss = 'css/messages.css';
-    $title = 'Neue Nachricht';
-    include __DIR__ . '/../includes/layout.php';
-    include __DIR__ . '/../app/Views/messages/compose.php';
-}
-
-function saveMessage(): void
-{
-    if (!isset($_SESSION['user_id'])) {
-        header('Location: /login.php');
-        exit;
-    }
-
+if ($action === 'store') {
     $senderId = (int) $_SESSION['user_id'];
     $recipientId = (int) ($_POST['recipient_id'] ?? 0);
     $subject = trim($_POST['subject'] ?? '');
@@ -109,14 +44,40 @@ function saveMessage(): void
     exit;
 }
 
-$action = $_GET['action'] ?? '';
+$userId = (int) $_SESSION['user_id'];
+global $pdo;
 
-if ($action === 'store') {
-    saveMessage();
-} elseif ($action === 'compose') {
-    showCompose();
+$isDriver = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'fahrer';
+if ($isDriver) {
+    $stmt = $pdo->prepare('SELECT b.BenutzerID, b.Name FROM Benutzer b JOIN message_permissions mp ON b.BenutzerID = mp.recipient_id WHERE mp.driver_id = ? ORDER BY b.Name');
+    $stmt->execute([$userId]);
 } else {
-    showInbox();
+    $stmt = $pdo->query('SELECT BenutzerID, Name FROM Benutzer ORDER BY Name');
 }
 
-echo '</body></html>';
+$recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$extraCss = 'css/messages.css';
+
+if ($action === 'compose') {
+    $title = 'Neue Nachricht';
+    $view = __DIR__ . '/../app/Views/messages/compose.php';
+} else {
+    $title = 'Postfach';
+    $conversations = Message::getConversationsByUser($userId);
+    $conversation = [];
+    if (isset($_GET['with'])) {
+        $otherId = (int) $_GET['with'];
+        $conversation = Message::getMessagesBetween($userId, $otherId);
+    }
+    $success = ($_GET['success'] ?? '') !== '';
+    $view = __DIR__ . '/../app/Views/messages/inbox.php';
+}
+
+include __DIR__ . '/../includes/layout.php';
+include $view;
+
+?>
+</body>
+</html>
+
