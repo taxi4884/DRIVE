@@ -23,6 +23,8 @@ if ($uri === '' || $uri === 'index.php' || $uri === 'login') {
     (new App\Controllers\MessageController())->index();
 } elseif (preg_match('#^messages/([0-9]+)$#', $uri, $matches)) {
     (new App\Controllers\MessageController())->show((int)$matches[1]);
+} elseif ($uri === 'messages/store') {
+    (new App\Controllers\MessageController())->store();
 } elseif ($uri === 'messages/mark-as-read') {
     (new App\Controllers\MessageController())->markAsRead();
 } elseif ($uri === 'messages/inbox') {
