@@ -5,6 +5,9 @@ error_reporting(E_ALL);
 
 require_once '../../includes/bootstrap.php'; // Verbindung und Authentifizierung
 
+// Rolle für diese Route festlegen (einfachste Variante)
+$_SESSION['rolle'] = 'Fahrer';
+
 // Session prüfen
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

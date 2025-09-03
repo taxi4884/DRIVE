@@ -4,6 +4,10 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
+
+// Rolle für diese Route festlegen (einfachste Variante)
+$_SESSION['rolle'] = 'Fahrer';
+
 require_once '../../includes/db.php'; // Passe den Pfad an, falls nötig.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

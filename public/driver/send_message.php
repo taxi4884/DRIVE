@@ -1,6 +1,9 @@
 <?php
 require_once '../../includes/bootstrap.php';
 
+// Rolle für diese Route festlegen (einfachste Variante)
+$_SESSION['rolle'] = 'Fahrer';
+
 if (!isDriver()) {
     header('Location: ../index.php');
     exit;
