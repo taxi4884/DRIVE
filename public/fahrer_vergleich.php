@@ -50,19 +50,15 @@ $stmt_wochentagsumsatz = $pdo->prepare($sql_wochentagsumsatz);
 $stmt_wochentagsumsatz->execute();
 $result_wochentagsumsatz = $stmt_wochentagsumsatz->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Fahrer-Vergleich</title>
+<?php
+$title = 'Fahrer-Vergleich';
+include __DIR__ . '/../includes/layout.php';
+?>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="css/custom.css">
     <script src="js/modal.js"></script>
-</head>
-<body>
-  	<?php include 'nav.php'; ?>
-	<main>
+
+  		<main>
     <h2>Vergleich Fahrer-Statistik</h2>
     <form method="get">
         <label for="fahrer">Fahrer auswählen:</label>
@@ -128,5 +124,6 @@ $result_wochentagsumsatz = $stmt_wochentagsumsatz->fetchAll(PDO::FETCH_ASSOC);
         });
     </script>
   </main>
+
 </body>
 </html>

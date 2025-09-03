@@ -27,19 +27,13 @@ try {
     die("Datenbankfehler: " . $e->getMessage());
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
+<?php
+$title = 'FahrzeugÜbergaben';
+include __DIR__ . '/../includes/layout.php';
+?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FahrzeugÜbergaben | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main>
+
+        <main>
         <h1>FahrzeugÜbergaben</h1>
 
         <table>
@@ -71,5 +65,6 @@ try {
             </tbody>
         </table>
     </main>
+
 </body>
 </html>

@@ -69,13 +69,10 @@ $stmtUmsatz = $pdo->prepare("
 $stmtUmsatz->execute([$fahrer_id, $start_date, $end_date]);
 $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fahrer Umsatz | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
+<?php
+$title = 'Fahrer Umsatz';
+include __DIR__ . '/../includes/layout.php';
+?>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -86,25 +83,21 @@ $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
             --border-color: #ccc;
             --text-muted: #555;
         }
-
         body {
             font-family: Arial, sans-serif;
             background-color: #f9f9f9;
             margin: 0;
             padding: 0;
         }
-
         h1, h2, h3 {
             margin-top: 0;
         }
-
         .section-container {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             margin-bottom: 20px;
         }
-
         .section-container section {
             flex: 1;
             padding: 16px;
@@ -113,13 +106,11 @@ $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
             background-color: white;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
-
         @media (max-width: 768px) {
             .section-container {
                 flex-direction: column;
             }
         }
-
         form.flex-container {
             display: flex;
             flex-wrap: wrap;
@@ -131,12 +122,10 @@ $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 10px;
             margin-bottom: 20px;
         }
-
         form.flex-container label {
             font-weight: bold;
             margin-bottom: 5px;
         }
-
         form.flex-container select,
         form.flex-container input[type="date"] {
             padding: 6px;
@@ -144,7 +133,6 @@ $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 5px;
             font-size: 1rem;
         }
-
         button {
             padding: 8px 12px;
             font-size: 1rem;
@@ -152,11 +140,9 @@ $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 5px;
             cursor: pointer;
         }
-
         button i {
             margin-right: 6px;
         }
-
         .action-btn {
             background-color: var(--highlight-color);
             color: var(--highlight-text);
@@ -166,36 +152,29 @@ $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
             display: inline-flex;
             align-items: center;
         }
-
         .action-btn:hover {
             background-color: #f7c600;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             background-color: white;
         }
-
         table th, table td {
             padding: 10px;
             border: 1px solid var(--border-color);
             text-align: center;
         }
-
         table th {
             background-color: var(--highlight-color);
             color: var(--highlight-text);
         }
-
         .modal, .modal-overlay {
             display: none;
         }
-
         .modal.active, .modal-overlay.active {
             display: block;
         }
-
         .modal {
             position: fixed;
             top: 10%;
@@ -209,7 +188,6 @@ $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 1000;
         }
-
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -219,7 +197,6 @@ $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
             background: rgba(0, 0, 0, 0.4);
             z-index: 999;
         }
-
         .modal input,
         .modal textarea {
             width: 100%;
@@ -229,35 +206,28 @@ $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
             border: 1px solid var(--border-color);
             border-radius: 5px;
         }
-
         .modal button {
             margin-top: 10px;
             font-size: 1rem;
         }
-
         .text-muted {
             font-size: 0.85rem;
             color: var(--text-muted);
         }
-
         .btn-primary {
             background-color: var(--primary-color);
             color: white;
         }
-
         .btn-secondary {
             background-color: var(--light-grey);
             color: var(--text-muted);
         }
-
         .btn-secondary:hover {
             background-color: #e1e1e1;
         }
     </style>
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main>
+
+        <main>
         <h1>Umsätze</h1>
 
         <!-- Fahrerwechsel und Zeitraum -->
@@ -681,5 +651,6 @@ $umsatzDaten = $stmtUmsatz->fetchAll(PDO::FETCH_ASSOC);
 			document.getElementById('modalOverlay').classList.remove('active');
 		}
     </script>
+
 </body>
 </html>

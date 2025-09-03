@@ -65,12 +65,10 @@ foreach ($spalten as $spalte) {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Benutzerverwaltung | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
+<?php
+$title = 'Benutzerverwaltung';
+include __DIR__ . '/../includes/layout.php';
+?>
     <style>
         .switch {
             position: relative;
@@ -98,9 +96,7 @@ foreach ($spalten as $spalte) {
             transform: translateX(20px);
         }
     </style>
-</head>
-<body>
-<?php include 'nav.php'; ?>
+
 <h1>Benutzerverwaltung</h1>
 
 <?php if (isset($updateMessage)): ?>
@@ -162,5 +158,6 @@ foreach ($spalten as $spalte) {
         document.querySelector('.nav-links').classList.toggle('active');
     });
 </script>
+
 </body>
 </html>

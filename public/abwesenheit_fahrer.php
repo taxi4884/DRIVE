@@ -65,13 +65,10 @@ setlocale(LC_TIME, 'de_DE.UTF-8');
 $formatter = new IntlDateFormatter('de_DE', IntlDateFormatter::LONG, IntlDateFormatter::NONE);
 $formatter->setPattern('MMMM yyyy');
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fahrer Abwesenheiten | DRIVE</title>
-  <link rel="stylesheet" href="css/custom.css">
+<?php
+$title = 'Fahrer Abwesenheiten';
+include __DIR__ . '/../includes/layout.php';
+?>
   <script src="js/modal.js"></script>
   <style>
     /* Basisstil für Kalenderzellen */
@@ -81,13 +78,11 @@ $formatter->setPattern('MMMM yyyy');
 	  border: 1px solid #ddd;
 	  transition: transform 0.2s, box-shadow 0.2s;
 	}
-
 	/* Hover-Effekt für Zellen */
 	.dashboard-table td:hover {
 	  transform: scale(1.05);
 	  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 	}
-
 	/* Farben und Stil für Krankheitsfälle */
 	.absent-krank, .absent-kind-krank {
 	  background: linear-gradient(135deg, #0044cc, #3366ff); /* dunkler bis heller Blauverlauf */
@@ -96,7 +91,6 @@ $formatter->setPattern('MMMM yyyy');
 	  font-weight: bold;
 	  box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
 	}
-
 	/* Farben und Stil für Urlaubsfälle */
 	.absent-vacation-beantragt {
 	  background: linear-gradient(135deg, #ffcc00, #ffff66); /* gelber Verlauf */
@@ -105,7 +99,6 @@ $formatter->setPattern('MMMM yyyy');
 	  font-weight: bold;
 	  box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
 	}
-
 	.absent-vacation-genehmigt {
 	  background: linear-gradient(135deg, #008000, #66cc66); /* grüner Verlauf */
 	  color: white;
@@ -113,7 +106,6 @@ $formatter->setPattern('MMMM yyyy');
 	  font-weight: bold;
 	  box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
 	}
-
 	.absent-vacation-abgelehnt {
 	  background: linear-gradient(135deg, #cc0000, #ff3333); /* roter Verlauf */
 	  color: white;
@@ -121,7 +113,6 @@ $formatter->setPattern('MMMM yyyy');
 	  font-weight: bold;
 	  box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
 	}
-
 	.absent-vacation-unbezahlt {
 	  background: linear-gradient(135deg, #cc6600, #ff9933); /* orangener Verlauf */
 	  color: white;
@@ -129,7 +120,6 @@ $formatter->setPattern('MMMM yyyy');
 	  font-weight: bold;
 	  box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
 	}
-
 	/* Wochenende bleibt unverändert */
 	.weekend {
 	  background-color: #f8d7da;
@@ -138,7 +128,6 @@ $formatter->setPattern('MMMM yyyy');
 	td[title] {
 	  position: relative;
 	}
-
 	td[title]:hover::after {
 	  content: attr(title);
 	  position: absolute;
@@ -154,7 +143,6 @@ $formatter->setPattern('MMMM yyyy');
 	  z-index: 1000;
 	  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 	}
-
 	td[title]:hover::before {
 	  content: '';
 	  position: absolute;
@@ -164,16 +152,13 @@ $formatter->setPattern('MMMM yyyy');
 	  border: 5px solid transparent;
 	  border-top-color: #333;
 	}
-
     .month-navigation { margin: 20px auto; text-align: left; }
     .month-navigation a { padding: 10px 15px; font-size: 16px; background-color: #FFD700; color: #000; text-decoration: none; border-radius: 4px; margin: 0 5px; }
     .month-navigation a:hover { background-color: #FFC107; }
     .month-navigation span { font-size: 18px; font-weight: bold; margin-left: 10px; }
   </style>
-</head>
-<body>
-  <?php include 'nav.php'; ?>
-  <main>
+
+    <main>
     <h1>Fahrer Abwesenheiten</h1>
     <button onclick="openModal('fahrerAbwesenheitModal')">Abwesenheit eintragen</button>
 	<?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
@@ -301,5 +286,6 @@ $formatter->setPattern('MMMM yyyy');
                         document.querySelector('.nav-links').classList.toggle('active');
                 });
     </script>
+
 </body>
 </html>

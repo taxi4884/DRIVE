@@ -75,14 +75,11 @@ $stmt->execute();
 $wartung_kommend = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
+<?php
+$title = 'Fahrzeuge';
+include __DIR__ . '/../includes/layout.php';
+?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fahrzeuge | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
     <script src="js/modal.js"></script>
     <style>
         .fahrzeug.limousine {
@@ -95,10 +92,8 @@ $wartung_kommend = $stmt->fetchAll(PDO::FETCH_ASSOC);
             background-color: #f8d7da; /* Rot */
         }
     </style>
-</head>
-<body>
-	<?php include 'nav.php'; ?>
-    <main class="with_sidebar">
+
+	    <main class="with_sidebar">
 		<h1><i class="fas fa-taxi"></i> Fahrzeugbesetzung</h1>
 		<?php include 'buttons.php'; ?>
 		
@@ -198,5 +193,6 @@ $wartung_kommend = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         document.querySelector('.nav-links').classList.toggle('active');
                 });
     </script>
+
 </body>
 </html>

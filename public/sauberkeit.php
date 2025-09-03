@@ -91,21 +91,16 @@ $vorherigesJahr = ($monat == 1) ? $jahr - 1 : $jahr;
 $nächsterMonat = ($monat == 12) ? 1 : $monat + 1;
 $nächstesJahr = ($monat == 12) ? $jahr + 1 : $jahr;
 ?>
-
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
+<?php
+$title = 'Fahrzeugsauberkeit';
+include __DIR__ . '/../includes/layout.php';
+?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fahrzeugsauberkeit | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
 	<style>
 	.month-navigation {
 		  margin: 20px auto;
 		  text-align: left;
 		}
-
 		.month-navigation a {
 		  padding: 10px 15px;
 		  font-size: 16px;
@@ -115,21 +110,17 @@ $nächstesJahr = ($monat == 12) ? $jahr + 1 : $jahr;
 		  border-radius: 4px;
 		  margin: 0 5px;
 		}
-
 		.month-navigation a:hover {
 		  background-color: #FFC107;
 		}
-
 		.month-navigation span {
 		  font-size: 18px;
 		  font-weight: bold;
 		  margin-left: 10px;
 		}
 	</style>
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-	<main>
+
+    	<main>
     <h1>Fahrzeugkontrollen - Sauberkeit</h1>
 
     <div class="month-navigation">
@@ -181,5 +172,6 @@ $nächstesJahr = ($monat == 12) ? $jahr + 1 : $jahr;
         </tbody>
     </table>
 	</main>
+
 </body>
 </html>

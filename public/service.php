@@ -30,19 +30,13 @@ try {
     die("Datenbankfehler: " . $e->getMessage());
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wartungen | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
+<?php
+$title = 'Wartungen';
+include __DIR__ . '/../includes/layout.php';
+?>
     <script src="js/modal.js"></script>
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main>
+
+        <main>
         <h1>Wartungen</h1>
 		
 		<button class="btn" onclick="openModal('maintenanceModal')">Wartungstermin</button>
@@ -91,5 +85,6 @@ try {
             document.querySelector('.nav-links').classList.toggle('active');
         });
     </script>
+
 </body>
 </html>

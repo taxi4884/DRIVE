@@ -31,14 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrierung | DRIVE</title>
-</head>
-<body>
+<?php
+$title = 'Registrierung';
+$showNav = false;
+include __DIR__ . '/../includes/layout.php';
+?>
+
+
     <h1>Benutzer registrieren</h1>
     <?php if ($error): ?>
         <p style="color: red;"><?= htmlspecialchars($error) ?></p>
@@ -59,5 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit">Registrieren</button>
     </form>
     <p><a href="index.php">Zum Login</a></p>
+
 </body>
 </html>

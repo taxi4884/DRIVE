@@ -6,18 +6,13 @@ require_once 'modals/process_vehicle.php';
 $stmt = $pdo->query("SELECT * FROM Fahrzeuge ORDER BY Konzessionsnummer ASC");
 $fahrzeuge = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fahrzeugübersicht | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
+<?php
+$title = 'Fahrzeugübersicht';
+include __DIR__ . '/../includes/layout.php';
+?>
     <script src="js/modal.js"></script>
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main>
+
+        <main>
         <h1>Fahrzeugübersicht</h1>
         <div class="button-group">
             <button class="btn" onclick="openModal('vehicleModal')">Neues Fahrzeug hinzufügen</button>
@@ -58,5 +53,6 @@ $fahrzeuge = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </table>
     </main>
     <?php include 'modals/add_vehicle_modal.php'; ?>
+
 </body>
 </html>

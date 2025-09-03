@@ -51,14 +51,10 @@ if (isset($_GET['edit'])) {
 $stmt = $pdo->query("SELECT * FROM mitarbeiter_zentrale ORDER BY nachname ASC");
 $mitarbeiterListe = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mitarbeiterverwaltung | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
+<?php
+$title = 'Mitarbeiterverwaltung';
+include __DIR__ . '/../includes/layout.php';
+?>
     <style>
 		.form-wrapper {
             max-width: 500px;
@@ -134,10 +130,8 @@ $mitarbeiterListe = $stmt->fetchAll(PDO::FETCH_ASSOC);
             text-decoration: underline;
         }
     </style>
-</head>
-<body>
-	<?php include 'nav.php'; ?>
-	<main>
+
+		<main>
 		<div class="form-wrapper">
 			<h2><?= $editMitarbeiter ? 'Mitarbeiter bearbeiten' : 'Mitarbeiter hinzufügen' ?></h2>
 			<?php if ($error): ?><div class="error"><?= $error ?></div><?php endif; ?>
@@ -200,5 +194,6 @@ $mitarbeiterListe = $stmt->fetchAll(PDO::FETCH_ASSOC);
 			</tbody>
 		</table>
 	</main>
+
 </body>
 </html>

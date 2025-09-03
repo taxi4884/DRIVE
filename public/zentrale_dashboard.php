@@ -171,17 +171,13 @@ $unreadAbwesenheiten = $unreadStmt->fetchAll(PDO::FETCH_ASSOC);
 $unreadCount = count($unreadAbwesenheiten);
 
 ?>
-
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zentrale Dashboard | DRIVE</title>
+<?php
+$title = 'Zentrale Dashboard';
+include __DIR__ . '/../includes/layout.php';
+?>
     <!-- Font Awesome Einbindung -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Bisheriges CSS -->
-    <link rel="stylesheet" href="css/custom.css">
     <script src="js/modal.js"></script>
     <style>
                 /* Krankheitszellen */
@@ -189,24 +185,20 @@ $unreadCount = count($unreadAbwesenheiten);
 		  background-color: #d4edda;
 		  color: #155724;
 		}
-
 		/* Urlaubszellen */
 		.dashboard-table .absent-vacation {
 		  background-color: #fff3cd;
 		  color: #856404;
 		}
-		
 		/*Wochenende*/
 		.dashboard-table .weekend {
 		  background-color: #f8d7da;
 		  color: #721c24;
 		}
-
 		.month-navigation {
 		  margin: 20px auto;
 		  text-align: left;
 		}
-
 		.month-navigation a {
 		  padding: 10px 15px;
 		  font-size: 16px;
@@ -216,21 +208,17 @@ $unreadCount = count($unreadAbwesenheiten);
 		  border-radius: 4px;
 		  margin: 0 5px;
 		}
-
 		.month-navigation a:hover {
 		  background-color: #FFC107;
 		}
-
 		.month-navigation span {
 		  font-size: 18px;
 		  font-weight: bold;
 		  margin-left: 10px;
 		}
 		</style>
-</head>
-<body>
-    <?php include 'nav.php'; ?>
-    <main class="with_sidebar">
+
+        <main class="with_sidebar">
         <h1>Zentrale Dashboard</h1>
 		
 		<?php if ($unreadCount > 0): ?>
@@ -374,6 +362,7 @@ $unreadCount = count($unreadAbwesenheiten);
 	document.querySelector('.nav-links').classList.toggle('active');
 	});
 	</script>
+
 
 </body>
 </html>
