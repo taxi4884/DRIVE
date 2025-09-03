@@ -9,86 +9,93 @@ $menuEntries = [
         'icon' => 'bi-house',
     ],
     [
-        'label' => 'Besetzung',
-        'url' => 'fahrzeuge.php',
-        'roles' => ['Admin', 'Mitarbeiter'],
-        'icon' => 'bi-people',
-    ],
-    [
-        'label' => 'Fahrerdashboard',
-        'url' => 'fahrer.php',
-        'roles' => ['Admin', 'Mitarbeiter'],
-        'icon' => 'bi-person-badge',
-        'children' => [
-            [
-                'label' => 'Abwesenheit',
-                'url' => 'abwesenheit_fahrer.php',
-                'roles' => ['Admin', 'Mitarbeiter'],
-                'icon' => 'bi-calendar-x',
-            ],
-            [
-                'label' => 'Bußgelder',
-                'url' => 'fines_management.php',
-                'roles' => ['Admin', 'Mitarbeiter'],
-                'icon' => 'bi-exclamation-octagon',
-            ],
-        ],
-    ],
-    [
-        'label' => 'Fahrzeugdashboard',
-        'url' => 'fahrzeug_overview.php',
-        'roles' => ['Admin', 'Mitarbeiter'],
-        'icon' => 'bi-truck',
-        'children' => [
-            [
-                'label' => 'Fahrzeugübergaben',
-                'url' => 'vehicle_transfer.php',
-                'roles' => ['Admin', 'Mitarbeiter'],
-                'icon' => 'bi-arrow-left-right',
-            ],
-            [
-                'label' => 'Service',
-                'url' => 'service.php',
-                'roles' => ['Admin', 'Mitarbeiter'],
-                'icon' => 'bi-tools',
-            ],
-            [
-                'label' => 'Sauberkeit',
-                'url' => 'sauberkeit.php',
-                'roles' => ['Admin', 'Mitarbeiter'],
-                'icon' => 'bi-droplet',
-            ],
-        ],
-    ],
-    [
-        'label' => 'Zentralendashboard',
-        'url' => 'zentrale_dashboard.php',
-        'roles' => ['Admin', 'Mitarbeiter'],
-        'icon' => 'bi-speedometer',
-    ],
-    [
-        'label' => 'Schulung',
-        'url' => 'schulungsverwaltung.php',
-        'roles' => ['Admin'],
-        'icon' => 'bi-journal-text',
-    ],
-    [
-        'label' => 'XRechnung',
-        'url' => 'xrechnung_viewer.php',
-        'roles' => ['Admin', 'Mitarbeiter'],
-        'icon' => 'bi-file-earmark-text',
-    ],
-    [
         'label' => 'Postfach',
         'url' => 'messages/inbox',
         'roles' => ['Admin', 'Mitarbeiter', 'Fahrer', 'Zentrale', 'Abrechnung'],
         'icon' => 'bi-envelope',
     ],
     [
-        'label' => 'Verwaltung',
-        'url'   => 'verwaltung_abwesenheit.php',
-        'roles' => ['Admin', 'Mitarbeiter', 'Zentrale', 'Abrechnung'], // ggf. erweitern
-        'icon' => 'bi-gear',
+        'label' => 'Fahrbetrieb',
+        'roles' => ['Admin', 'Mitarbeiter'],
+        'icon' => 'bi-truck',
+        'children' => [
+            [
+                'label' => 'Besetzung',
+                'url' => 'fahrzeuge.php',
+                'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-people',
+            ],
+            [
+                'label' => 'Fahrer',
+                'url' => 'fahrer.php',
+                'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-person-badge',
+                'children' => [
+                    [
+                        'label' => 'Abwesenheit',
+                        'url' => 'abwesenheit_fahrer.php',
+                        'roles' => ['Admin', 'Mitarbeiter'],
+                        'icon' => 'bi-calendar-x',
+                    ],
+                    [
+                        'label' => 'Bußgelder',
+                        'url' => 'fines_management.php',
+                        'roles' => ['Admin', 'Mitarbeiter'],
+                        'icon' => 'bi-exclamation-octagon',
+                    ],
+                ],
+            ],
+            [
+                'label' => 'Fahrzeuge',
+                'url' => 'fahrzeug_overview.php',
+                'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-truck',
+                'children' => [
+                    [
+                        'label' => 'Fahrzeugübergaben',
+                        'url' => 'vehicle_transfer.php',
+                        'roles' => ['Admin', 'Mitarbeiter'],
+                        'icon' => 'bi-arrow-left-right',
+                    ],
+                    [
+                        'label' => 'Service',
+                        'url' => 'service.php',
+                        'roles' => ['Admin', 'Mitarbeiter'],
+                        'icon' => 'bi-tools',
+                    ],
+                    [
+                        'label' => 'Sauberkeit',
+                        'url' => 'sauberkeit.php',
+                        'roles' => ['Admin', 'Mitarbeiter'],
+                        'icon' => 'bi-droplet',
+                    ],
+                ],
+            ],
+            [
+                'label' => 'Zentralendashboard',
+                'url' => 'zentrale_dashboard.php',
+                'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-speedometer',
+            ],
+            [
+                'label' => 'Schulung',
+                'url' => 'schulungsverwaltung.php',
+                'roles' => ['Admin'],
+                'icon' => 'bi-journal-text',
+            ],
+            [
+                'label' => 'XRechnung',
+                'url' => 'xrechnung_viewer.php',
+                'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-file-earmark-text',
+            ],
+            [
+                'label' => 'Verwaltung',
+                'url'   => 'verwaltung_abwesenheit.php',
+                'roles' => ['Admin', 'Mitarbeiter', 'Zentrale', 'Abrechnung'],
+                'icon' => 'bi-gear',
+            ],
+        ],
     ],
     [
         'label' => 'Abrechnung',
