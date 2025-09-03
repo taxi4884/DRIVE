@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-  var items = document.querySelectorAll('.conversation-list [data-other-id]');
+  var items = document.querySelectorAll('.conversation-item');
   var content = document.getElementById('conversation-content');
 
   function escapeHtml(str) {
