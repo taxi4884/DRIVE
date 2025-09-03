@@ -768,6 +768,7 @@ header p#subtitle {
 /* Flexbox Layout für Widgets */
 main {
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
     gap: 20px;
     justify-content: space-between;
@@ -962,7 +963,7 @@ nav {
     border: 2px solid #FFD700; /* Gelber Rand */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Schlagschatten */
     position: relative;
-    flex: 1 1 calc(30% - 20px); /* Drei Widgets pro Zeile */
+    width: 100%;
     min-width: 300px;
     transition: transform 0.3s ease, box-shadow 0.3s ease; /* Für Hover-Animation */
 }
