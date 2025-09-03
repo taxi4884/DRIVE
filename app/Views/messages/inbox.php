@@ -1,5 +1,6 @@
 <?php
 // expects $conversations and optional $conversation
+require_once __DIR__ . '/../../../includes/user_check.php';
 ?>
 <?php include __DIR__ . '/../../../public/head.php'; ?>
 <link rel="stylesheet" href="/css/messages.css">
