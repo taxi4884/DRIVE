@@ -1,11 +1,7 @@
 <?php
 // Formular zum Verfassen einer neuen Nachricht
-require_once __DIR__ . '/../../../includes/user_check.php';
 ?>
-<?php include __DIR__ . '/../../../public/head.php'; ?>
-<body>
-    <?php include __DIR__ . '/../../../public/nav.php'; ?>
-    <main>
+<main>
         <h1>Neue Nachricht</h1>
         <form method="post" action="/postfach.php?action=store">
             <div>

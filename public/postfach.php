@@ -38,6 +38,9 @@ function showInbox(): void
     $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $success = ($_GET['success'] ?? '') !== '';
+
+    $title = 'Postfach';
+    include __DIR__ . '/../includes/layout.php';
     include __DIR__ . '/../app/Views/messages/inbox.php';
 }
 
@@ -63,6 +66,8 @@ function showCompose(): void
 
     $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    $title = 'Neue Nachricht';
+    include __DIR__ . '/../includes/layout.php';
     include __DIR__ . '/../app/Views/messages/compose.php';
 }
 

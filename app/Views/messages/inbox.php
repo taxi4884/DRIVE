@@ -1,12 +1,8 @@
 <?php
 // expects $conversations and optional $conversation
-require_once __DIR__ . '/../../../includes/user_check.php';
 ?>
-<?php include __DIR__ . '/../../../public/head.php'; ?>
 <link rel="stylesheet" href="/css/messages.css">
-<body>
-    <?php include __DIR__ . '/../../../public/nav.php'; ?>
-    <main>
+<main>
         <h1>Nachrichten</h1>
         <div style="text-align: right;">
             <button class="btn btn-primary" onclick="openModal('composeModal')">Neue Nachricht</button>
