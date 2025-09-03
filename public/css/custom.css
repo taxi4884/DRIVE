@@ -195,7 +195,7 @@ nav {
         color: var(--color-primary);
 }
 
-.dropdown:hover .dropdown-menu {
+.dropdown:hover > .dropdown-menu {
     display: block;
 }
 
@@ -852,7 +852,7 @@ nav {
 }
 
 
-.dropdown:hover .dropdown-menu {
+.dropdown:hover > .dropdown-menu {
     display: block;
 }
 
