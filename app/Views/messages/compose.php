@@ -9,7 +9,11 @@
         <form method="post" action="/postfach.php?action=store">
             <div>
                 <label for="recipient_id">Empfänger</label>
-                <input type="text" id="recipient_id" name="recipient_id" required>
+                <select id="recipient_id" name="recipient_id" required>
+                    <?php foreach ($recipients as $r): ?>
+                        <option value="<?= $r['BenutzerID'] ?>"><?= htmlspecialchars($r['Name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div>
                 <label for="subject">Betreff</label>

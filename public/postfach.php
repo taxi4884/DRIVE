@@ -31,6 +31,19 @@ function showCompose(): void
         exit;
     }
 
+    global $pdo;
+
+    $isDriver = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'fahrer';
+
+    if ($isDriver) {
+        $stmt = $pdo->prepare('SELECT b.BenutzerID, b.Name FROM Benutzer b JOIN message_permissions mp ON b.BenutzerID = mp.recipient_id WHERE mp.driver_id = ? ORDER BY b.Name');
+        $stmt->execute([(int) $_SESSION['user_id']]);
+    } else {
+        $stmt = $pdo->query('SELECT BenutzerID, Name FROM Benutzer ORDER BY Name');
+    }
+
+    $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     include __DIR__ . '/../app/Views/messages/compose.php';
 }
 
