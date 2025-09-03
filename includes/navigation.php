@@ -77,25 +77,13 @@ $menuEntries = [
                 'roles' => ['Admin', 'Mitarbeiter'],
                 'icon' => 'bi-speedometer',
             ],
-            [
-                'label' => 'Schulung',
-                'url' => 'schulungsverwaltung.php',
-                'roles' => ['Admin'],
-                'icon' => 'bi-journal-text',
-            ],
-            [
-                'label' => 'XRechnung',
-                'url' => 'xrechnung_viewer.php',
-                'roles' => ['Admin', 'Mitarbeiter'],
-                'icon' => 'bi-file-earmark-text',
-            ],
-            [
-                'label' => 'Verwaltung',
-                'url'   => 'verwaltung_abwesenheit.php',
-                'roles' => ['Admin', 'Mitarbeiter', 'Zentrale', 'Abrechnung'],
-                'icon' => 'bi-gear',
-            ],
         ],
+    ],
+    [
+        'label' => 'Verwaltung',
+        'url'   => 'verwaltung_abwesenheit.php',
+        'roles' => ['Admin', 'Mitarbeiter', 'Zentrale', 'Abrechnung'],
+        'icon'  => 'bi-gear',
     ],
     [
         'label' => 'Abrechnung',
@@ -150,6 +138,25 @@ $menuEntries = [
                 'url' => 'mitarbeiter_management.php',
                 'roles' => ['Zentrale'],
                 'icon' => 'bi-people',
+            ],
+        ],
+    ],
+    [
+        'label' => 'Sonstiges',
+        'roles' => ['Admin', 'Mitarbeiter'],
+        'icon' => 'bi-three-dots',
+        'children' => [
+            [
+                'label' => 'Schulung',
+                'url' => 'schulungsverwaltung.php',
+                'roles' => ['Admin'],
+                'icon' => 'bi-journal-text',
+            ],
+            [
+                'label' => 'XRechnung',
+                'url' => 'xrechnung_viewer.php',
+                'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-file-earmark-text',
             ],
         ],
     ],
