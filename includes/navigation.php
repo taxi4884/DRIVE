@@ -309,6 +309,7 @@ function buildMenu(array $items, array $userRoles, string $currentPath = ''): st
 function renderMenu($currentRole, $secondaryRoles, $context = 'top', $currentPath = '')
 {
     global $menuEntries;
+    $menuEntries = is_array($menuEntries) ? $menuEntries : [];
 
     if (is_string($secondaryRoles)) {
         $secondary = array_filter(array_map('trim', explode(',', $secondaryRoles)));
