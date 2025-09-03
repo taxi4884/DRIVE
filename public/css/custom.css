@@ -133,7 +133,7 @@ body {
 nav {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     background: var(--color-nav-bg);
     padding: 10px 20px;
     color: #ffffff;
@@ -787,7 +787,7 @@ main {
 nav {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     /* Neuer dezenter Farbverlauf */
     background: var(--gradient-nav);
     padding: 10px 20px;
