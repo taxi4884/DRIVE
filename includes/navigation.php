@@ -10,7 +10,7 @@ $menuEntries = [
     ],
     [
         'label' => 'Postfach',
-        'url' => 'messages/inbox',
+        'url' => 'postfach.php',
         'roles' => ['Admin', 'Mitarbeiter', 'Fahrer', 'Zentrale', 'Abrechnung'],
         'icon' => 'bi-envelope',
     ],
@@ -222,7 +222,7 @@ $menuEntries = [
     ],
     [
         'label' => 'Postfach',
-        'url' => 'messages/inbox',
+        'url' => 'postfach.php',
         'roles' => ['Fahrer'],
         'context' => 'bottom',
         'icon' => 'bi-envelope',
