@@ -2,6 +2,9 @@
 //public/driver/dashboard.php
 require_once '../../includes/bootstrap.php';
 
+// Rolle für diese Route festlegen (einfachste Variante)
+$_SESSION['rolle'] = 'Fahrer';
+
 // Fehleranzeige aktivieren (nur für Debugging, in Produktion entfernen)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);

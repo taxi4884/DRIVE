@@ -1,6 +1,9 @@
 <?php
 require_once '../../includes/bootstrap.php'; // Lädt Authentifizierung und Datenbankverbindung
 
+// Rolle für diese Route festlegen (einfachste Variante)
+$_SESSION['rolle'] = 'Fahrer';
+
 // Überprüfung, ob der Benutzer eingeloggt ist
 if (!isset($_SESSION['user_id'])) {
     die('Fehler: Keine gültige Session. Bitte erneut anmelden.');

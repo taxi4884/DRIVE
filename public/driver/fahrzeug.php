@@ -4,6 +4,9 @@ use PHPMailer\PHPMailer\Exception;
 	
 require_once '../../includes/bootstrap.php'; // Datenbankverbindung und Authentifizierung
 
+// Rolle für diese Route festlegen (einfachste Variante)
+$_SESSION['rolle'] = 'Fahrer';
+
 if (!isset($_SESSION['user_id'])) {
     die('Fehler: Keine gültige Session. Bitte erneut anmelden.');
 }
