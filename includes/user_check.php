@@ -24,6 +24,8 @@ try {
         explode(',', $user['SekundarRolle'] ?? '')
     );
 
+    $_SESSION['sekundarRolle'] = $sekundarRolle;
+
     // Name in der Session speichern
     if ($user && isset($user['Name'])) {
         $_SESSION['user_name'] = $user['Name'];
