@@ -10,7 +10,7 @@ $menuEntries = [
     ],
     [
         'label' => 'Postfach',
-        'url' => '/messages/inbox',
+        'url' => 'messages/inbox',
         'roles' => ['Admin', 'Mitarbeiter', 'Fahrer', 'Zentrale', 'Abrechnung'],
         'icon' => 'bi-envelope',
     ],
