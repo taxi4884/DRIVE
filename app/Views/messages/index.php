@@ -9,11 +9,6 @@ if ($selectedUserId && isset($_SESSION['user_id'])) {
     $messages = Message::getMessagesBetween((int) $_SESSION['user_id'], $selectedUserId);
 }
 ?>
-<?php
-$title = 'Nachrichten';
-include __DIR__ . '/../../../includes/layout.php';
-?>
-<link rel="stylesheet" href="/css/messages.css">
 <main class="messages-container">
         <aside class="conversations">
             <h2>Gesprächspartner</h2>
@@ -50,6 +45,4 @@ include __DIR__ . '/../../../includes/layout.php';
             <?php endif; ?>
         </section>
     </main>
-</body>
-</html>
 

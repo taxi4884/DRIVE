@@ -17,7 +17,11 @@ class MessageController
 
         $userId = (int) $_SESSION['user_id'];
         $conversations = Message::getConversationsByUser($userId);
+        $title = 'Nachrichten';
+        $extraCss = 'css/messages.css';
+        include __DIR__ . '/../../includes/layout.php';
         include __DIR__ . '/../Views/messages/index.php';
+        echo "</body></html>";
     }
 
     public function show(int $otherId): void
@@ -30,7 +34,11 @@ class MessageController
 
         $userId = (int) $_SESSION['user_id'];
         $messages = Message::getMessagesBetween($userId, $otherId);
+        $title = 'Nachrichtenverlauf';
+        $extraCss = 'css/messages.css';
+        include __DIR__ . '/../../includes/layout.php';
         include __DIR__ . '/../Views/messages/show.php';
+        echo "</body></html>";
     }
 
     public function inbox(): void
@@ -42,8 +50,18 @@ class MessageController
         }
 
         $userId = (int) $_SESSION['user_id'];
-        $messages = Message::getUnreadByUser($userId);
+        $conversations = Message::getConversationsByUser($userId);
+        $conversation = [];
+        if (isset($_GET['with'])) {
+            $otherId = (int) $_GET['with'];
+            $conversation = Message::getMessagesBetween($userId, $otherId);
+        }
+        $success = ($_GET['success'] ?? '') !== '';
+        $title = 'Postfach';
+        $extraCss = 'css/messages.css';
+        include __DIR__ . '/../../includes/layout.php';
         include __DIR__ . '/../Views/messages/inbox.php';
+        echo "</body></html>";
     }
 
     public function markAsRead(): void
