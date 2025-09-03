@@ -2,12 +2,15 @@
 
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/user_check.php';
 require_once __DIR__ . '/../app/Models/Message.php';
 
 use App\Models\Message;
 
 function showInbox(): void
 {
+    global $sekundarRolle;
+
     if (!isset($_SESSION['user_id'])) {
         header('Location: /login.php');
         exit;
