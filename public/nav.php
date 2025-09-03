@@ -1,9 +1,13 @@
 <?php
 require_once '../includes/navigation.php';
 $currentPage = basename($_SERVER['PHP_SELF']);
+
+$primaryRole    = $_SESSION['rolle'] ?? '';
+$secondaryRoles = $sekundarRolle ?? [];
+
 renderMenu(
-    $_SESSION['rolle'] ?? '',
-    $sekundarRolle ?? '',
+    $primaryRole,
+    $secondaryRoles,
     'top',
     $currentPage
 );
