@@ -32,6 +32,12 @@
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
+            <form id="chat-form" method="post" action="/postfach.php?action=store">
+                <input type="hidden" name="recipient_id" id="chat-recipient-id">
+                <input type="hidden" name="subject" id="chat-subject">
+                <textarea name="body" id="chat-body" rows="3" placeholder="Nachricht" required></textarea>
+                <button type="submit">Senden</button>
+            </form>
         </div>
     </div>
     <?php include __DIR__ . '/../../../public/modals/message_compose.php'; ?>

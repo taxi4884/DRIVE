@@ -61,11 +61,22 @@
     background-color: #f0f0f0;
 }
 
+
 .conversation-panel {
     flex: 1;
+    display: flex;
+    flex-direction: column;
     position: relative;
     padding: 1rem;
+}
+
+#conversation-content {
+    flex: 1;
     overflow-y: auto;
+}
+
+#chat-form {
+    margin-top: 1rem;
 }
 
 .conversation-panel .new-message-btn {
