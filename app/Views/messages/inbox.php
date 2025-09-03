@@ -1,13 +1,8 @@
 <?php
 // expects $messages
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <title>Inbox</title>
-    <link rel="stylesheet" href="/css/custom.css">
-</head>
+<?php include __DIR__ . '/../../../public/head.php'; ?>
+<link rel="stylesheet" href="/css/messages.css">
 <body>
     <?php include __DIR__ . '/../../../public/nav.php'; ?>
     <main>
