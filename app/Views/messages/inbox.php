@@ -7,6 +7,9 @@
     <?php include __DIR__ . '/../../../public/nav.php'; ?>
     <main>
         <h1>Nachrichten</h1>
+        <div style="text-align: right;">
+            <button class="btn btn-primary" onclick="openModal('composeModal')">Neue Nachricht</button>
+        </div>
 
         <?php if (!empty($success)): ?>
             <p class="success">Nachricht gesendet.</p>
@@ -24,7 +27,6 @@
                 </ul>
             </div>
             <div class="conversation-panel" id="conversation-panel">
-                <a href="/postfach.php?action=compose" class="new-message-btn">Neue Nachricht</a>
                 <div id="conversation-content">
                     <?php if (!empty($conversation)): ?>
                         <?php foreach ($conversation as $msg): ?>
@@ -37,7 +39,9 @@
                 </div>
             </div>
         </div>
+        <?php include __DIR__ . '/../../../public/modals/message_compose.php'; ?>
     </main>
+    <script src="/js/modal.js"></script>
     <script src="/js/messages.js"></script>
 </body>
 </html>
