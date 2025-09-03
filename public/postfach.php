@@ -23,6 +23,20 @@ function showInbox(): void
         $otherId = (int) $_GET['with'];
         $conversation = Message::getMessagesBetween($userId, $otherId);
     }
+    
+    global $pdo;
+
+    $isDriver = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'fahrer';
+
+    if ($isDriver) {
+        $stmt = $pdo->prepare('SELECT b.BenutzerID, b.Name FROM Benutzer b JOIN message_permissions mp ON b.BenutzerID = mp.recipient_id WHERE mp.driver_id = ? ORDER BY b.Name');
+        $stmt->execute([$userId]);
+    } else {
+        $stmt = $pdo->query('SELECT BenutzerID, Name FROM Benutzer ORDER BY Name');
+    }
+
+    $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     $success = ($_GET['success'] ?? '') !== '';
     include __DIR__ . '/../app/Views/messages/inbox.php';
 }
