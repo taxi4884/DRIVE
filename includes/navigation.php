@@ -71,12 +71,6 @@ $menuEntries = [
                     ],
                 ],
             ],
-            [
-                'label' => 'Zentralendashboard',
-                'url' => 'zentrale_dashboard.php',
-                'roles' => ['Admin', 'Mitarbeiter'],
-                'icon' => 'bi-speedometer',
-            ],
         ],
     ],
     [
@@ -121,6 +115,12 @@ $menuEntries = [
         'roles' => ['Zentrale'],
         'icon' => 'bi-building',
         'children' => [
+            [
+                'label' => 'Zentralendashboard',
+                'url' => 'zentrale_dashboard.php',
+                'roles' => ['Admin', 'Mitarbeiter'],
+                'icon' => 'bi-speedometer',
+            ],
             [
                 'label' => 'Dienstplan',
                 'url' => 'dienstplan_erstellung.php',
