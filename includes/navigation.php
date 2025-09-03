@@ -80,7 +80,7 @@ $menuEntries = [
     ],
     [
         'label' => 'Postfach',
-        'url' => 'messages/inbox.php',
+        'url' => 'messages/inbox',
         'roles' => ['Admin', 'Mitarbeiter', 'Fahrer', 'Zentrale', 'Abrechnung'],
         'icon' => 'bi-envelope',
     ],
