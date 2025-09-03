@@ -15,15 +15,14 @@ try {
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Primärrolle in der Session speichern
-    if ($user && isset($user['Rolle'])) {
-        $_SESSION['rolle'] = $user['Rolle'];
-    } else {
-        $_SESSION['rolle'] = 'Keine'; // Fallback, falls keine Rolle gesetzt ist
-    }
+    // Primärrolle in der Session speichern, normalisiert
+    $_SESSION['rolle'] = ucfirst(strtolower($user['Rolle'] ?? ''));
 
-    // Sekundarrolle setzen
-    $sekundarRolle = $user['SekundarRolle'] ?? 'Keine'; // Standardwert, wenn keine Sekundarrolle vorhanden
+    // Sekundärrollen normalisieren und als Array bereitstellen
+    $sekundarRolle = array_map(
+        fn($r) => ucfirst(strtolower($r)),
+        explode(',', $user['SekundarRolle'] ?? '')
+    );
 
     // Name in der Session speichern
     if ($user && isset($user['Name'])) {
