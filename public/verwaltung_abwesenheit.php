@@ -67,7 +67,7 @@ $formatter = new IntlDateFormatter('de_DE', IntlDateFormatter::LONG, IntlDateFor
 $formatter->setPattern('MMMM yyyy');
 
 // Ungenehmigte Abwesenheiten anzeigen, wenn Benutzer Zugriff hat
-$rollen = array_map('trim', explode(',', $sekundarRolle));
+$rollen = array_map('trim', (array)$sekundarRolle);
 $anzeigenAbwesenheiten = in_array('Verwaltung', $rollen, true);
 $offeneAbwesenheiten = [];
 
