@@ -191,6 +191,10 @@ nav {
 .dropdown-menu a {
         color: var(--color-black) !important;
 }
+.dropdown-menu a:hover {
+        color: var(--color-primary);
+}
+
 .dropdown:hover .dropdown-menu {
     display: block;
 }
@@ -843,6 +847,10 @@ nav {
 .dropdown-menu a {
         color: var(--color-black) !important;
 }
+.dropdown-menu a:hover {
+        color: var(--color-primary);
+}
+
 
 .dropdown:hover .dropdown-menu {
     display: block;
