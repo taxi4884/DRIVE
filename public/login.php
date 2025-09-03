@@ -35,17 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Wenn weder Benutzer noch Fahrer erfolgreich waren
     $error = 'Ungültige Anmeldedaten!';
 }
+
+$title = 'Login';
+$showNav = false;
+include __DIR__ . '/../includes/layout.php';
 ?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | DRIVE</title>
-    <link rel="stylesheet" href="css/custom.css">
     <link rel="stylesheet" href="css/index.css">
-</head>
-<body>
     <div class="wrapper">
         <header>
             <img src="images/4884-logo.png" alt="Ihr Leipzig Taxi 4884" class="logo">
