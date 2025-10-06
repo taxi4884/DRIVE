@@ -1100,3 +1100,358 @@ button:hover {
 
 /* Falls du noch weitere Texte o. Ä. animieren möchtest, könntest du solche Keyframes
    einsetzen oder eigene erstellen (z.B. Slide-In, Fade-In, Shake, etc.). */
+
+/*********************************************
+ * DASHBOARD REDESIGN
+ *********************************************/
+.dashboard-container {
+    max-width: 1200px;
+}
+
+.dashboard-hero {
+    border: none;
+    border-radius: 1.75rem;
+    background: linear-gradient(135deg, rgba(255, 214, 0, 0.35), rgba(255, 214, 0, 0.05));
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255, 214, 0, 0.55), transparent 55%);
+    opacity: 0.85;
+}
+
+.dashboard-hero .card-body {
+    position: relative;
+    z-index: 1;
+    padding: 2.75rem;
+}
+
+.hero-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #a07c00;
+    margin-bottom: 0.75rem;
+}
+
+.hero-title {
+    font-size: clamp(2.2rem, 2.4vw + 1.2rem, 3.4rem);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #1f1f1f;
+}
+
+.hero-subtitle {
+    font-size: 1.05rem;
+    color: #4d4d4d;
+    margin: 0;
+    max-width: 36rem;
+}
+
+.hero-meta {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.hero-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    color: #343a40;
+    font-weight: 600;
+}
+
+.hero-meta-badge {
+    background: rgba(33, 33, 33, 0.12);
+}
+
+.dashboard-quickstats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0 2.5rem;
+}
+
+.stat-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+    background: #ffffff;
+    border: 1px solid #f1f3f5;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 28px 55px rgba(15, 23, 42, 0.1);
+}
+
+.stat-icon {
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.stat-label {
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: #212529;
+}
+
+.dashboard-main {
+    display: grid;
+    gap: 1.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    align-items: start;
+}
+
+@media (min-width: 992px) {
+    .grid-span-2 {
+        grid-column: span 2;
+    }
+}
+
+@media (min-width: 1200px) {
+    .grid-span-full {
+        grid-column: 1 / -1;
+    }
+}
+
+.widget.card {
+    border: none;
+    border-radius: 1.5rem;
+    background: #ffffff;
+    box-shadow: 0 24px 40px rgba(15, 23, 42, 0.05);
+}
+
+.widget.card .card-body {
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.section-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+    color: #1f1f1f;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    color: #c29c00;
+}
+
+.section-subtitle {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+.company-card {
+    background: #fdfdfd;
+    border: 1px solid #eef1f4;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.company-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.company-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f1f1f;
+}
+
+.two-column {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #1f1f1f;
+}
+
+.stacked-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.stacked-list-item {
+    background: #f9fafb;
+    border: 1px solid #edf0f3;
+    border-radius: 1rem;
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stacked-list-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+}
+
+.list-primary {
+    font-weight: 600;
+    color: #1f1f1f;
+}
+
+.list-secondary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.list-secondary span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.list-meta {
+    font-size: 0.82rem;
+    color: #6c757d;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.dashboard-table thead th {
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.dashboard-table tbody th {
+    font-weight: 600;
+    color: #1f1f1f;
+}
+
+.dashboard-table td,
+.dashboard-table th {
+    white-space: nowrap;
+}
+
+.dashboard-table .weekend {
+    background: rgba(220, 53, 69, 0.12);
+    color: #a11a2b;
+}
+
+.dashboard-table .early-shift {
+    background: rgba(25, 135, 84, 0.18);
+    color: #0f5132;
+}
+
+.dashboard-table .mid-shift {
+    background: rgba(255, 193, 7, 0.18);
+    color: #664d03;
+}
+
+.dashboard-table .late-shift {
+    background: rgba(13, 110, 253, 0.12);
+    color: #0a58ca;
+}
+
+.dashboard-table .night-shift {
+    background: rgba(108, 117, 125, 0.16);
+    color: #495057;
+}
+
+@media (max-width: 768px) {
+    .dashboard-hero .card-body {
+        padding: 2rem;
+    }
+
+    .dashboard-quickstats {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-card {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-meta span {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .dashboard-quickstats {
+        grid-template-columns: 1fr;
+    }
+}
