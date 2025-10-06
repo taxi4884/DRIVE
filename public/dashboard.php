@@ -309,7 +309,6 @@ include '../includes/layout.php';
                 </div>
                 <div class="hero-meta">
                     <span class="hero-date"><i class="bi bi-calendar-event"></i> <?php echo htmlspecialchars($todayLabel); ?></span>
-                    <span class="hero-meta-badge"><i class="bi bi-building"></i> <?php echo htmlspecialchars(count($mitarbeiter)); ?> Teammitglieder</span>
                 </div>
             </div>
         </header>
@@ -367,9 +366,6 @@ include '../includes/layout.php';
                                             <div class="list-primary"><?php echo htmlspecialchars(trim($fahrer['fahrer_vorname'] . ' ' . $fahrer['fahrer_nachname'])); ?></div>
                                             <div class="list-secondary">
                                                 <span><i class="bi bi-car-front"></i> <?php echo htmlspecialchars($fahrer['kennzeichen']); ?></span>
-                                                <?php if (!empty($fahrer['fahrzeugflotte'])): ?>
-                                                    <span><i class="bi bi-diagram-3"></i> <?php echo htmlspecialchars($fahrer['fahrzeugflotte']); ?></span>
-                                                <?php endif; ?>
                                             </div>
                                             <?php if (!empty($fahrer['anmeldung'])): ?>
                                                 <div class="list-meta"><i class="bi bi-clock-history"></i> seit <?php echo htmlspecialchars(date('d.m.Y H:i', strtotime($fahrer['anmeldung']))); ?></div>
