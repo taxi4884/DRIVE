@@ -122,8 +122,8 @@ include __DIR__ . '/../includes/layout.php';
 			endif; ?>
 			<tr class="fahrzeug <?= strtolower($fahrzeug['Fahrzeugtyp']) ?>">
 				<td><?= htmlspecialchars($fahrzeug['Konzessionsnummer']) ?> <small><?= htmlspecialchars($fahrzeug['Kennzeichen']) ?></small></td>
-				<td><?= htmlspecialchars(date('d.m.Y', strtotime($fahrzeug['HU']))) ?></td>
-				<td><?= htmlspecialchars(date('d.m.Y', strtotime($fahrzeug['Eichung']))) ?></td>
+				<td><?= htmlspecialchars(date('d.m.y', strtotime($fahrzeug['HU']))) ?></td>
+				<td><?= htmlspecialchars(date('d.m.y', strtotime($fahrzeug['Eichung']))) ?></td>
 				<td><?= htmlspecialchars($fahrzeug['Tagfahrer'] ?? '-') ?></td>
 				<td><?= htmlspecialchars($fahrzeug['Nachtfahrer'] ?? '-') ?></td>
 			</tr>
@@ -142,7 +142,7 @@ include __DIR__ . '/../includes/layout.php';
 					<li>
 						<?= htmlspecialchars($fahrzeug['Konzessionsnummer']) ?> - 
 						<?= htmlspecialchars($fahrzeug['Marke']) ?> <?= htmlspecialchars($fahrzeug['Modell']) ?> 
-						(<?= htmlspecialchars(date('d.m.Y', strtotime($fahrzeug['HU']))) ?>)
+						(<?= htmlspecialchars(date('d.m.y', strtotime($fahrzeug['HU']))) ?>)
 					</li>
 				<?php endforeach; ?>
 			</ul>
@@ -154,7 +154,7 @@ include __DIR__ . '/../includes/layout.php';
 					<li>
 						<?= htmlspecialchars($fahrzeug['Konzessionsnummer']) ?> - 
 						<?= htmlspecialchars($fahrzeug['Marke']) ?> <?= htmlspecialchars($fahrzeug['Modell']) ?> 
-						(<?= htmlspecialchars(date('d.m.Y', strtotime($fahrzeug['Eichung']))) ?>)
+						(<?= htmlspecialchars(date('d.m.y', strtotime($fahrzeug['Eichung']))) ?>)
 					</li>
 				<?php endforeach; ?>
 			</ul>
@@ -165,7 +165,7 @@ include __DIR__ . '/../includes/layout.php';
 				<?php foreach ($fahrer_pschein as $fahrer): ?>
 					<li>
 						<?= htmlspecialchars($fahrer['Name']) ?> 
-						(<?= htmlspecialchars(date('d.m.Y', strtotime($fahrer['PScheinGueltigkeit']))) ?>)
+						(<?= htmlspecialchars(date('d.m.y', strtotime($fahrer['PScheinGueltigkeit']))) ?>)
 					</li>
 				<?php endforeach; ?>
 			</ul>
@@ -178,7 +178,7 @@ include __DIR__ . '/../includes/layout.php';
 						<?= htmlspecialchars($wartung['Konzessionsnummer']) ?> - 
 						<?= htmlspecialchars($wartung['Marke']) ?> <?= htmlspecialchars($wartung['Modell']) ?>: 
 						<?= htmlspecialchars($wartung['Werkstatt']) ?> 
-						(<?= htmlspecialchars(date('d.m.Y', strtotime($wartung['Wartungsdatum']))) ?>)
+						(<?= htmlspecialchars(date('d.m.y', strtotime($wartung['Wartungsdatum']))) ?>)
 					</li>
 				<?php endforeach; ?>
 			</ul>

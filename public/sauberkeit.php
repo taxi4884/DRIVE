@@ -150,7 +150,7 @@ include __DIR__ . '/../includes/layout.php';
                     <tr>
                         <td><?= htmlspecialchars($kontrolle['konzession']) ?></td>
                         <td><?= htmlspecialchars($kontrolle['vorname'] . ' ' . $kontrolle['nachname']) ?></td>
-                        <td><?= htmlspecialchars(date('d.m.Y', strtotime($kontrolle['datum']))) ?></td>
+                        <td><?= htmlspecialchars(date('d.m.y', strtotime($kontrolle['datum']))) ?></td>
                         <td><?= htmlspecialchars($kontrolle['sauberkeitaussen']) ?> <?= getBewertungIcon($kontrolle['sauberkeitaussen']) ?></td>
                         <td><?= htmlspecialchars($kontrolle['sauberkeitinnen']) ?> <?= getBewertungIcon($kontrolle['sauberkeitinnen']) ?></td>
                         <td><?= htmlspecialchars($kontrolle['reifendruck']) ?> bar</td>

@@ -95,7 +95,7 @@ try {
 
 function formatDateTime($datetime) {
     $date = new DateTime($datetime);
-    return $date->format('d.m.Y');
+    return $date->format('d.m.y');
 }
 
 $title = 'Meine Fahrzeuge';

@@ -47,7 +47,7 @@ $pdf->AddPage();
 $pdf->SetFont('Arial', 'B', 16);
 $pdf->Cell(0, 10, "Rechnung: $invoiceId", 0, 1, 'C');
 $pdf->SetFont('Arial', '', 12);
-$pdf->Cell(0, 10, "Rechnungsdatum: " . date('d.m.Y', strtotime($issueDate)), 0, 1, 'C');
+$pdf->Cell(0, 10, "Rechnungsdatum: " . date('d.m.y', strtotime($issueDate)), 0, 1, 'C');
 $pdf->Ln(10);
 
 // Positionen

@@ -41,7 +41,7 @@ if (isset($_GET['id'])) {
         'Nachname' => $teilnehmer['nachname'],
         'Straße' => $teilnehmer['strasse'] . ' ' . $teilnehmer['hausnummer'],
         'PLZ / Ort' => $teilnehmer['postleitzahl'] . ' ' . $teilnehmer['ort'],
-        'Geburtsdatum' => date('d.m.Y', strtotime($teilnehmer['geburtsdatum'])),
+        'Geburtsdatum' => date('d.m.y', strtotime($teilnehmer['geburtsdatum'])),
         'Handynummer' => $teilnehmer['handynummer'],
         'Email' => $teilnehmer['email'],
         'Unternehmer' => $teilnehmer['unternehmer']

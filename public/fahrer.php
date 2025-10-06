@@ -53,7 +53,7 @@ include __DIR__ . '/../includes/layout.php';
 			<div class="hinweis-box" style="background: <?= $mitteilung['wichtig'] ? '#ffe4e4' : '#fffae6' ?>; border: 1px solid <?= $mitteilung['wichtig'] ? '#cc0000' : '#e6c300' ?>; padding: 10px; margin-bottom: 20px;">
 				<strong>📢 Mitteilung an alle Fahrer:</strong><br>
 				<?= nl2br(htmlspecialchars($mitteilung['nachricht'])) ?><br><br>
-				<small>Gültig bis: <?= date('d.m.Y', strtotime($mitteilung['gueltig_bis'])) ?> | erstellt von <?= htmlspecialchars($mitteilung['erstellt_von']) ?></small>
+				<small>Gültig bis: <?= date('d.m.y', strtotime($mitteilung['gueltig_bis'])) ?> | erstellt von <?= htmlspecialchars($mitteilung['erstellt_von']) ?></small>
 
 				<div style="margin-top: 10px;">
 					<a class="btn-sm" href="?aktion=toggle_wichtig&id=<?= $mitteilung['id'] ?>">Wichtig <?= $mitteilung['wichtig'] ? '🔴' : '⚪' ?></a>
@@ -94,8 +94,8 @@ include __DIR__ . '/../includes/layout.php';
                             <td><?= htmlspecialchars($driver['Vorname']) ?></td>
                             <td><?= htmlspecialchars($driver['Nachname']) ?></td>
                             <td><?= htmlspecialchars($driver['Telefonnummer']) ?></td>
-                            <td><?= htmlspecialchars(date('d.m.Y', strtotime($driver['FuehrerscheinGueltigkeit']))) ?></td>
-                            <td><?= htmlspecialchars(date('d.m.Y', strtotime($driver['PScheinGueltigkeit']))) ?></td>
+                            <td><?= htmlspecialchars(date('d.m.y', strtotime($driver['FuehrerscheinGueltigkeit']))) ?></td>
+                            <td><?= htmlspecialchars(date('d.m.y', strtotime($driver['PScheinGueltigkeit']))) ?></td>
                             <td>
                                 <a href="fahrer_bearbeiten.php?id=<?= $driver['FahrerID'] ?>" class="btn-sm">Bearbeiten</a>
                             </td>

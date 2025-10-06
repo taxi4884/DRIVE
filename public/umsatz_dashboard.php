@@ -183,7 +183,7 @@ include __DIR__ . '/../includes/layout.php';
 							<?php if ($datum === '1970-01-01' || empty($fahrerDaten)) continue; // Zeile überspringen, wenn 01.01.1970 ?>
 							
 							<tr>
-								<td><?= date('d.m.Y', strtotime($datum)) ?></td>
+								<td><?= date('d.m.y', strtotime($datum)) ?></td>
 								<?php foreach ($fahrerDerFirma as $fahrer => $fahrerID): ?>
 									<td>
 										<?= number_format($fahrerDaten[$fahrer]['GesamtUmsatz'], 2, ',', '.') ?> €

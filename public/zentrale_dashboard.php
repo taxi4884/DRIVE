@@ -264,9 +264,9 @@ include __DIR__ . '/../includes/layout.php';
 							Mitarbeiter: 
 							<?php echo htmlspecialchars($absence['employee_lastname'] . ', ' . $absence['employee_firstname']); ?><br>
 							Zeitraum: 
-							<?php echo date('d.m.Y', strtotime($absence['startdatum'])); ?>
+							<?php echo date('d.m.y', strtotime($absence['startdatum'])); ?>
 							bis 
-							<?php echo date('d.m.Y', strtotime($absence['enddatum'])); ?><br>
+							<?php echo date('d.m.y', strtotime($absence['enddatum'])); ?><br>
 							Grund: 
 							<?php echo htmlspecialchars($absence['typ']); ?><br>
 							<button onclick="markAsRead(<?php echo $absence['abwesenheit_id']; ?>)">
@@ -356,8 +356,8 @@ include __DIR__ . '/../includes/layout.php';
 					?>
 					<li>
 						<?php echo htmlspecialchars($vacation['vorname'] . ' ' . $vacation['nachname']); ?>: 
-						<?php echo date('d.m.Y', strtotime($vacation['startdatum'])); ?> bis 
-						<?php echo date('d.m.Y', strtotime($vacation['enddatum'])); ?> 
+						<?php echo date('d.m.y', strtotime($vacation['startdatum'])); ?> bis 
+						<?php echo date('d.m.y', strtotime($vacation['enddatum'])); ?> 
 						(<?php echo $workdays; ?> Tage)
 					</li>
 				<?php endforeach; ?>

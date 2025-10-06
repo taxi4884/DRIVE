@@ -37,8 +37,8 @@ include __DIR__ . '/../includes/layout.php';
                             <td><?= htmlspecialchars($fahrzeug['Modell']) ?></td>
                             <td><?= htmlspecialchars($fahrzeug['Konzessionsnummer']) ?></td>
                             <td><?= htmlspecialchars($fahrzeug['Typ']) ?></td>
-                            <td><?= htmlspecialchars(date('d.m.Y', strtotime($fahrzeug['HU']))) ?></td>
-                            <td><?= htmlspecialchars(date('d.m.Y', strtotime($fahrzeug['Eichung']))) ?></td>
+                            <td><?= htmlspecialchars(date('d.m.y', strtotime($fahrzeug['HU']))) ?></td>
+                            <td><?= htmlspecialchars(date('d.m.y', strtotime($fahrzeug['Eichung']))) ?></td>
                             <td>
                                 <a href="fahrzeug_bearbeiten.php?id=<?= htmlspecialchars($fahrzeug['FahrzeugID']) ?>" class="btn-sm">Bearbeiten</a>
                             </td>

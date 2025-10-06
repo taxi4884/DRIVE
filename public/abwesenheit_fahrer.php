@@ -173,8 +173,8 @@ include __DIR__ . '/../includes/layout.php';
           <?php foreach ($urlaubAntraege as $antrag): ?>
             <li>
               <?= htmlspecialchars($antrag['nachname'] . ', ' . $antrag['vorname']) ?>:
-              <?= date('d.m.Y', strtotime($antrag['startdatum'])) ?> bis 
-              <?= date('d.m.Y', strtotime($antrag['enddatum'])) ?>
+              <?= date('d.m.y', strtotime($antrag['startdatum'])) ?> bis 
+              <?= date('d.m.y', strtotime($antrag['enddatum'])) ?>
 			  <?= htmlspecialchars($antrag['kommentar']) ?>:
               <button onclick="window.location.href='approve_urlaub.php?id=<?= $antrag['abwesenheit_id'] ?>'">Genehmigen</button>
               <button onclick="window.location.href='reject_urlaub.php?id=<?= $antrag['abwesenheit_id'] ?>'">Ablehnen</button>

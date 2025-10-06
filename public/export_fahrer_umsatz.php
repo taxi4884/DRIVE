@@ -125,8 +125,8 @@ try {
 }
 
 $werktage = workdaysBetween($start_date, $end_date);
-$startDatumFormat = date('d.m.Y', strtotime($start_date));
-$endDatumFormat = date('d.m.Y', strtotime($end_date));
+$startDatumFormat = date('d.m.y', strtotime($start_date));
+$endDatumFormat = date('d.m.y', strtotime($end_date));
 
 // PDF erstellen
 $pdf = new FPDF();
@@ -156,8 +156,8 @@ for ($i = 0; $i < $maxRows; $i++) {
     // Krankheitsdaten
     if (isset($krankDetails[$i])) {
         $detail = $krankDetails[$i];
-        $krankStart = date('d.m.Y', strtotime($detail['start']));
-        $krankEnde = date('d.m.Y', strtotime($detail['ende']));
+        $krankStart = date('d.m.y', strtotime($detail['start']));
+        $krankEnde = date('d.m.y', strtotime($detail['ende']));
         $days = (strtotime($detail['ende']) - strtotime($detail['start'])) / (60 * 60 * 24) + 1;
         $krankText = "{$detail['grund']} ({$krankStart} - {$krankEnde}, {$days} Tage)";
     } else {
@@ -167,8 +167,8 @@ for ($i = 0; $i < $maxRows; $i++) {
     // Urlaubsdaten
     if (isset($urlaubDetails[$i])) {
         $detail = $urlaubDetails[$i];
-        $urlaubStart = date('d.m.Y', strtotime($detail['start']));
-        $urlaubEnde = date('d.m.Y', strtotime($detail['ende']));
+        $urlaubStart = date('d.m.y', strtotime($detail['start']));
+        $urlaubEnde = date('d.m.y', strtotime($detail['ende']));
         $days = (strtotime($detail['ende']) - strtotime($detail['start'])) / (60 * 60 * 24) + 1;
         $urlaubText = "{$detail['grund']} ({$urlaubStart} - {$urlaubEnde}, {$days} Tage)";
     } else {

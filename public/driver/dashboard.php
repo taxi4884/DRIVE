@@ -432,7 +432,7 @@ include __DIR__ . '/../../includes/layout.php';
 				</div>
 				<div class="hinweis-text">
 					<strong>Info:</strong><br>
-					Yannik plant am <strong><?= date('d.m.Y', strtotime($naechsteAbrechnung['Datum'])) ?></strong><br>
+					Yannik plant am <strong><?= date('d.m.y', strtotime($naechsteAbrechnung['Datum'])) ?></strong><br>
 					gegen <strong><?= htmlspecialchars($naechsteAbrechnung['Uhrzeit']) ?> Uhr</strong> zur Abrechnung zu kommen.
 				</div>
 			</div>
@@ -505,7 +505,7 @@ include __DIR__ . '/../../includes/layout.php';
                                 $bargeld = $umsatz - $ausgaben;
                             ?>
                             <tr>
-                                <td data-label="Datum"><?= htmlspecialchars(DateTime::createFromFormat('Y-m-d', $eintrag['Datum'])->format('d.m.Y')) ?></td>
+                                <td data-label="Datum"><?= htmlspecialchars(DateTime::createFromFormat('Y-m-d', $eintrag['Datum'])->format('d.m.y')) ?></td>
                                 <td data-label="Gesamtumsatz"><?= number_format($umsatz, 2, ',', '.') ?> €</td>
                                 <td data-label="Bargeld"><?= number_format($bargeld, 2, ',', '.') ?> €</td>
                                 <td class="actions">
