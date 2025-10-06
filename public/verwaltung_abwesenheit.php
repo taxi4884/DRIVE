@@ -157,9 +157,26 @@ include __DIR__ . '/../includes/layout.php';
       document.getElementById('von_uhrzeit').disabled = !isTimeRange;
       document.getElementById('bis_uhrzeit').disabled = !isTimeRange;
     }
+    function openAbwesenheitModal() {
+      document.getElementById('abwesenheitModal').style.display = 'flex';
+    }
+    function closeAbwesenheitModal() {
+      document.getElementById('abwesenheitModal').style.display = 'none';
+    }
     window.addEventListener('load', updateFormFields);
   </script>
   <style>
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
     .dashboard-table td {
         text-align: center;
         padding: 5px;
@@ -231,7 +248,7 @@ include __DIR__ . '/../includes/layout.php';
         <?php endif; ?>
     <?php endif; ?>
 
-    <button onclick="document.getElementById('abwesenheitModal').style.display='block'">Abwesenheit eintragen</button>
+    <button onclick="openAbwesenheitModal()">Abwesenheit eintragen</button>
 
     <div class="month-navigation">
       <a href="?month=<?= $prevMonth ?>&year=<?= $prevYear ?>">&laquo; Vorheriger Monat</a>
@@ -277,10 +294,10 @@ include __DIR__ . '/../includes/layout.php';
   </main>
 
 	<!-- Modal zur Abwesenheitseintragung -->
-	<div id="abwesenheitModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center;">
-	  <div style="background:#fff; padding:20px; border-radius:10px; width:450px;">
-		<h2>Abwesenheit eintragen</h2>
-		<form action="verwaltung_abwesenheit_eintragen.php" method="post">
+        <div id="abwesenheitModal" class="modal-overlay" style="display:none;">
+          <div style="background:#fff; padding:20px; border-radius:10px; width:450px;">
+                <h2>Abwesenheit eintragen</h2>
+                <form action="verwaltung_abwesenheit_eintragen.php" method="post">
 		  <label for="mitarbeiter_id">Mitarbeiter:</label>
 		  <select name="mitarbeiter_id" required>
 			<?php foreach ($benutzerListe as $benutzer): ?>
@@ -321,11 +338,11 @@ include __DIR__ . '/../includes/layout.php';
 		  <label for="beschreibung">Beschreibung:</label>
 		  <textarea name="beschreibung" rows="3"></textarea><br><br>
 
-		  <button type="submit">Speichern</button>
-		  <button type="button" onclick="document.getElementById('abwesenheitModal').style.display='none'">Abbrechen</button>
-		</form>
-	  </div>
-	</div>
+                  <button type="submit">Speichern</button>
+                  <button type="button" onclick="closeAbwesenheitModal()">Abbrechen</button>
+                </form>
+          </div>
+        </div>
 
 
 </body>
