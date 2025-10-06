@@ -5,7 +5,12 @@ if (!isLoggedIn()) {
     die("Nicht eingeloggt.");
 }
 
-$rollen = array_map('trim', explode(',', $sekundarRolle ?? ''));
+$rollenQuelle = $sekundarRolle ?? '';
+if (is_array($rollenQuelle)) {
+    $rollen = array_map('trim', $rollenQuelle);
+} else {
+    $rollen = array_map('trim', explode(',', (string) $rollenQuelle));
+}
 if (!in_array('Verwaltung', $rollen, true)) {
     die("Keine Berechtigung.");
 }
