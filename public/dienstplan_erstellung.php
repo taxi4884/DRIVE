@@ -23,7 +23,7 @@ setlocale(LC_TIME, 'de_DE.UTF-8');
 $currentMonthName = date('F Y', strtotime($start_date));
 
 // Mitarbeiter abrufen
-$stmt = $pdo->query("SELECT mitarbeiter_id, vorname, nachname FROM mitarbeiter_zentrale ORDER BY nachname ASC");
+$stmt = $pdo->query("SELECT mitarbeiter_id, vorname, nachname FROM mitarbeiter_zentrale WHERE status = 'Aktiv' ORDER BY nachname ASC");
 $mitarbeiterListe = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Schichten abrufen

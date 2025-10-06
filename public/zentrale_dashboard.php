@@ -17,7 +17,7 @@ $start_date = "$currentYear-$currentMonth-01";
 $end_date = date('Y-m-t', strtotime($start_date));
 
 // Mitarbeiter abrufen, sortiert nach Nachnamen
-$stmt = $pdo->prepare("SELECT vorname, nachname, mitarbeiter_id FROM mitarbeiter_zentrale ORDER BY nachname ASC");
+$stmt = $pdo->prepare("SELECT vorname, nachname, mitarbeiter_id FROM mitarbeiter_zentrale WHERE status = 'Aktiv' ORDER BY nachname ASC");
 $stmt->execute();
 $mitarbeiter = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -70,6 +70,7 @@ $birthdaysStmt = $pdo->prepare("
     SELECT vorname, nachname, geburtsdatum, DATE_FORMAT(geburtsdatum, '%d.%m.') AS geburtstag
     FROM mitarbeiter_zentrale
     WHERE geburtsdatum IS NOT NULL
+      AND status = 'Aktiv'
     ORDER BY MONTH(geburtsdatum), DAY(geburtsdatum)
 ");
 $birthdaysStmt->execute();
@@ -96,6 +97,7 @@ $upcomingVacationsStmt = $pdo->prepare("
     JOIN mitarbeiter_zentrale mz ON az.mitarbeiter_id = mz.mitarbeiter_id
     WHERE az.typ = 'Urlaub'
     AND az.startdatum BETWEEN CURDATE() AND CURDATE() + INTERVAL 3 MONTH
+    AND mz.status = 'Aktiv'
     ORDER BY mz.mitarbeiter_id, az.startdatum
 ");
 $upcomingVacationsStmt->execute();
@@ -159,6 +161,7 @@ $unreadStmt = $pdo->prepare("
     WHERE ars.BenutzerID = :user_id
       AND ars.read_status = 0
       AND az.typ = 'Krank'
+      AND mz.status = 'Aktiv'
 ");
 
 // Hier nutze den Session-Key 'user_id':
@@ -267,9 +270,9 @@ include __DIR__ . '/../includes/layout.php';
 			</thead>
 			<tbody>
 				<?php if (!empty($mitarbeiter)): ?>
-					<?php foreach ($mitarbeiter as $person): ?>
-						<tr>
-							<td><?php echo htmlspecialchars($person['nachname'] . ', ' . $person['vorname']); ?></td>
+                                    <?php foreach ($mitarbeiter as $person): ?>
+                                                <tr class="mitarbeiter-row" data-mitarbeiter-id="<?= htmlspecialchars($person['mitarbeiter_id']) ?>">
+                                                        <td><?php echo htmlspecialchars($person['nachname'] . ', ' . $person['vorname']); ?></td>
 							<?php foreach ($dates as $date): ?>
 								<?php
 								// Standardklasse und Text
@@ -341,11 +344,26 @@ include __DIR__ . '/../includes/layout.php';
 				<?php endforeach; ?>
 			</ul>
 		</section>
-	</aside>
+        </aside>
+        <div class="modal" id="mitarbeiterEditModal">
+                <div class="modal-content">
+                        <span class="close" role="button" aria-label="Modal schließen" onclick="closeModal('mitarbeiterEditModal')">&times;</span>
+                        <h2>Mitarbeiter bearbeiten</h2>
+                        <div id="mitarbeiterFormMessages" class="alert d-none" role="alert"></div>
+                        <form id="mitarbeiterEditForm">
+                                <input type="hidden" name="mitarbeiter_id" id="mitarbeiterEditId">
+                                <div id="mitarbeiterFormFields" class="row g-3"></div>
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                        <button type="button" class="btn btn-secondary" onclick="closeModal('mitarbeiterEditModal')">Abbrechen</button>
+                                        <button type="submit" class="btn btn-primary">Speichern</button>
+                                </div>
+                        </form>
+                </div>
+        </div>
         <?php include 'modals/add_abwesenheit_modal.php'; ?>
-	<script>
-		function markAsRead(abwesenheitId) {
-			fetch("mark_as_read.php?abwesenheit_id=" + abwesenheitId)
+        <script>
+                function markAsRead(abwesenheitId) {
+                        fetch("mark_as_read.php?abwesenheit_id=" + abwesenheitId)
 				.then(response => response.text())
 				.then(data => {
 					console.log("Antwort von mark_as_read:", data); // <-- zum Debuggen
@@ -355,9 +373,11 @@ include __DIR__ . '/../includes/layout.php';
 						alert("Fehler beim Aktualisieren des Lesestatus: " + data);
 					}
 				});
-		}
-	</script>
-	<script>
+                }
+        </script>
+        <?php $mitarbeiterScriptVersion = filemtime(__DIR__ . '/js/mitarbeiter_zentrale.js'); ?>
+        <script src="js/mitarbeiter_zentrale.js?v=<?= $mitarbeiterScriptVersion; ?>" defer></script>
+        <script>
 	document.querySelector('.burger-menu').addEventListener('click', () => {
 	document.querySelector('.nav-links').classList.toggle('active');
 	});

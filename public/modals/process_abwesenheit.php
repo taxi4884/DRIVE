@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_abwesenheit'])) {
             SELECT vorname, nachname
             FROM mitarbeiter_zentrale
             WHERE mitarbeiter_id = ?
+              AND status = 'Aktiv'
             LIMIT 1
         ");
         $stmtMitarbeiter->execute([$mitarbeiter_id]);

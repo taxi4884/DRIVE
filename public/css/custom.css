@@ -546,6 +546,15 @@ input:focus, select:focus {
   color: var(--color-primary-dark);
 }
 
+.dashboard-table tbody tr.mitarbeiter-row {
+  cursor: pointer;
+  transition: background-color var(--transition-speed, 0.2s) ease-in-out;
+}
+
+.dashboard-table tbody tr.mitarbeiter-row:hover {
+  background-color: rgba(13, 110, 253, 0.08);
+}
+
 /*********************************************
  * SIDEBAR
  *********************************************/
