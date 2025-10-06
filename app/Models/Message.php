@@ -71,6 +71,25 @@ class Message
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public static function findWithSender(int $messageId): ?array
+    {
+        global $pdo;
+        $stmt = $pdo->prepare('
+            SELECT m.id, m.subject, m.body, m.created_at, m.read_at,
+                   m.sender_id, m.recipient_id,
+                   sender.Name AS sender_name,
+                   recipient.Name AS recipient_name
+            FROM messages m
+            JOIN Benutzer sender ON sender.BenutzerID = m.sender_id
+            JOIN Benutzer recipient ON recipient.BenutzerID = m.recipient_id
+            WHERE m.id = ?
+        ');
+        $stmt->execute([$messageId]);
+        $message = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $message !== false ? $message : null;
+    }
+
     public static function markConversationAsRead(int $userId, int $otherId): void
     {
         global $pdo;

@@ -20,9 +20,18 @@ if ($action === 'store') {
     $subject = trim($_POST['subject'] ?? '');
     $body = trim($_POST['body'] ?? '');
 
+    $isAjax = false;
+    $acceptHeader = $_SERVER['HTTP_ACCEPT'] ?? '';
+    if (stripos($acceptHeader, 'application/json') !== false) {
+        $isAjax = true;
+    }
+    if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        $isAjax = true;
+    }
+
+    $error = null;
     if ($recipientId === 0 || $subject === '' || $body === '') {
-        header('Location: /postfach.php?action=compose');
-        exit;
+        $error = 'Empfänger, Betreff und Nachricht dürfen nicht leer sein.';
     }
 
     global $pdo;
@@ -32,13 +41,33 @@ if ($action === 'store') {
         $check = $pdo->prepare('SELECT 1 FROM message_permissions WHERE driver_id = ? AND recipient_id = ?');
         $check->execute([$senderId, $recipientId]);
         if (!$check->fetchColumn()) {
-            header('Location: /postfach.php?action=compose');
+            $error = 'Sie dürfen diesem Empfänger keine Nachricht senden.';
+        }
+    }
+
+    if ($error !== null) {
+        if ($isAjax) {
+            http_response_code(422);
+            header('Content-Type: application/json');
+            echo json_encode(['error' => $error]);
             exit;
         }
+
+        header('Location: /postfach.php?action=compose');
+        exit;
     }
 
     $stmt = $pdo->prepare('INSERT INTO messages (sender_id, recipient_id, subject, body) VALUES (?, ?, ?, ?)');
     $stmt->execute([$senderId, $recipientId, $subject, $body]);
+
+    if ($isAjax) {
+        $messageId = (int) $pdo->lastInsertId();
+        $message = Message::findWithSender($messageId);
+
+        header('Content-Type: application/json');
+        echo json_encode($message ?? ['success' => true]);
+        exit;
+    }
 
     header('Location: /postfach.php?success=1');
     exit;

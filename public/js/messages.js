@@ -138,10 +138,24 @@ document.addEventListener('DOMContentLoaded', function () {
       var formData = new FormData(chatForm);
       fetch(chatForm.action, {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
       })
-        .then(function (res) { return res.json(); })
+        .then(function (res) {
+          if (!res.ok) {
+            throw new Error('Fehler beim Senden der Nachricht (Status ' + res.status + ')');
+          }
+          return res.json();
+        })
         .then(function (msg) {
+          if (msg && msg.error) {
+            console.error(msg.error);
+            return;
+          }
+
           if (msg && msg.sender_name) {
             var newMessageHtml = '<div class="message sent">';
             newMessageHtml += '<p class="message-header"><strong>' + escapeHtml(msg.sender_name) + '</strong> am ' + escapeHtml(msg.created_at) + '</p>';
@@ -157,7 +171,9 @@ document.addEventListener('DOMContentLoaded', function () {
           }
           bodyInput.value = '';
         })
-        .catch(function (err) { console.error(err); });
+        .catch(function (err) {
+          console.error(err);
+        });
     });
   }
 });
