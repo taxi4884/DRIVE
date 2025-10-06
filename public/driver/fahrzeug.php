@@ -171,26 +171,70 @@ include __DIR__ . '/../../includes/layout.php';
 			padding: 0;
 		}
 
-		.wartung-container ul li {
-			margin-bottom: 8px;
-			padding-left: 10px;
-		}
+                .wartung-container ul li {
+                        margin-bottom: 8px;
+                        padding-left: 10px;
+                }
 
-		p {
-			color: #666;
-		}
+                .inspection-form {
+                        margin-top: 15px;
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                        gap: 16px;
+                        align-items: end;
+                }
+
+                .inspection-form .form-group {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+                }
+
+                .inspection-form .button-group {
+                        display: flex;
+                        gap: 12px;
+                        flex-wrap: wrap;
+                        order: -1;
+                }
+
+                .inspection-form button {
+                        background: #ff9800;
+                        color: white;
+                        padding: 10px 20px;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        transition: background 0.2s ease;
+                }
+
+                .inspection-form button:hover {
+                        background: #fb8c00;
+                }
+
+                p {
+                        color: #666;
+                }
 
 		/* 👇 Mobile-Ansicht */
-		@media (max-width: 768px) {
-			.fahrzeug-tabelle thead {
-				display: none; /* Keine Tabellenüberschrift auf Handy */
-			}
+                @media (max-width: 768px) {
+                        .fahrzeug-tabelle thead {
+                                display: none; /* Keine Tabellenüberschrift auf Handy */
+                        }
 
-			.fahrzeug-tabelle, 
-			.fahrzeug-tabelle tbody, 
-			.fahrzeug-tabelle tr, 
-			.fahrzeug-tabelle td {
-				display: block;
+                        .inspection-form {
+                                grid-template-columns: 1fr;
+                        }
+
+                        .inspection-form .button-group {
+                                order: 0;
+                                justify-content: flex-start;
+                        }
+
+                        .fahrzeug-tabelle,
+                        .fahrzeug-tabelle tbody,
+                        .fahrzeug-tabelle tr,
+                        .fahrzeug-tabelle td {
+                                display: block;
 				width: 100%;
 			}
 
@@ -267,23 +311,31 @@ include __DIR__ . '/../../includes/layout.php';
                                     <?php endif; ?>
 
                                     <!-- Formular zur Inspektionsmeldung -->
-                                    <form method="POST" style="margin-top: 15px;">
+                                    <form method="POST" class="inspection-form">
                                         <input type="hidden" name="fahrzeug_id" value="<?= htmlspecialchars($fahrzeug['FahrzeugID']) ?>">
                                         <input type="hidden" name="konzession" value="<?= htmlspecialchars($fahrzeug['Konzessionsnummer']) ?>">
                                         <input type="hidden" name="kennzeichen" value="<?= htmlspecialchars($fahrzeug['Kennzeichen']) ?>">
 
-                                        <label>Anzeigetext:</label>
-                                        <input type="text" name="meldung" placeholder="z. B. Inspektion oder Ölservice" required>
+                                        <div class="button-group">
+                                            <button type="submit" name="inspektion_melden">
+                                                🔧 Inspektion melden
+                                            </button>
+                                        </div>
 
-                                        <label>Restkilometer:</label>
-                                        <input type="number" name="rest_km" placeholder="z. B. 1200" required>
+                                        <div class="form-group">
+                                            <label for="meldung-<?= htmlspecialchars($fahrzeug['FahrzeugID']) ?>">Anzeigetext:</label>
+                                            <input id="meldung-<?= htmlspecialchars($fahrzeug['FahrzeugID']) ?>" type="text" name="meldung" placeholder="z. B. Inspektion oder Ölservice" required>
+                                        </div>
 
-                                        <label>Gesamtkilometerstand:</label>
-                                        <input type="number" name="gesamt_km" placeholder="z. B. 174500" required>
+                                        <div class="form-group">
+                                            <label for="rest-km-<?= htmlspecialchars($fahrzeug['FahrzeugID']) ?>">Restkilometer:</label>
+                                            <input id="rest-km-<?= htmlspecialchars($fahrzeug['FahrzeugID']) ?>" type="number" name="rest_km" placeholder="z. B. 1200" required>
+                                        </div>
 
-                                        <button type="submit" name="inspektion_melden" style="background: #ff9800; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
-                                            🔧 Inspektion melden
-                                        </button>
+                                        <div class="form-group">
+                                            <label for="gesamt-km-<?= htmlspecialchars($fahrzeug['FahrzeugID']) ?>">Gesamtkilometerstand:</label>
+                                            <input id="gesamt-km-<?= htmlspecialchars($fahrzeug['FahrzeugID']) ?>" type="number" name="gesamt_km" placeholder="z. B. 174500" required>
+                                        </div>
                                     </form>
                                 </div>
                             </td>
