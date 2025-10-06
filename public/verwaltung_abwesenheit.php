@@ -122,7 +122,7 @@ function getAbwesenheitsKuerzel($typ) {
         case 'Urlaub':
             return 'UR';
         case 'Kommt später':
-            return 'LS';
+            return 'KS';
         case 'Geht eher':
             return 'GE';
         case 'Unterbrechung':
