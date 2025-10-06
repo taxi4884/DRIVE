@@ -113,12 +113,12 @@ $menuEntries = [
     [
         'label' => 'Zentrale',
         'roles' => ['Zentrale'],
-        'icon' => 'bi-building',
+        'icon' => 'bi-telephone',
         'children' => [
             [
                 'label' => 'Zentralendashboard',
                 'url' => 'zentrale_dashboard.php',
-                'roles' => ['Admin', 'Mitarbeiter'],
+                'roles' => ['Zentrale'],
                 'icon' => 'bi-speedometer',
             ],
             [
