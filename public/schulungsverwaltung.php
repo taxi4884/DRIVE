@@ -379,8 +379,8 @@ include __DIR__ . '/../includes/layout.php';
         <h1>Schulungsverwaltung</h1>
 		
 			<!-- Nachricht aus der Session anzeigen -->
-			<?php if (isset($_SESSION['message'])): ?>
-				<div class="alert alert-success text-center">
+                        <?php if (isset($_SESSION['message'])): ?>
+                                <div class="alert alert-success text-center fade show" data-session-message>
 					<?php echo $_SESSION['message']; ?>
 				</div>
 				<?php unset($_SESSION['message']); ?>
@@ -569,6 +569,22 @@ include __DIR__ . '/../includes/layout.php';
             var modalInput = deleteModal.querySelector('#delete_id');
             modalInput.value = deleteId;
         });
+
+        // Session-Meldung nach 3 Sekunden automatisch ausblenden
+        var sessionAlert = document.querySelector('[data-session-message]');
+        if (sessionAlert) {
+            sessionAlert.classList.add('fade');
+            if (!sessionAlert.classList.contains('show')) {
+                sessionAlert.classList.add('show');
+            }
+
+            setTimeout(function () {
+                sessionAlert.classList.remove('show');
+                sessionAlert.addEventListener('transitionend', function () {
+                    sessionAlert.remove();
+                }, { once: true });
+            }, 3000);
+        }
     </script>
 
 </body>
