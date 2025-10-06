@@ -172,12 +172,6 @@ $menuEntries = [
                 'icon' => 'bi-people',
             ],
             [
-                'label' => 'Schulung',
-                'url' => 'schulungsverwaltung.php',
-                'roles' => ['Admin'],
-                'icon' => 'bi-journal-text',
-            ],
-            [
                 'label' => 'Nachrichtenrechte',
                 'url' => 'message_permissions.php',
                 'roles' => ['Admin'],
