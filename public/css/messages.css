@@ -3,6 +3,31 @@
     height: 80vh;
 }
 
+.message-form {
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.message-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.message-form select,
+.message-form input[type="text"],
+.message-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.message-form textarea {
+    min-height: 7.5rem;
+    resize: vertical;
+}
+
 .messages-container .conversations {
     flex: 0 0 30%;
     max-width: 300px;
