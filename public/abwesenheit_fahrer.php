@@ -237,11 +237,10 @@ include __DIR__ . '/../includes/layout.php';
 								}
 							} elseif ($absence['abwesenheitsart'] === 'Urlaub') {
 								// Für Urlaub: Statusabhängige Darstellung
-								if ($absence['status'] === 'beantragt') {
-									$cellClass = 'absent-vacation-beantragt';
-									$cellText = 'Ub';
-									$titleText = $absence['grund'] . 
-												 (!empty($absence['kommentar']) ? ': ' . $absence['kommentar'] : '');
+                                                                if ($absence['status'] === 'beantragt') {
+                                                                        $cellClass = 'absent-vacation-beantragt';
+                                                                        $cellText = 'Ub';
+                                                                        $titleText = $absence['grund'];
 								} elseif ($absence['status'] === 'genehmigt') {
 									if ($absence['grund'] === 'unbezahlter Urlaub') {
 										$cellClass = 'absent-vacation-unbezahlt';
@@ -257,8 +256,11 @@ include __DIR__ . '/../includes/layout.php';
 									$cellText = 'Ua';
 									$titleText = $absence['grund'];
 								}
-							}
-							break; // Schleife beenden, sobald eine passende Abwesenheit gefunden wurde
+                                                        }
+                                                        if (!empty($absence['kommentar'])) {
+                                                                $titleText .= (!empty($titleText) ? ': ' : '') . $absence['kommentar'];
+                                                        }
+                                                        break; // Schleife beenden, sobald eine passende Abwesenheit gefunden wurde
 						}
 					}
 					?>
