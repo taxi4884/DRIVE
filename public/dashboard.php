@@ -2,6 +2,20 @@
 // Include authentication and database connection
 require_once '../includes/bootstrap.php';
 
+if (!function_exists('tableHasColumn')) {
+    /**
+     * Prüft, ob eine bestimmte Spalte in einer Tabelle existiert.
+     */
+    function tableHasColumn(PDO $pdo, string $table, string $column): bool
+    {
+        $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+        $stmt = $pdo->prepare("SHOW COLUMNS FROM `{$table}` LIKE :column");
+        $stmt->execute(['column' => $column]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
+    }
+}
+
 // Get user information for greeting
 $user_name = $_SESSION['user_name'] ?? 'Gast';
 
@@ -143,6 +157,7 @@ $totalActiveDrivers = array_sum(array_map('count', $activeDriversByCompany));
 $fahrer_birthdays = [];
 $zentrale_birthdays = [];
 $birthdaysError = null;
+$hasZentraleBirthdateColumn = tableHasColumn($pdo, 'mitarbeiter_zentrale', 'geburtsdatum');
 try {
     $stmt_fahrer = $pdo->prepare("SELECT CONCAT(Vorname, ' ', Nachname) AS name FROM Fahrer WHERE DATE_FORMAT(geburtsdatum, '%m-%d') = DATE_FORMAT(NOW(), '%m-%d')");
     $stmt_fahrer->execute();
@@ -151,12 +166,23 @@ try {
     $birthdaysError = $e->getMessage();
 }
 
-try {
-    $stmt_zentrale = $pdo->prepare("SELECT CONCAT(Vorname, ' ', Nachname) AS name FROM mitarbeiter_zentrale WHERE DATE_FORMAT(geburtsdatum, '%m-%d') = DATE_FORMAT(NOW(), '%m-%d') AND status = 'Aktiv'");
-    $stmt_zentrale->execute();
-    $zentrale_birthdays = $stmt_zentrale->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $birthdaysError = $birthdaysError ? $birthdaysError . ' / ' . $e->getMessage() : $e->getMessage();
+if ($hasZentraleBirthdateColumn) {
+    try {
+        $stmt_zentrale = $pdo->prepare(
+            "SELECT CONCAT(Vorname, ' ', Nachname) AS name
+             FROM mitarbeiter_zentrale
+             WHERE DATE_FORMAT(geburtsdatum, '%m-%d') = DATE_FORMAT(NOW(), '%m-%d')
+               AND status = 'Aktiv'"
+        );
+        $stmt_zentrale->execute();
+        $zentrale_birthdays = $stmt_zentrale->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        $birthdaysError = $birthdaysError ? $birthdaysError . ' / ' . $e->getMessage() : $e->getMessage();
+    }
+} else {
+    $birthdaysError = $birthdaysError
+        ? $birthdaysError . ' / Spalte "geburtsdatum" existiert nicht in mitarbeiter_zentrale.'
+        : 'Spalte "geburtsdatum" existiert nicht in mitarbeiter_zentrale.';
 }
 
 $birthdays      = array_merge($fahrer_birthdays, $zentrale_birthdays);

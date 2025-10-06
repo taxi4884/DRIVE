@@ -5,6 +5,20 @@ require_once '../includes/bootstrap.php';
 require_once '../includes/date_utils.php';
 require_once 'modals/process_abwesenheit.php';
 
+if (!function_exists('tableHasColumn')) {
+    /**
+     * Prüft, ob eine bestimmte Spalte in einer Tabelle existiert.
+     */
+    function tableHasColumn(PDO $pdo, string $table, string $column): bool
+    {
+        $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+        $stmt = $pdo->prepare("SHOW COLUMNS FROM `{$table}` LIKE :column");
+        $stmt->execute(['column' => $column]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
+    }
+}
+
 // PHP-Fehleranzeige aktivieren
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -65,16 +79,27 @@ foreach ($dienstplan as $entry) {
     $dienstplanMap[$entry['mitarbeiter_id']][$entry['datum']] = $entry['schicht_name'];
 }
 
-// Geburtsdatum abfragen
-$birthdaysStmt = $pdo->prepare("
-    SELECT vorname, nachname, geburtsdatum, DATE_FORMAT(geburtsdatum, '%d.%m.') AS geburtstag
-    FROM mitarbeiter_zentrale
-    WHERE geburtsdatum IS NOT NULL
-      AND status = 'Aktiv'
-    ORDER BY MONTH(geburtsdatum), DAY(geburtsdatum)
-");
-$birthdaysStmt->execute();
-$birthdays = $birthdaysStmt->fetchAll(PDO::FETCH_ASSOC);
+$hasZentraleBirthdateColumn = tableHasColumn($pdo, 'mitarbeiter_zentrale', 'geburtsdatum');
+$birthdays = [];
+$birthdaysError = null;
+
+if ($hasZentraleBirthdateColumn) {
+    try {
+        $birthdaysStmt = $pdo->prepare("
+            SELECT vorname, nachname, geburtsdatum, DATE_FORMAT(geburtsdatum, '%d.%m.') AS geburtstag
+            FROM mitarbeiter_zentrale
+            WHERE geburtsdatum IS NOT NULL
+              AND status = 'Aktiv'
+            ORDER BY MONTH(geburtsdatum), DAY(geburtsdatum)
+        ");
+        $birthdaysStmt->execute();
+        $birthdays = $birthdaysStmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        $birthdaysError = $e->getMessage();
+    }
+} else {
+    $birthdaysError = 'Spalte "geburtsdatum" existiert nicht in mitarbeiter_zentrale.';
+}
 
 function calculateAge($birthdate, $onDate) {
     $birthDate = new DateTime($birthdate);
@@ -82,17 +107,23 @@ function calculateAge($birthdate, $onDate) {
     return $referenceDate->diff($birthDate)->y;
 }
 
-foreach ($birthdays as &$birthday) {
-    $currentYear = date('Y');
-    // Nächstes Geburtstagsdatum im aktuellen Jahr berechnen
-    $birthdayDateThisYear = date("$currentYear-m-d", strtotime($birthday['geburtsdatum']));
-    $birthday['new_age'] = calculateAge($birthday['geburtsdatum'], $birthdayDateThisYear);
+if (empty($birthdaysError) && !empty($birthdays)) {
+    foreach ($birthdays as &$birthday) {
+        $currentYear = date('Y');
+        // Nächstes Geburtstagsdatum im aktuellen Jahr berechnen
+        $birthdayDateThisYear = date("$currentYear-m-d", strtotime($birthday['geburtsdatum']));
+        $birthday['new_age'] = calculateAge($birthday['geburtsdatum'], $birthdayDateThisYear);
+    }
+    unset($birthday); // Referenz zurücksetzen
 }
-unset($birthday); // Referenz zurücksetzen
 
 // Urlaube abfragen und gruppieren
+$birthdateSelect = $hasZentraleBirthdateColumn
+    ? 'mz.geburtsdatum AS geburtsdatum'
+    : 'NULL AS geburtsdatum';
+
 $upcomingVacationsStmt = $pdo->prepare("
-    SELECT mz.mitarbeiter_id, mz.vorname, mz.nachname, mz.geburtsdatum, az.startdatum, az.enddatum
+    SELECT mz.mitarbeiter_id, mz.vorname, mz.nachname, {$birthdateSelect}, az.startdatum, az.enddatum
     FROM abwesenheiten_zentrale az
     JOIN mitarbeiter_zentrale mz ON az.mitarbeiter_id = mz.mitarbeiter_id
     WHERE az.typ = 'Urlaub'
@@ -332,18 +363,24 @@ include __DIR__ . '/../includes/layout.php';
 				<?php endforeach; ?>
 			</ul>
 		</section>
-		<section>
-			<h3>Geburtstagsliste</h3>
-			<ul>
-				<?php foreach ($birthdays as $birthday): ?>
-					<li>
-						<?php echo htmlspecialchars($birthday['vorname'] . ' ' . $birthday['nachname']); ?>: 
-						<?php echo $birthday['geburtstag']; ?>
-						(<?php echo $birthday['new_age']; ?> Jahre)
-					</li>
-				<?php endforeach; ?>
-			</ul>
-		</section>
+                <section>
+                        <h3>Geburtstagsliste</h3>
+                        <ul>
+                                <?php if ($birthdaysError): ?>
+                                        <li><?php echo htmlspecialchars($birthdaysError); ?></li>
+                                <?php elseif (empty($birthdays)): ?>
+                                        <li>Keine Geburtstage vorhanden.</li>
+                                <?php else: ?>
+                                        <?php foreach ($birthdays as $birthday): ?>
+                                                <li>
+                                                        <?php echo htmlspecialchars($birthday['vorname'] . ' ' . $birthday['nachname']); ?>:
+                                                        <?php echo $birthday['geburtstag']; ?>
+                                                        (<?php echo $birthday['new_age']; ?> Jahre)
+                                                </li>
+                                        <?php endforeach; ?>
+                                <?php endif; ?>
+                        </ul>
+                </section>
         </aside>
         <div class="modal" id="mitarbeiterEditModal">
                 <div class="modal-content">

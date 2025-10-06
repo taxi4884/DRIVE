@@ -1105,7 +1105,10 @@ button:hover {
  * DASHBOARD REDESIGN
  *********************************************/
 .dashboard-container {
-    max-width: 1200px;
+    max-width: 100%;
+    width: 100%;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
 }
 
 .dashboard-hero {
