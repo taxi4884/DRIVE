@@ -31,6 +31,7 @@ try {
         JOIN mitarbeiter_zentrale m ON dp.mitarbeiter_id = m.mitarbeiter_id
         JOIN schichten s ON dp.schicht_id = s.schicht_id
         WHERE dp.datum = :heute
+        AND m.status = 'Aktiv'
         AND NOT EXISTS (
             SELECT 1 
             FROM abwesenheiten_zentrale a
@@ -53,6 +54,7 @@ try {
         JOIN mitarbeiter_zentrale m ON a.mitarbeiter_id = m.mitarbeiter_id
         WHERE :heute BETWEEN a.startdatum AND a.enddatum
         AND a.typ = 'Krank'
+        AND m.status = 'Aktiv'
         AND NOT EXISTS (
             SELECT 1 
             FROM dienstplan dp
@@ -75,6 +77,7 @@ try {
         JOIN mitarbeiter_zentrale m ON dp.mitarbeiter_id = m.mitarbeiter_id
         JOIN schichten s ON dp.schicht_id = s.schicht_id
         WHERE dp.datum BETWEEN :monat_start AND :monat_ende
+        AND m.status = 'Aktiv'
         AND NOT EXISTS (
             SELECT 1 
             FROM abwesenheiten_zentrale a
@@ -99,6 +102,7 @@ try {
         JOIN mitarbeiter_zentrale m ON dp.mitarbeiter_id = m.mitarbeiter_id
         JOIN schichten s ON dp.schicht_id = s.schicht_id
         WHERE dp.datum BETWEEN :monat_start AND :monat_ende
+        AND m.status = 'Aktiv'
         AND NOT EXISTS (
             SELECT 1 
             FROM abwesenheiten_zentrale a
@@ -121,6 +125,7 @@ try {
         JOIN mitarbeiter_zentrale m ON a.mitarbeiter_id = m.mitarbeiter_id
         WHERE a.startdatum BETWEEN :monat_start AND :monat_ende
         AND a.typ = 'Urlaub'
+        AND m.status = 'Aktiv'
     ");
     $stmt->execute(['monat_start' => $aktuellerMonatStart, 'monat_ende' => $aktuellerMonatEnde]);
     $urlaubeAktuellerMonat = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -136,6 +141,7 @@ try {
         JOIN mitarbeiter_zentrale m ON a.mitarbeiter_id = m.mitarbeiter_id
         WHERE a.startdatum BETWEEN :monat_start AND :monat_ende
         AND a.typ = 'Urlaub'
+        AND m.status = 'Aktiv'
     ");
     $stmt->execute(['monat_start' => $naechsterMonatStart, 'monat_ende' => $naechsterMonatEnde]);
     $urlaubeNaechsterMonat = $stmt->fetchAll(PDO::FETCH_ASSOC);

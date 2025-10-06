@@ -5,7 +5,7 @@ require_once '../includes/db.php'; // Datenbankverbindung
 
 // Mitarbeiter abrufen
 try {
-    $stmtMitarbeiter = $pdo->query("SELECT mitarbeiter_id, CONCAT(vorname, ' ', nachname) AS name FROM mitarbeiter_zentrale ORDER BY nachname ASC");
+    $stmtMitarbeiter = $pdo->query("SELECT mitarbeiter_id, CONCAT(vorname, ' ', nachname) AS name FROM mitarbeiter_zentrale WHERE status = 'Aktiv' ORDER BY nachname ASC");
     $mitarbeiter = $stmtMitarbeiter->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die('Fehler beim Abrufen der Mitarbeiter: ' . $e->getMessage());

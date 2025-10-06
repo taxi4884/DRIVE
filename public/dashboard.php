@@ -54,7 +54,7 @@ $start_date = date('Y-m-d', strtotime('+1 day'));
 $end_date = date('Y-m-d', strtotime('+6 days'));
 
 // Mitarbeiter abrufen
-$stmt = $pdo->prepare("SELECT vorname, nachname, mitarbeiter_id FROM mitarbeiter_zentrale ORDER BY nachname ASC");
+$stmt = $pdo->prepare("SELECT vorname, nachname, mitarbeiter_id FROM mitarbeiter_zentrale WHERE status = 'Aktiv' ORDER BY nachname ASC");
 $stmt->execute();
 $mitarbeiter = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -176,7 +176,7 @@ include '../includes/layout.php';
 
                         try {
                             // Mitarbeiter-Zentrale-Geburtstage
-                            $stmt_zentrale = $pdo->prepare("SELECT CONCAT(Vorname, ' ', Nachname) AS name FROM mitarbeiter_zentrale WHERE DATE_FORMAT(geburtsdatum, '%m-%d') = DATE_FORMAT(NOW(), '%m-%d')");
+                            $stmt_zentrale = $pdo->prepare("SELECT CONCAT(Vorname, ' ', Nachname) AS name FROM mitarbeiter_zentrale WHERE DATE_FORMAT(geburtsdatum, '%m-%d') = DATE_FORMAT(NOW(), '%m-%d') AND status = 'Aktiv'");
                             $stmt_zentrale->execute();
                             $zentrale_birthdays = $stmt_zentrale->fetchAll(PDO::FETCH_ASSOC);
                         } catch (PDOException $e) {
@@ -264,10 +264,11 @@ include '../includes/layout.php';
                             <?php
                             try {
                                 $stmt_zentrale_absences = $pdo->prepare(
-                                    "SELECT CONCAT(mz.Vorname, ' ', mz.Nachname) AS name, az.typ, DATE_FORMAT(az.startdatum, '%d.%m.%Y') AS startdatum, DATE_FORMAT(az.enddatum, '%d.%m.%Y') AS enddatum 
-                                     FROM abwesenheiten_zentrale az 
-                                     JOIN mitarbeiter_zentrale mz ON az.mitarbeiter_id = mz.mitarbeiter_id 
-                                     WHERE CURDATE() BETWEEN az.startdatum AND az.enddatum"
+                                    "SELECT CONCAT(mz.Vorname, ' ', mz.Nachname) AS name, az.typ, DATE_FORMAT(az.startdatum, '%d.%m.%Y') AS startdatum, DATE_FORMAT(az.enddatum, '%d.%m.%Y') AS enddatum
+                                     FROM abwesenheiten_zentrale az
+                                     JOIN mitarbeiter_zentrale mz ON az.mitarbeiter_id = mz.mitarbeiter_id
+                                     WHERE CURDATE() BETWEEN az.startdatum AND az.enddatum
+                                       AND mz.status = 'Aktiv'"
                                 );
                                 $stmt_zentrale_absences->execute();
                                 $zentrale_absences = $stmt_zentrale_absences->fetchAll(PDO::FETCH_ASSOC);
@@ -373,13 +374,14 @@ include '../includes/layout.php';
 					<ul>
 						<?php
 						try {
-							$stmt_today = $pdo->prepare("
-								SELECT CONCAT(mz.vorname, ' ', mz.nachname) AS name, s.name AS schicht
-								FROM dienstplan d
-								JOIN mitarbeiter_zentrale mz ON d.mitarbeiter_id = mz.mitarbeiter_id
-								JOIN schichten s ON d.schicht_id = s.schicht_id
-								WHERE DATE(d.datum) = CURDATE()
-							");
+                                                        $stmt_today = $pdo->prepare("
+                                                                SELECT CONCAT(mz.vorname, ' ', mz.nachname) AS name, s.name AS schicht
+                                                                FROM dienstplan d
+                                                                JOIN mitarbeiter_zentrale mz ON d.mitarbeiter_id = mz.mitarbeiter_id
+                                                                JOIN schichten s ON d.schicht_id = s.schicht_id
+                                                                WHERE DATE(d.datum) = CURDATE()
+                                                                  AND mz.status = 'Aktiv'
+                                                        ");
 							$stmt_today->execute();
 							$heutige_schicht = $stmt_today->fetchAll(PDO::FETCH_ASSOC);
 
