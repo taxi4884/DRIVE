@@ -6,116 +6,177 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 if (!isLoggedIn()) {
-    header("Location: index.php");
+    header('Location: index.php');
     exit();
 }
 
 $error = '';
 $success = '';
 
-// Fahrer-ID aus der URL abrufen
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    header("Location: fahrer.php");
-    exit();
+/**
+ * Holt eine einzelne Fahrer-Datensatzzeile.
+ */
+function fetchDriver(PDO $pdo, int $fahrerId): ?array
+{
+    $stmt = $pdo->prepare('SELECT * FROM Fahrer WHERE FahrerID = ?');
+    $stmt->execute([$fahrerId]);
+
+    $fahrer = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $fahrer ?: null;
 }
 
-$fahrer_id = $_GET['id'];
+/**
+ * Holt Abwesenheiten eines Fahrers nach Art.
+ */
+function fetchAbwesenheiten(PDO $pdo, int $fahrerId, string $art): array
+{
+    $stmt = $pdo->prepare(
+        "SELECT startdatum, enddatum, grund FROM FahrerAbwesenheiten WHERE FahrerID = ? AND abwesenheitsart = ? ORDER BY startdatum DESC"
+    );
+    $stmt->execute([$fahrerId, $art]);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/**
+ * Zählt die Werktage (Montag-Freitag) innerhalb eines Datumsbereichs.
+ */
+function countWeekdays(string $start, string $end): int
+{
+    $startDate = new DateTime($start);
+    $endDate = new DateTime($end);
+
+    if ($endDate < $startDate) {
+        return 0;
+    }
+
+    $days = 0;
+    while ($startDate <= $endDate) {
+        if ((int) $startDate->format('N') <= 5) {
+            $days++;
+        }
+        $startDate->modify('+1 day');
+    }
+
+    return $days;
+}
+
+/**
+ * Gruppiert Urlaube pro Jahr und berechnet die genommenen Werktage.
+ */
+function groupVacationsByYear(array $urlaube): array
+{
+    $urlaubNachJahr = [];
+
+    foreach ($urlaube as $urlaub) {
+        $jahr = date('Y', strtotime($urlaub['startdatum']));
+        $tage = countWeekdays($urlaub['startdatum'], $urlaub['enddatum']);
+
+        if (!isset($urlaubNachJahr[$jahr])) {
+            $urlaubNachJahr[$jahr] = [
+                'genommen' => 0,
+                'eintraege' => [],
+            ];
+        }
+
+        $urlaubNachJahr[$jahr]['genommen'] += $tage;
+        $urlaubNachJahr[$jahr]['eintraege'][] = $urlaub;
+    }
+
+    return $urlaubNachJahr;
+}
+
+/**
+ * Holt die Gesamtanzahl der Urlaubstage aus der Fahrer-Tabelle.
+ */
+function fetchGesamtUrlaubstage(PDO $pdo, int $fahrerId): int
+{
+    $stmt = $pdo->prepare('SELECT Urlaubstage FROM Fahrer WHERE FahrerID = ?');
+    $stmt->execute([$fahrerId]);
+
+    return (int) $stmt->fetchColumn();
+}
+
+// Fahrer-ID aus der URL abrufen
+$fahrer_id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!$fahrer_id) {
+    header('Location: fahrer.php');
+    exit();
+}
 
 // Fahrer-Daten laden
-$stmt = $pdo->prepare("SELECT * FROM Fahrer WHERE FahrerID = ?");
-$stmt->execute([$fahrer_id]);
-$fahrer = $stmt->fetch(PDO::FETCH_ASSOC);
-
+$fahrer = fetchDriver($pdo, $fahrer_id);
 if (!$fahrer) {
-    header("Location: fahrer.php");
+    header('Location: fahrer.php');
     exit();
 }
 
-// Fahrerdaten neu speichern
+// Fahrerdaten speichern
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $first_name = trim($_POST['first_name']);
-    $last_name = trim($_POST['last_name']);
-    $license_validity = $_POST['license_validity'];
-    $pschein_validity = $_POST['pschein_validity'];
-    $phone = trim($_POST['phone']);
-    $email = trim($_POST['email']);
-    $street = trim($_POST['street']);
-    $house_number = trim($_POST['house_number']);
-    $zip = trim($_POST['zip']);
-    $city = trim($_POST['city']);
-    $status = $_POST['status'];
-    $personalnummer = trim($_POST['personalnummer']); // <-- Das neue Feld wird erfasst!
+    $first_name = trim($_POST['first_name'] ?? '');
+    $last_name = trim($_POST['last_name'] ?? '');
+    $license_validity = $_POST['license_validity'] ?? null;
+    $pschein_validity = $_POST['pschein_validity'] ?? null;
+    $phone = trim($_POST['phone'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $street = trim($_POST['street'] ?? '');
+    $house_number = trim($_POST['house_number'] ?? '');
+    $zip = trim($_POST['zip'] ?? '');
+    $city = trim($_POST['city'] ?? '');
+    $status = $_POST['status'] ?? 'Aktiv';
+    $personalnummer = trim($_POST['personalnummer'] ?? '');
 
-    // SQL-Statement zur Aktualisierung der Fahrerdaten
-    $stmt = $pdo->prepare("UPDATE Fahrer SET 
-        Vorname = ?, 
-        Nachname = ?, 
-        FuehrerscheinGueltigkeit = ?, 
-        PScheinGueltigkeit = ?, 
-        Telefonnummer = ?, 
-        Email = ?, 
-        Strasse = ?, 
-        Hausnummer = ?, 
-        PLZ = ?, 
-        Ort = ?, 
-        Status = ?, 
-        Personalnummer = ? 
-        WHERE FahrerID = ?");
+    $stmt = $pdo->prepare(
+        'UPDATE Fahrer SET
+            Vorname = ?,
+            Nachname = ?,
+            FuehrerscheinGueltigkeit = ?,
+            PScheinGueltigkeit = ?,
+            Telefonnummer = ?,
+            Email = ?,
+            Strasse = ?,
+            Hausnummer = ?,
+            PLZ = ?,
+            Ort = ?,
+            Status = ?,
+            Personalnummer = ?
+        WHERE FahrerID = ?'
+    );
 
     $stmt->execute([
-        $first_name, 
-        $last_name, 
-        $license_validity, 
-        $pschein_validity, 
-        $phone, 
-        $email, 
-        $street, 
-        $house_number, 
-        $zip, 
-        $city, 
-        $status, 
-        $personalnummer, // <-- Personalnummer wird jetzt gespeichert!
-        $fahrer_id
+        $first_name,
+        $last_name,
+        $license_validity,
+        $pschein_validity,
+        $phone,
+        $email,
+        $street,
+        $house_number,
+        $zip,
+        $city,
+        $status,
+        $personalnummer,
+        $fahrer_id,
     ]);
 
-    $success = "Fahrerdaten erfolgreich aktualisiert!";
+    $success = 'Fahrerdaten erfolgreich aktualisiert!';
+
+    // Daten nach Speichern aktualisieren
+    $fahrer = fetchDriver($pdo, $fahrer_id);
 }
 
-// Bußgelder abrufen
-$stmt = $pdo->prepare("SELECT date_of_offense, fine_amount, case_number FROM fines WHERE recipient_id = ? ORDER BY date_of_offense DESC");
-$stmt->execute([$fahrer_id]);
-$bussgelder = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$bussgelder = (function () use ($pdo, $fahrer_id) {
+    $stmt = $pdo->prepare('SELECT date_of_offense, fine_amount, case_number FROM fines WHERE recipient_id = ? ORDER BY date_of_offense DESC');
+    $stmt->execute([$fahrer_id]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+})();
 
-// Krankheitszeiträume abrufen
-$stmt = $pdo->prepare("SELECT startdatum, enddatum, grund FROM FahrerAbwesenheiten WHERE FahrerID = ? AND abwesenheitsart = 'Krankheit' ORDER BY startdatum DESC");
-$stmt->execute([$fahrer_id]);
-$krankheiten = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$krankheiten = fetchAbwesenheiten($pdo, $fahrer_id, 'Krankheit');
+$urlaube = fetchAbwesenheiten($pdo, $fahrer_id, 'Urlaub');
+$urlaub_nach_jahr = groupVacationsByYear($urlaube);
+$gesamt_urlaubstage = fetchGesamtUrlaubstage($pdo, $fahrer_id);
 
-// Urlaubszeiträume abrufen und nach Jahr gruppieren
-$stmt = $pdo->prepare("SELECT startdatum, enddatum, grund FROM FahrerAbwesenheiten WHERE FahrerID = ? AND abwesenheitsart = 'Urlaub' ORDER BY startdatum DESC");
-$stmt->execute([$fahrer_id]);
-$urlaube = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Urlaubstage berechnen
-$urlaub_nach_jahr = [];
-foreach ($urlaube as $urlaub) {
-    $jahr = date('Y', strtotime($urlaub['startdatum']));
-    $tage = (new DateTime($urlaub['startdatum']))->diff(new DateTime($urlaub['enddatum']))->days + 1;
-    if (!isset($urlaub_nach_jahr[$jahr])) {
-        $urlaub_nach_jahr[$jahr]['genommen'] = 0;
-        $urlaub_nach_jahr[$jahr]['eintraege'] = [];
-    }
-    $urlaub_nach_jahr[$jahr]['genommen'] += $tage;
-    $urlaub_nach_jahr[$jahr]['eintraege'][] = $urlaub;
-}
-
-// Gesamturlaubstage aus der Datenbank abrufen
-$stmt = $pdo->prepare("SELECT Urlaubstage FROM Fahrer WHERE FahrerID = ?");
-$stmt->execute([$fahrer_id]);
-$gesamt_urlaubstage = $stmt->fetchColumn();
-
-?>
-<?php
 $title = 'Fahrer bearbeiten';
 include __DIR__ . '/../includes/layout.php';
 ?>
