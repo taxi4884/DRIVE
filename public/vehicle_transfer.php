@@ -50,7 +50,7 @@ include __DIR__ . '/../includes/layout.php';
                 <?php if (!empty($transfers)): ?>
                     <?php foreach ($transfers as $transfer): ?>
                         <tr>
-                            <td><?= htmlspecialchars(date('d.m.Y', strtotime($transfer['transfer_date']))) ?></td>
+                            <td><?= htmlspecialchars(date('d.m.y', strtotime($transfer['transfer_date']))) ?></td>
                             <td><?= htmlspecialchars($transfer['fahrer_vorname'] . ' ' . $transfer['fahrer_nachname']) ?></td>
                             <td><?= htmlspecialchars($transfer['konzession'] . ' - ' . $transfer['marke'] . ' ' . $transfer['modell']) ?></td>
                             <td><?= htmlspecialchars($transfer['kilometerstand'] ?? 'Kein Eintrag') ?></td>

@@ -21,7 +21,7 @@ define('LOGFILE', __DIR__ . '/schulung/versand.log');
  * @param int    $id              Teilnehmer‑ID
  * @param string $vorname         Vorname
  * @param string $email           Empfängeradresse
- * @param string $praxistagdatum  Termin im Format d.m.Y (wird hier zurückgewandelt)
+ * @param string $praxistagdatum  Termin im Format dd.mm.yy (wird hier zurückgewandelt)
  * @return bool  true bei Erfolg
  */
  
@@ -32,7 +32,7 @@ function sendInvitation($id, $vorname, $email, $praxistagdatum) {
 	/* ---------------------------------------------------------------------
 	1) Termin in DateTime wandeln
 	------------------------------------------------------------------ */
-    $dateObj = DateTime::createFromFormat('d.m.Y', $praxistagdatum);
+    $dateObj = DateTime::createFromFormat('d.m.y', $praxistagdatum);
     if (!$dateObj) {
         logMessage("Ungültiges Datumsformat: $praxistagdatum", LOGFILE);
         return false;
@@ -166,11 +166,11 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
             $email = $teilnehmer['email'];
             $praxistagdatum = $teilnehmer['schulungstermin'];
 
-            // Datum ins Format dd.mm.YYYY umwandeln
+            // Datum ins Format dd.mm.yy umwandeln
             if (!empty($praxistagdatum)) {
                 $date = DateTime::createFromFormat('Y-m-d', $praxistagdatum);
                 if ($date) {
-                    $praxistagdatum = $date->format('d.m.Y');
+                    $praxistagdatum = $date->format('d.m.y');
                 }
             }
 

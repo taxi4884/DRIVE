@@ -37,7 +37,7 @@ if (empty($aenderungen)) {
         <?php foreach ($aenderungen as $log): ?>
             <tr>
                 <td><?= htmlspecialchars($log['Benutzer']) ?></td>
-                <td><?= date('d.m.Y H:i', strtotime($log['Zeitpunkt'])) ?></td>
+                <td><?= date('d.m.y H:i', strtotime($log['Zeitpunkt'])) ?></td>
                 <td><?= htmlspecialchars($log['Feldname']) ?></td>
                 <td><?= htmlspecialchars($log['AlterWert']) ?></td>
                 <td><?= htmlspecialchars($log['NeuerWert']) ?></td>

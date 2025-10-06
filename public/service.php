@@ -62,7 +62,7 @@ include __DIR__ . '/../includes/layout.php';
 								<?= htmlspecialchars($wartung['Marke']) ?> 
 								<?= htmlspecialchars($wartung['Modell']) ?>
 							</td>
-							<td><?= htmlspecialchars(date('d.m.Y', strtotime($wartung['Wartungsdatum']))) ?></td>
+							<td><?= htmlspecialchars(date('d.m.y', strtotime($wartung['Wartungsdatum']))) ?></td>
 							<td><?= htmlspecialchars(number_format($wartung['Kilometerstand'], 0, ',', '.')) ?> km</td>
 							<td><?= htmlspecialchars($wartung['Beschreibung'] ?? 'Keine Beschreibung') ?></td>
 							<td><?= htmlspecialchars(number_format($wartung['Kosten'], 2, ',', '.')) ?> €</td>

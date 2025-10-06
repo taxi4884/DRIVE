@@ -353,7 +353,7 @@ include __DIR__ . '/../includes/layout.php';
                     <?php if (!empty($umsatzDaten)): ?>
                         <?php foreach ($umsatzDaten as $umsatz): ?>
                             <tr>
-                                <td><?= htmlspecialchars(date('d.m.Y', strtotime($umsatz['Datum']))) ?></td>
+                                <td><?= htmlspecialchars(date('d.m.y', strtotime($umsatz['Datum']))) ?></td>
                                 <td><?= number_format($umsatz['TaxameterUmsatz'], 2, ',', '.') ?></td>
                                 <td><?= number_format($umsatz['OhneTaxameter'], 2, ',', '.') ?></td>
                                 <td><?= number_format($umsatz['Kartenzahlung'], 2, ',', '.') ?></td>

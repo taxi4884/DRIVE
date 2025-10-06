@@ -38,7 +38,7 @@ foreach ($teilnehmerListe as $teilnehmer) {
         'Nachname' => $teilnehmer['nachname'],
         'Straße' => $teilnehmer['strasse'] . ' ' . $teilnehmer['hausnummer'],
         'PLZ / Ort' => $teilnehmer['postleitzahl'] . ' ' . $teilnehmer['ort'],
-        'Geburtsdatum' => date('d.m.Y', strtotime($teilnehmer['geburtsdatum'])),
+        'Geburtsdatum' => date('d.m.y', strtotime($teilnehmer['geburtsdatum'])),
         'Handynummer' => $teilnehmer['handynummer'],
         'Email' => $teilnehmer['email'],
         'Unternehmer' => $teilnehmer['unternehmer']
@@ -54,6 +54,6 @@ foreach ($teilnehmerListe as $teilnehmer) {
 }
 
 // Dateiname z. B. mit Datum
-$filename = 'Schulung_Alle_Bestaetigten_' . date('d-m-Y') . '.pdf';
+$filename = 'Schulung_Alle_Bestaetigten_' . date('d-m-y') . '.pdf';
 $pdf->Output('D', $filename);
 exit();

@@ -106,7 +106,7 @@ $daysOfWeek = [
     'Saturday'  => 'Samstag',
     'Sunday'    => 'Sonntag',
 ];
-$todayLabel = ($daysOfWeek[date('l')] ?? date('l')) . ', ' . date('d.m.Y');
+$todayLabel = ($daysOfWeek[date('l')] ?? date('l')) . ', ' . date('d.m.y');
 
 // Aktive Fahrer strukturieren
 $activeDriversByCompany = [];
@@ -368,7 +368,7 @@ include '../includes/layout.php';
                                                 <span><i class="bi bi-car-front"></i> <?php echo htmlspecialchars($fahrer['kennzeichen']); ?></span>
                                             </div>
                                             <?php if (!empty($fahrer['anmeldung'])): ?>
-                                                <div class="list-meta"><i class="bi bi-clock-history"></i> seit <?php echo htmlspecialchars(date('d.m.Y H:i', strtotime($fahrer['anmeldung']))); ?></div>
+                                                <div class="list-meta"><i class="bi bi-clock-history"></i> seit <?php echo htmlspecialchars(date('d.m.y H:i', strtotime($fahrer['anmeldung']))); ?></div>
                                             <?php endif; ?>
                                         </li>
                                     <?php endforeach; ?>

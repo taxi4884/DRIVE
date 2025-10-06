@@ -285,11 +285,11 @@ include __DIR__ . '/../../includes/layout.php';
         </tr>
         <tr>
           <th>Führerschein gültig bis:</th>
-          <td><?= htmlspecialchars(date('d.m.Y', strtotime($fahrer['FuehrerscheinGueltigkeit']))) ?></td>
+          <td><?= htmlspecialchars(date('d.m.y', strtotime($fahrer['FuehrerscheinGueltigkeit']))) ?></td>
         </tr>
         <tr>
           <th>P-Schein gültig bis:</th>
-          <td><?= htmlspecialchars(date('d.m.Y', strtotime($fahrer['PScheinGueltigkeit']))) ?></td>
+          <td><?= htmlspecialchars(date('d.m.y', strtotime($fahrer['PScheinGueltigkeit']))) ?></td>
         </tr>
       </table>
     </div>
@@ -313,7 +313,7 @@ include __DIR__ . '/../../includes/layout.php';
 			  </span>
 			  <strong><?= htmlspecialchars($eintrag['abwesenheitsart']) ?></strong> – 
 			  <?= htmlspecialchars($eintrag['grund']) ?><br>
-			  <small>von <?= date('d.m.Y', strtotime($eintrag['startdatum'])) ?> bis <?= date('d.m.Y', strtotime($eintrag['enddatum'])) ?></small>
+			  <small>von <?= date('d.m.y', strtotime($eintrag['startdatum'])) ?> bis <?= date('d.m.y', strtotime($eintrag['enddatum'])) ?></small>
 			  <?php if($eintrag['abwesenheitsart'] === 'Urlaub'): ?>
 				<?php 
 				  $status = $eintrag['status'] ?? 'nicht gesetzt';

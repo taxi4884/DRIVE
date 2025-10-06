@@ -26,19 +26,19 @@ switch ($zeitraum) {
     case 'tag':
         $start_date = date('Y-m-d', strtotime("$offset day"));
         $end_date = $start_date;
-        $anzeige_zeitraum = date("d.m.Y", strtotime($start_date));
+        $anzeige_zeitraum = date("d.m.y", strtotime($start_date));
         break;
 
     case 'woche':
         $start_date = date('Y-m-d', strtotime("monday this week +$offset week"));
         $end_date = date('Y-m-d', strtotime("sunday this week +$offset week"));
-        $anzeige_zeitraum = date("d.m.Y", strtotime($start_date)) . " - " . date("d.m.Y", strtotime($end_date));
+        $anzeige_zeitraum = date("d.m.y", strtotime($start_date)) . " - " . date("d.m.y", strtotime($end_date));
         break;
 
     case 'monat':
         $start_date = date('Y-m-01', strtotime("$offset month"));
         $end_date = date('Y-m-t', strtotime("$offset month"));
-        $anzeige_zeitraum = date("d.m.Y", strtotime($start_date)) . " - " . date("d.m.Y", strtotime($end_date));
+        $anzeige_zeitraum = date("d.m.y", strtotime($start_date)) . " - " . date("d.m.y", strtotime($end_date));
         break;
 
     case 'quartal':
@@ -47,7 +47,7 @@ switch ($zeitraum) {
         $start_month = (($aktuelles_quartal - 1) * 3) + 1;
         $start_date = date('Y-m-d', mktime(0, 0, 0, $start_month, 1, $jahr));
         $end_date = date('Y-m-t', mktime(0, 0, 0, $start_month + 2, 1, $jahr));
-        $anzeige_zeitraum = date("d.m.Y", strtotime($start_date)) . " - " . date("d.m.Y", strtotime($end_date));
+        $anzeige_zeitraum = date("d.m.y", strtotime($start_date)) . " - " . date("d.m.y", strtotime($end_date));
         break;
 
     case 'jahr':
@@ -61,7 +61,7 @@ switch ($zeitraum) {
         $zeitraum = 'woche';
         $start_date = date('Y-m-d', strtotime("monday this week +$offset week"));
         $end_date = date('Y-m-d', strtotime("sunday this week +$offset week"));
-        $anzeige_zeitraum = date("d.m.Y", strtotime($start_date)) . " - " . date("d.m.Y", strtotime($end_date));
+        $anzeige_zeitraum = date("d.m.y", strtotime($start_date)) . " - " . date("d.m.y", strtotime($end_date));
         break;
 }
 
@@ -158,7 +158,7 @@ include __DIR__ . '/../../includes/layout.php';
                     <?php foreach ($umsatz_pro_tag as $eintrag): ?>
                         <?php $umsatz = $eintrag['GesamtUmsatz'] ?? 0; ?>
                         <tr>
-                            <td><?= date("d.m.Y", strtotime($eintrag['Datum'])) ?></td>
+                            <td><?= date("d.m.y", strtotime($eintrag['Datum'])) ?></td>
                             <td><?= number_format($umsatz, 2, ',', '.') ?> €</td>
                         </tr>
                     <?php endforeach; ?>

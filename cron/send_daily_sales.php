@@ -134,7 +134,7 @@ try {
     $totalSales = array_sum(array_column($yesterdayData, 'total_sales'));
 
     $recipients = getEmailRecipients($pdo);
-    $dateLabel  = date('d.m.Y', strtotime('yesterday'));
+    $dateLabel  = date('d.m.y', strtotime('yesterday'));
 
     foreach ($recipients as $recipient) {
         // Kompakteres, zentriertes Layout mit reduzierter Schriftgröße und Padding

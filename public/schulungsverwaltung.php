@@ -108,7 +108,7 @@ function versendeEinladung($id, $termin){
     $vorname         = $teilnehmer['vorname'];
     $email           = $teilnehmer['email'];
     $praxistagdatum  = DateTime::createFromFormat('Y-m-d', $termin)
-                        ->format('d.m.Y');
+                        ->format('d.m.y');
 
     /* E‑Mail verschicken (versand.php) */
     if (sendInvitation($id, $vorname, $email, $praxistagdatum)) {
@@ -354,7 +354,7 @@ include __DIR__ . '/../includes/layout.php';
 	</div>
 	<?php if ($nextTermin): ?>
 		<?php
-			$dateDe = (new DateTime($nextTermin))->format('d.m.Y');
+			$dateDe = (new DateTime($nextTermin))->format('d.m.y');
 		?>
 		<div class="alert alert-warning d-flex justify-content-center gap-4 align-items-center">
 			<strong>Nächster Praxistag: <?= $dateDe ?></strong>
@@ -444,7 +444,7 @@ include __DIR__ . '/../includes/layout.php';
                     <tr>
 						<td>
 							<?php if (!empty($row['gesperrt_bis']) && new DateTime($row['gesperrt_bis']) > new DateTime()): ?>
-								<i class="fas fa-ban text-danger" title="Gesperrt bis <?= date('d.m.Y', strtotime($row['gesperrt_bis'])) ?>"></i>
+								<i class="fas fa-ban text-danger" title="Gesperrt bis <?= date('d.m.y', strtotime($row['gesperrt_bis'])) ?>"></i>
 							<?php elseif ((int)$row['nicht_bestanden_count'] > 0): ?>
 								<i class="fas fa-rotate-left text-warning" title="Wiederholer (bereits durchgefallen)"></i>
 							<?php else: ?>
@@ -511,7 +511,7 @@ include __DIR__ . '/../includes/layout.php';
 							<td>
 								<?php if ($row['gesperrt_bis'] !== null && new DateTime($row['gesperrt_bis']) > new DateTime()): ?>
 									<div class="mb-1 text-danger">
-										<i class="fas fa-ban"></i> Gesperrt bis <?= date('d.m.Y', strtotime($row['gesperrt_bis'])) ?>
+										<i class="fas fa-ban"></i> Gesperrt bis <?= date('d.m.y', strtotime($row['gesperrt_bis'])) ?>
 									</div>
 									<form method="POST" class="d-inline">
 										<input type="hidden" name="id" value="<?php echo $row['id']; ?>">
@@ -526,7 +526,7 @@ include __DIR__ . '/../includes/layout.php';
 						<?php else: ?>
 							<td>
 								<?php if ($row['gesperrt_bis'] !== null && new DateTime($row['gesperrt_bis']) > new DateTime()): ?>
-									<span class="text-danger"><i class="fas fa-ban"></i> Gesperrt bis <?= date('d.m.Y', strtotime($row['gesperrt_bis'])) ?></span>
+									<span class="text-danger"><i class="fas fa-ban"></i> Gesperrt bis <?= date('d.m.y', strtotime($row['gesperrt_bis'])) ?></span>
 								<?php else: ?>
 									<span class="text-success"><i class="fas fa-check-circle"></i> Nicht gesperrt</span>
 								<?php endif; ?>

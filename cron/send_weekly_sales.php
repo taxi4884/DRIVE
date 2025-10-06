@@ -57,7 +57,7 @@ function getLastWeekRange(): array {
 }
 
 function formatDE(DateTime $dt): string {
-    return $dt->format('d.m.Y');
+    return $dt->format('d.m.y');
 }
 
 function kwLabel(DateTime $anyDayOfWeek): string {

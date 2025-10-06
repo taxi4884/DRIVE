@@ -191,7 +191,7 @@ include __DIR__ . '/../includes/layout.php';
                             <td><?= htmlspecialchars($eintrag['Name'] ?? 'Unbekannter Fahrer') ?></td>
                             <td><?= htmlspecialchars($eintrag['Schicht'] ?? '-') ?></td>
                             <td><?= htmlspecialchars($eintrag['Aktion']) ?></td>
-                            <td><?= htmlspecialchars(date('d.m.Y H:i', strtotime($eintrag['Datum']))) ?></td>
+                            <td><?= htmlspecialchars(date('d.m.y H:i', strtotime($eintrag['Datum']))) ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
