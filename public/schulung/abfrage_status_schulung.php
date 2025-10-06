@@ -34,8 +34,8 @@ if (!$api_key) {
     exit;
 }
 
-// Teilnehmer laden
-$stmt = $pdo->query("SELECT id, email FROM schulungsteilnehmer WHERE email IS NOT NULL");
+// Teilnehmer laden – nur jene ohne bereits hinterlegten Status abfragen
+$stmt = $pdo->query("SELECT id, email FROM schulungsteilnehmer WHERE email IS NOT NULL AND abschlusstest_bestanden IS NULL");
 $teilnehmer = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $erfolge = 0;
