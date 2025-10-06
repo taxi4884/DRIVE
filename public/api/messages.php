@@ -21,6 +21,7 @@ if ($otherId === 0) {
 }
 
 $userId = (int) $_SESSION['user_id'];
+Message::markConversationAsRead($userId, $otherId);
 $messages = Message::getMessagesBetween($userId, $otherId);
 echo json_encode($messages);
 

@@ -33,6 +33,7 @@ class MessageController
         }
 
         $userId = (int) $_SESSION['user_id'];
+        Message::markConversationAsRead($userId, $otherId);
         $messages = Message::getMessagesBetween($userId, $otherId);
         $title = 'Nachrichtenverlauf';
         $extraCss = 'css/messages.css';
@@ -54,11 +55,13 @@ class MessageController
         $conversation = [];
         if (isset($_GET['with'])) {
             $otherId = (int) $_GET['with'];
+            Message::markConversationAsRead($userId, $otherId);
             $conversation = Message::getMessagesBetween($userId, $otherId);
         }
         $success = ($_GET['success'] ?? '') !== '';
         $title = 'Postfach';
         $extraCss = 'css/messages.css';
+        $currentUserId = $userId;
         include __DIR__ . '/../../includes/layout.php';
         include __DIR__ . '/../Views/messages/inbox.php';
         echo "</body></html>";

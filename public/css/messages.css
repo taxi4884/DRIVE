@@ -114,6 +114,7 @@
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
     max-width: 75%;
+    width: fit-content;
 }
 
 .message.sent {
@@ -126,5 +127,27 @@
     background-color: #ffffff;
     border: 1px solid #ccc;
     margin-right: auto;
+}
+
+.message-header {
+    margin: 0 0 0.25rem 0;
+}
+
+.message-subject {
+    margin: 0 0 0.25rem 0;
+}
+
+.message-subject span {
+    font-weight: 600;
+}
+
+.message-body {
+    margin: 0;
+}
+
+.message-meta {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.75rem;
+    color: #666;
 }
 
