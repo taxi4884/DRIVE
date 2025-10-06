@@ -131,6 +131,81 @@ function getAbwesenheitsKuerzel($typ) {
             return '?';
     }
 }
+
+function getAbwesenheitsTooltip(array $abwesenheit) {
+    $beschreibung = trim((string)($abwesenheit['beschreibung'] ?? ''));
+    $typ = $abwesenheit['typ'] ?? '';
+    $lines = [];
+
+    switch ($typ) {
+        case 'Geht eher':
+            if (!empty($abwesenheit['endzeit'])) {
+                $lines[] = 'Uhrzeit: ' . $abwesenheit['endzeit'];
+            }
+            if ($beschreibung !== '') {
+                $lines[] = 'Grund: ' . $beschreibung;
+            }
+            break;
+        case 'Kommt später':
+            if (!empty($abwesenheit['startzeit'])) {
+                $lines[] = 'Uhrzeit: ' . $abwesenheit['startzeit'];
+            }
+            if ($beschreibung !== '') {
+                $lines[] = 'Grund: ' . $beschreibung;
+            }
+            break;
+        case 'Unterbrechung':
+            if (!empty($abwesenheit['datum'])) {
+                $lines[] = 'Datum: ' . $abwesenheit['datum'];
+            }
+            $zeitraum = [];
+            if (!empty($abwesenheit['startzeit'])) {
+                $zeitraum[] = $abwesenheit['startzeit'];
+            }
+            if (!empty($abwesenheit['endzeit'])) {
+                $zeitraum[] = $abwesenheit['endzeit'];
+            }
+            if (!empty($zeitraum)) {
+                $lines[] = 'Zeit: ' . implode(' bis ', $zeitraum);
+            }
+            if ($beschreibung !== '') {
+                $lines[] = 'Beschreibung: ' . $beschreibung;
+            }
+            break;
+        case 'Urlaub':
+            $lines[] = 'Typ: ' . $typ;
+            $zeitraum = [];
+            if (!empty($abwesenheit['startdatum'])) {
+                $zeitraum[] = $abwesenheit['startdatum'];
+            }
+            if (!empty($abwesenheit['enddatum'])) {
+                $zeitraum[] = $abwesenheit['enddatum'];
+            }
+            if (!empty($zeitraum)) {
+                $lines[] = 'Zeitraum: ' . implode(' bis ', $zeitraum);
+            }
+            break;
+        case 'Kind Krank':
+            $zeitraum = [];
+            if (!empty($abwesenheit['startdatum'])) {
+                $zeitraum[] = $abwesenheit['startdatum'];
+            }
+            if (!empty($abwesenheit['enddatum'])) {
+                $zeitraum[] = $abwesenheit['enddatum'];
+            }
+            if (!empty($zeitraum)) {
+                $lines[] = 'Zeitraum: ' . implode(' bis ', $zeitraum);
+            }
+            break;
+        default:
+            if ($beschreibung !== '') {
+                $lines[] = $beschreibung;
+            }
+            break;
+    }
+
+    return implode("\n", array_filter($lines));
+}
 ?>
 <?php
 $title = 'Verwaltung Abwesenheiten';
@@ -256,6 +331,7 @@ include __DIR__ . '/../includes/layout.php';
                           <?php
                                 $cellClass = $date['isWeekend'] ? 'weekend' : '';
                                 $cellText = '-';
+                                $cellTooltip = '';
                                 foreach ($abwesenheiten as $a) {
                                   if ($a['mitarbeiter_id'] == $person['BenutzerID']) {
                                         $currentDate = $date['date'];
@@ -263,12 +339,19 @@ include __DIR__ . '/../includes/layout.php';
                                             (isset($a['startdatum'], $a['enddatum']) && $currentDate >= $a['startdatum'] && $currentDate <= $a['enddatum'])) {
                                             $cellClass = getAbwesenheitsKlasse($a['typ']);
                                             $cellText = getAbwesenheitsKuerzel($a['typ']);
+                                            $cellTooltip = getAbwesenheitsTooltip($a);
                                             break;
                                         }
                                   }
                                 }
+                                $titleAttr = '';
+                                if ($cellTooltip !== '') {
+                                  $escapedTooltip = htmlspecialchars($cellTooltip, ENT_QUOTES);
+                                  $escapedTooltip = str_replace("\n", '&#10;', $escapedTooltip);
+                                  $titleAttr = ' title="' . $escapedTooltip . '"';
+                                }
                           ?>
-                          <td class="<?= $cellClass ?>"><?= htmlspecialchars($cellText) ?></td>
+                          <td class="<?= $cellClass ?>"<?= $titleAttr ?>><?= htmlspecialchars($cellText) ?></td>
                         <?php endforeach; ?>
 		  </tr>
 		<?php endforeach; ?>
