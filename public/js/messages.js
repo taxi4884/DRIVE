@@ -25,10 +25,16 @@ document.addEventListener('DOMContentLoaded', function () {
           var html = '';
           messages.forEach(function (msg) {
             var cls = (msg.sender_id === otherId) ? 'received' : 'sent';
-            html += '<div class="message ' + cls + '">' +
-              '<p><strong>' + escapeHtml(msg.sender_name) + '</strong> am ' + escapeHtml(msg.created_at) + '</p>' +
-              '<p>' + escapeHtml(msg.body).replace(/\n/g, '<br>') + '</p>' +
-              '</div>';
+            html += '<div class="message ' + cls + '">';
+            html += '<p class="message-header"><strong>' + escapeHtml(msg.sender_name) + '</strong> am ' + escapeHtml(msg.created_at) + '</p>';
+            if (msg.subject) {
+              html += '<p class="message-subject"><span>Betreff:</span> ' + escapeHtml(msg.subject) + '</p>';
+            }
+            html += '<p class="message-body">' + escapeHtml(msg.body).replace(/\n/g, '<br>') + '</p>';
+            if (msg.read_at) {
+              html += '<p class="message-meta">Gelesen am ' + escapeHtml(msg.read_at) + '</p>';
+            }
+            html += '</div>';
           });
           content.innerHTML = html;
         });
@@ -136,11 +142,19 @@ document.addEventListener('DOMContentLoaded', function () {
       })
         .then(function (res) { return res.json(); })
         .then(function (msg) {
-          var html = '<div class="message sent">' +
-            '<p><strong>' + escapeHtml(msg.sender_name) + '</strong> am ' + escapeHtml(msg.created_at) + '</p>' +
-            '<p>' + escapeHtml(msg.body).replace(/\n/g, '<br>') + '</p>' +
-            '</div>';
-          content.insertAdjacentHTML('beforeend', html);
+          if (msg && msg.sender_name) {
+            var newMessageHtml = '<div class="message sent">';
+            newMessageHtml += '<p class="message-header"><strong>' + escapeHtml(msg.sender_name) + '</strong> am ' + escapeHtml(msg.created_at) + '</p>';
+            if (msg.subject) {
+              newMessageHtml += '<p class="message-subject"><span>Betreff:</span> ' + escapeHtml(msg.subject) + '</p>';
+            }
+            newMessageHtml += '<p class="message-body">' + escapeHtml(msg.body).replace(/\n/g, '<br>') + '</p>';
+            if (msg.read_at) {
+              newMessageHtml += '<p class="message-meta">Gelesen am ' + escapeHtml(msg.read_at) + '</p>';
+            }
+            newMessageHtml += '</div>';
+            content.insertAdjacentHTML('beforeend', newMessageHtml);
+          }
           bodyInput.value = '';
         })
         .catch(function (err) { console.error(err); });

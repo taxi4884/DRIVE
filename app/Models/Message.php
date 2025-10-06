@@ -56,7 +56,7 @@ class Message
     {
         global $pdo;
         $stmt = $pdo->prepare('
-            SELECT m.id, m.subject, m.body, m.created_at,
+            SELECT m.id, m.subject, m.body, m.created_at, m.read_at,
                    m.sender_id, m.recipient_id,
                    sender.Name AS sender_name,
                    recipient.Name AS recipient_name
@@ -69,5 +69,12 @@ class Message
         ');
         $stmt->execute(['uid' => $userId, 'oid' => $otherId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function markConversationAsRead(int $userId, int $otherId): void
+    {
+        global $pdo;
+        $stmt = $pdo->prepare('UPDATE messages SET read_at = NOW() WHERE recipient_id = ? AND sender_id = ? AND read_at IS NULL');
+        $stmt->execute([$userId, $otherId]);
     }
 }

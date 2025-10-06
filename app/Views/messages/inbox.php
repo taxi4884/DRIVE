@@ -25,9 +25,16 @@
             <div id="conversation-content">
                 <?php if (!empty($conversation)): ?>
                     <?php foreach ($conversation as $msg): ?>
-                        <div class="message">
-                            <p><strong><?= htmlspecialchars($msg['sender_name']) ?></strong> am <?= htmlspecialchars($msg['created_at']) ?></p>
-                            <p><?= nl2br(htmlspecialchars($msg['body'])) ?></p>
+                        <?php $isSent = isset($currentUserId) && (int) $msg['sender_id'] === (int) $currentUserId; ?>
+                        <div class="message <?= $isSent ? 'sent' : 'received' ?>">
+                            <p class="message-header"><strong><?= htmlspecialchars($msg['sender_name']) ?></strong> am <?= htmlspecialchars($msg['created_at']) ?></p>
+                            <?php if (!empty($msg['subject'])): ?>
+                                <p class="message-subject"><span>Betreff:</span> <?= htmlspecialchars($msg['subject']) ?></p>
+                            <?php endif; ?>
+                            <p class="message-body"><?= nl2br(htmlspecialchars($msg['body'])) ?></p>
+                            <?php if (!empty($msg['read_at'])): ?>
+                                <p class="message-meta">Gelesen am <?= htmlspecialchars($msg['read_at']) ?></p>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>

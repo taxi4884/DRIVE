@@ -58,6 +58,7 @@ if ($isDriver) {
 $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $extraCss = 'css/messages.css';
+$currentUserId = $userId;
 
 if ($action === 'compose') {
     $title = 'Neue Nachricht';
@@ -68,6 +69,7 @@ if ($action === 'compose') {
     $conversation = [];
     if (isset($_GET['with'])) {
         $otherId = (int) $_GET['with'];
+        Message::markConversationAsRead($userId, $otherId);
         $conversation = Message::getMessagesBetween($userId, $otherId);
     }
     $success = ($_GET['success'] ?? '') !== '';
