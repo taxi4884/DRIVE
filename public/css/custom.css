@@ -948,6 +948,7 @@ nav {
 
 .widget {
     background-color: white;
+    margin-top: 12px;
     margin-bottom: 20px;
     padding: 20px;
     border-radius: 10px;
