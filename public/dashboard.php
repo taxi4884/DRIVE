@@ -264,14 +264,108 @@ $zentraleAbsences      = [];
 $zentraleAbsencesError = null;
 try {
     $stmt_zentrale_absences = $pdo->prepare(
-        "SELECT CONCAT(mz.Vorname, ' ', mz.Nachname) AS name, az.typ, DATE_FORMAT(az.startdatum, '%d.%m.%Y') AS startdatum, DATE_FORMAT(az.enddatum, '%d.%m.%Y') AS enddatum
+        "SELECT az.mitarbeiter_id,
+                CONCAT(mz.Vorname, ' ', mz.Nachname) AS name,
+                az.typ,
+                az.startdatum,
+                az.enddatum
          FROM abwesenheiten_zentrale az
          JOIN mitarbeiter_zentrale mz ON az.mitarbeiter_id = mz.mitarbeiter_id
          WHERE CURDATE() BETWEEN az.startdatum AND az.enddatum
-           AND mz.status = 'Aktiv'"
+           AND mz.status = 'Aktiv'
+         ORDER BY az.mitarbeiter_id, az.typ, az.startdatum"
     );
     $stmt_zentrale_absences->execute();
-    $zentraleAbsences = $stmt_zentrale_absences->fetchAll(PDO::FETCH_ASSOC);
+    $currentZentraleAbsences = $stmt_zentrale_absences->fetchAll(PDO::FETCH_ASSOC);
+
+    if (!empty($currentZentraleAbsences)) {
+        $datesStmt = $pdo->prepare(
+            "SELECT startdatum, enddatum
+             FROM abwesenheiten_zentrale
+             WHERE mitarbeiter_id = :mitarbeiter_id
+               AND typ = :typ
+             ORDER BY startdatum"
+        );
+
+        $todayTimestamp = strtotime('today');
+        $processedKeys  = [];
+
+        foreach ($currentZentraleAbsences as $absence) {
+            $key = $absence['mitarbeiter_id'] . '|' . $absence['typ'];
+
+            if (isset($processedKeys[$key])) {
+                continue;
+            }
+
+            $datesStmt->execute([
+                'mitarbeiter_id' => $absence['mitarbeiter_id'],
+                'typ'            => $absence['typ'],
+            ]);
+
+            $entries = $datesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (empty($entries)) {
+                $processedKeys[$key] = true;
+                continue;
+            }
+
+            $groups     = [];
+            $groupStart = null;
+            $groupEnd   = null;
+
+            foreach ($entries as $entry) {
+                $entryStart = strtotime($entry['startdatum']);
+                $entryEnd   = strtotime($entry['enddatum']);
+
+                if ($entryStart === false || $entryEnd === false) {
+                    continue;
+                }
+
+                if ($groupStart === null) {
+                    $groupStart = $entryStart;
+                    $groupEnd   = $entryEnd;
+                    continue;
+                }
+
+                $expectedNext = strtotime('+1 day', $groupEnd);
+
+                if ($entryStart <= $expectedNext) {
+                    if ($entryEnd > $groupEnd) {
+                        $groupEnd = $entryEnd;
+                    }
+                } else {
+                    $groups[] = [
+                        'start' => $groupStart,
+                        'end'   => $groupEnd,
+                    ];
+
+                    $groupStart = $entryStart;
+                    $groupEnd   = $entryEnd;
+                }
+            }
+
+            if ($groupStart !== null) {
+                $groups[] = [
+                    'start' => $groupStart,
+                    'end'   => $groupEnd,
+                ];
+            }
+
+            foreach ($groups as $group) {
+                if ($todayTimestamp >= $group['start'] && $todayTimestamp <= $group['end']) {
+                    $zentraleAbsences[] = [
+                        'name'       => $absence['name'],
+                        'typ'        => $absence['typ'],
+                        'startdatum' => date('d.m.Y', $group['start']),
+                        'enddatum'   => date('d.m.Y', $group['end']),
+                    ];
+                    break;
+                }
+            }
+
+            $processedKeys[$key] = true;
+        }
+    }
 } catch (PDOException $e) {
     $zentraleAbsencesError = $e->getMessage();
 }
