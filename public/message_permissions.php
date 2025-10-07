@@ -6,6 +6,11 @@ if (!isAdmin()) {
     exit;
 }
 
+$driversCacheKey = 'drivers_all';
+$usersCacheKey = 'benutzer_all';
+$permissionsCacheKey = 'message_permissions_matrix';
+$cacheTtl = 900; // 15 Minuten
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST['recipients'] ?? [] as $driverId => $recipientIds) {
@@ -25,22 +30,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+
+    // Cache invalidieren, damit Änderungen sofort sichtbar sind
+    Cache::delete($driversCacheKey);
+    Cache::delete($usersCacheKey);
+    Cache::delete($permissionsCacheKey);
 }
 
 // Fetch all drivers
-$driversStmt = $pdo->query('SELECT FahrerID, CONCAT(Vorname, " ", Nachname) AS name FROM Fahrer ORDER BY Nachname, Vorname');
-$drivers = $driversStmt->fetchAll(PDO::FETCH_ASSOC);
+$drivers = Cache::remember($driversCacheKey, function () use ($pdo) {
+    $driversStmt = $pdo->query('SELECT FahrerID, CONCAT(Vorname, " ", Nachname) AS name FROM Fahrer ORDER BY Nachname, Vorname');
+    return $driversStmt->fetchAll(PDO::FETCH_ASSOC);
+}, $cacheTtl);
 
 // Fetch all benutzer recipients
-$usersStmt = $pdo->query('SELECT BenutzerID, Name FROM Benutzer ORDER BY Name');
-$users = $usersStmt->fetchAll(PDO::FETCH_ASSOC);
+$users = Cache::remember($usersCacheKey, function () use ($pdo) {
+    $usersStmt = $pdo->query('SELECT BenutzerID, Name FROM Benutzer ORDER BY Name');
+    return $usersStmt->fetchAll(PDO::FETCH_ASSOC);
+}, $cacheTtl);
 
 // Fetch existing permissions
-$permStmt = $pdo->query('SELECT driver_id, recipient_id FROM message_permissions');
-$permissions = [];
-while ($row = $permStmt->fetch(PDO::FETCH_ASSOC)) {
-    $permissions[$row['driver_id']][] = $row['recipient_id'];
-}
+$permissions = Cache::remember($permissionsCacheKey, function () use ($pdo) {
+    $permStmt = $pdo->query('SELECT driver_id, recipient_id FROM message_permissions');
+    $result = [];
+    while ($row = $permStmt->fetch(PDO::FETCH_ASSOC)) {
+        $driverId = (int) $row['driver_id'];
+        $recipientId = (int) $row['recipient_id'];
+        $result[$driverId][] = $recipientId;
+    }
+    return $result;
+}, $cacheTtl);
 
 $title = 'Nachrichtenberechtigungen';
 include '../includes/layout.php';

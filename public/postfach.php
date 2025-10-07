@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/cache.php';
 require_once __DIR__ . '/../includes/user_check.php';
 require_once __DIR__ . '/../app/Models/Message.php';
 
@@ -13,6 +14,28 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $action = $_GET['action'] ?? '';
+$permissionsCacheKey = 'message_permissions_matrix';
+$usersCacheKey = 'benutzer_all';
+$cacheTtl = 900; // 15 Minuten
+
+global $pdo;
+
+$loadPermissions = static function () use ($pdo) {
+    $permStmt = $pdo->query('SELECT driver_id, recipient_id FROM message_permissions');
+    $result = [];
+    while ($row = $permStmt->fetch(PDO::FETCH_ASSOC)) {
+        $driverId = (int) $row['driver_id'];
+        $recipientId = (int) $row['recipient_id'];
+        $result[$driverId][] = $recipientId;
+    }
+
+    return $result;
+};
+
+$loadUsers = static function () use ($pdo) {
+    $usersStmt = $pdo->query('SELECT BenutzerID, Name FROM Benutzer ORDER BY Name');
+    return $usersStmt->fetchAll(PDO::FETCH_ASSOC);
+};
 
 if ($action === 'store') {
     $senderId = (int) $_SESSION['user_id'];
@@ -34,13 +57,12 @@ if ($action === 'store') {
         $error = 'Empfänger, Betreff und Nachricht dürfen nicht leer sein.';
     }
 
-    global $pdo;
-
     $isDriver = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'fahrer';
     if ($isDriver) {
-        $check = $pdo->prepare('SELECT 1 FROM message_permissions WHERE driver_id = ? AND recipient_id = ?');
-        $check->execute([$senderId, $recipientId]);
-        if (!$check->fetchColumn()) {
+        $permissions = Cache::remember($permissionsCacheKey, $loadPermissions, $cacheTtl);
+
+        $allowedRecipients = $permissions[$senderId] ?? [];
+        if (!in_array($recipientId, $allowedRecipients, true)) {
             $error = 'Sie dürfen diesem Empfänger keine Nachricht senden.';
         }
     }
@@ -74,17 +96,20 @@ if ($action === 'store') {
 }
 
 $userId = (int) $_SESSION['user_id'];
-global $pdo;
 
 $isDriver = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'fahrer';
-if ($isDriver) {
-    $stmt = $pdo->prepare('SELECT b.BenutzerID, b.Name FROM Benutzer b JOIN message_permissions mp ON b.BenutzerID = mp.recipient_id WHERE mp.driver_id = ? ORDER BY b.Name');
-    $stmt->execute([$userId]);
-} else {
-    $stmt = $pdo->query('SELECT BenutzerID, Name FROM Benutzer ORDER BY Name');
-}
+$allUsers = Cache::remember($usersCacheKey, $loadUsers, $cacheTtl);
 
-$recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if ($isDriver) {
+    $permissions = Cache::remember($permissionsCacheKey, $loadPermissions, $cacheTtl);
+
+    $allowedRecipients = $permissions[$userId] ?? [];
+    $recipients = array_values(array_filter($allUsers, static function (array $user) use ($allowedRecipients) {
+        return in_array((int) $user['BenutzerID'], $allowedRecipients, true);
+    }));
+} else {
+    $recipients = $allUsers;
+}
 
 $extraCss = 'css/messages.css';
 $currentUserId = $userId;

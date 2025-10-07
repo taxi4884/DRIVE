@@ -1,5 +1,6 @@
 <?php
 require_once 'auth.php'; // Prüft, ob der Benutzer eingeloggt ist
+require_once 'cache.php';
 require 'db.php';   // Stellt die Datenbankverbindung bereit
 
 // Seiten, bei denen das require_once nicht erfolgen soll
