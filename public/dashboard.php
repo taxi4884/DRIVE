@@ -645,6 +645,8 @@ include '../includes/layout.php';
             </section>
         </main>
     </div>
+        <script src="js/dashboard-masonry.js"></script>
+
         <script>
                 document.addEventListener("DOMContentLoaded", () => {
                         const greetingMessage = "<?php echo $greeting_message; ?>";
