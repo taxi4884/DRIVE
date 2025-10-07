@@ -3,19 +3,15 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-session_start();
-
-// Rolle für diese Route festlegen (einfachste Variante)
-$_SESSION['rolle'] = 'Fahrer';
-
-require_once '../../includes/db.php'; // Passe den Pfad an, falls nötig.
+require_once '../../includes/bootstrap.php';
+require_once '../../includes/driver_helpers.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Sicherstellen, dass der Fahrer eingeloggt ist
-    if (!isset($_SESSION['user_id'])) {
+    try {
+        $fahrer_id = requireDriverId();
+    } catch (RuntimeException $e) {
         die('Nicht autorisiert.');
     }
-    $fahrer_id = $_SESSION['user_id'];
 
     // Daten aus dem Formular sammeln
     $startdatum = $_POST['startdatum'] ?? null;

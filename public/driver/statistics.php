@@ -1,20 +1,20 @@
 <?php
 require_once '../../includes/bootstrap.php';
-
-// Rolle für diese Route festlegen (einfachste Variante)
-$_SESSION['rolle'] = 'Fahrer';
+require_once '../../includes/driver_helpers.php';
+require_once '../../includes/umsatz_repository.php';
 
 // Fehleranzeige aktivieren (nur für Debugging, in Produktion entfernen)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Session überprüfen
-if (!isset($_SESSION['user_id'])) {
-    die('Fehler: Keine gültige Session. Bitte erneut anmelden.');
+try {
+    $fahrer_id = requireDriverId();
+} catch (RuntimeException $e) {
+    die($e->getMessage());
 }
 
-$fahrer_id = $_SESSION['user_id'];
+$umsatzRepository = new UmsatzRepository($pdo);
 
 // Standardwerte
 $zeitraum = $_GET['zeitraum'] ?? 'woche'; // Standard: Woche
@@ -65,50 +65,16 @@ switch ($zeitraum) {
         break;
 }
 
-// Datenbankabfragen für Umsätze nach Tag
-$stmt_umsatz_pro_tag = $pdo->prepare("
-    SELECT 
-        DATE(Datum) AS Datum, 
-        SUM(TaxameterUmsatz + OhneTaxameter) AS GesamtUmsatz
-    FROM Umsatz
-    WHERE FahrerID = ? AND Datum BETWEEN ? AND ?
-    GROUP BY DATE(Datum)
-    ORDER BY Datum ASC
-");
-$stmt_umsatz_pro_tag->execute([$fahrer_id, $start_date, $end_date]);
-$umsatz_pro_tag = $stmt_umsatz_pro_tag->fetchAll(PDO::FETCH_ASSOC);
+$umsatz_daten = $umsatzRepository->getByDriverAndRange($fahrer_id, $start_date, $end_date);
+$umsatz_pro_tag = UmsatzRepository::aggregateByDate($umsatz_daten);
+$umsatz_nach_art = UmsatzRepository::aggregateByType($umsatz_daten);
+$ausgaben_nach_art = UmsatzRepository::aggregateExpenses($umsatz_daten);
 
-// Gesamtsumme berechnen
-$gesamt_umsatz = 0;
-foreach ($umsatz_pro_tag as $eintrag) {
-    $gesamt_umsatz += $eintrag['GesamtUmsatz'] ?? 0;
-}
-
-// Datenbankabfragen für Umsätze nach Art
-$stmt_umsatz_nach_art = $pdo->prepare("
-    SELECT 
-        SUM(TaxameterUmsatz + OhneTaxameter - Kartenzahlung - Rechnungsfahrten - Krankenfahrten - Gutscheine - Alita) AS Barzahlung,
-        SUM(Kartenzahlung) AS Kartenzahlung,
-        SUM(Rechnungsfahrten) AS Rechnungsfahrten,
-        SUM(Krankenfahrten) AS Krankenfahrten,
-		SUM(Gutscheine) AS Gutscheine,
-		SUM(Alita) AS Alita
-    FROM Umsatz
-    WHERE FahrerID = ? AND Datum BETWEEN ? AND ?
-");
-$stmt_umsatz_nach_art->execute([$fahrer_id, $start_date, $end_date]);
-$umsatz_nach_art = $stmt_umsatz_nach_art->fetch(PDO::FETCH_ASSOC);
-
-// Datenbankabfragen für Ausgaben nach Art
-$stmt_ausgaben_nach_art = $pdo->prepare("
-    SELECT 
-        SUM(TankenWaschen) AS `Tanken und Waschen`,
-        SUM(SonstigeAusgaben) AS sonstiges
-    FROM Umsatz
-    WHERE FahrerID = ? AND Datum BETWEEN ? AND ?
-");
-$stmt_ausgaben_nach_art->execute([$fahrer_id, $start_date, $end_date]);
-$ausgaben_nach_art = $stmt_ausgaben_nach_art->fetch(PDO::FETCH_ASSOC);
+$gesamt_umsatz = array_reduce(
+    $umsatz_pro_tag,
+    static fn($carry, $eintrag) => $carry + (float)($eintrag['GesamtUmsatz'] ?? 0),
+    0.0
+);
 
 $title = 'Statistiken';
 $extraCss = [
