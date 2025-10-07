@@ -1,8 +1,7 @@
 <?php
 require_once '../../includes/bootstrap.php'; // Datenbankverbindung
-
-// Rolle für diese Route festlegen (einfachste Variante)
-$_SESSION['rolle'] = 'Fahrer';
+require_once '../../includes/driver_helpers.php';
+require_once '../../includes/umsatz_repository.php';
 
 // Fehleranzeige aktivieren (nur für Debugging, in Produktion entfernen)
 ini_set('display_errors', 1);
@@ -17,22 +16,14 @@ if (!isset($_GET['datum']) || empty($_GET['datum'])) {
 // Datum direkt aus dem Parameter abrufen
 $datum = $_GET['datum'];
 
-// Überprüfung, ob der Benutzer eingeloggt ist
-if (!isset($_SESSION['user_id'])) {
-    die('Fehler: Keine gültige Session. Bitte erneut anmelden.');
+try {
+    $fahrer_id = requireDriverId();
+} catch (RuntimeException $e) {
+    die($e->getMessage());
 }
 
-// Fahrer-ID aus der Session
-$fahrer_id = $_SESSION['user_id'];
-
-// Abfrage des Eintrags aus der Datenbank
-$stmt = $pdo->prepare("
-    SELECT * 
-    FROM Umsatz 
-    WHERE Datum = ? AND FahrerID = ?
-");
-$stmt->execute([$datum, $fahrer_id]);
-$eintrag = $stmt->fetch(PDO::FETCH_ASSOC);
+$umsatzRepository = new UmsatzRepository($pdo);
+$eintrag = $umsatzRepository->getByDriverAndDate($fahrer_id, $datum);
 
 if (!$eintrag) {
     die('Eintrag nicht gefunden.');
@@ -43,30 +34,21 @@ $error = null;
 $success = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $taxameter_umsatz = (float)($_POST['taxameter_umsatz'] ?? 0);
-    $ohne_taxameter = (float)($_POST['ohne_taxameter'] ?? 0);
-    $kartenzahlung = (float)($_POST['kartenzahlung'] ?? 0);
-    $rechnungsfahrten = (float)($_POST['rechnungsfahrten'] ?? 0);
-    $krankenfahrten = (float)($_POST['krankenfahrten'] ?? 0);
-    $gutscheine = (float)($_POST['gutscheine'] ?? 0);
-    $alita = (float)($_POST['alita'] ?? 0);
-    $tanken_waschen = (float)($_POST['tanken_waschen'] ?? 0);
-    $sonstige_ausgaben = (float)($_POST['sonstige_ausgaben'] ?? 0);
+    $payload = [
+        'TaxameterUmsatz' => (float)($_POST['taxameter_umsatz'] ?? 0),
+        'OhneTaxameter' => (float)($_POST['ohne_taxameter'] ?? 0),
+        'Kartenzahlung' => (float)($_POST['kartenzahlung'] ?? 0),
+        'Rechnungsfahrten' => (float)($_POST['rechnungsfahrten'] ?? 0),
+        'Krankenfahrten' => (float)($_POST['krankenfahrten'] ?? 0),
+        'Gutscheine' => (float)($_POST['gutscheine'] ?? 0),
+        'Alita' => (float)($_POST['alita'] ?? 0),
+        'TankenWaschen' => (float)($_POST['tanken_waschen'] ?? 0),
+        'SonstigeAusgaben' => (float)($_POST['sonstige_ausgaben'] ?? 0),
+    ];
 
     try {
-        $stmt = $pdo->prepare("
-            UPDATE Umsatz 
-            SET TaxameterUmsatz = ?, OhneTaxameter = ?, Kartenzahlung = ?, Rechnungsfahrten = ?, 
-                Krankenfahrten = ?, Gutscheine = ?, Alita = ?, TankenWaschen = ?, SonstigeAusgaben = ?
-            WHERE FahrerID = ? AND Datum = ?
-        ");
-
-        $stmt->execute([
-            $taxameter_umsatz, $ohne_taxameter, $kartenzahlung, $rechnungsfahrten,
-            $krankenfahrten, $gutscheine, $alita, $tanken_waschen, $sonstige_ausgaben,
-            $fahrer_id, $datum
-        ]);
-
+        $umsatzRepository->update($fahrer_id, $datum, $payload);
+        $eintrag = array_merge($eintrag, $payload);
         $success = "Eintrag erfolgreich aktualisiert!";
     } catch (PDOException $e) {
         $error = 'Fehler beim Aktualisieren des Eintrags: ' . $e->getMessage();
@@ -137,28 +119,13 @@ include __DIR__ . '/../../includes/layout.php';
 			<button type="submit">Eintrag aktualisieren</button>
 		</form>
     </main>
-	<script>
-        // Automatische Berechnung des Gesamtumsatzes
-        document.querySelectorAll('input[type="number"]').forEach(input => {
-            input.addEventListener('input', calculateTotal);
+        <script src="../js/driver-cash-calculator.js"></script>
+        <script>
+        DriverCashCalculator.init({
+            incomeFields: ['taxameter', 'ohne_taxameter'],
+            expenseFields: ['kartenzahlung', 'rechnungsfahrten', 'krankenfahrten', 'gutscheine', 'alita', 'tanken_waschen', 'sonstige_ausgaben'],
+            outputField: '#gesamtumsatz'
         });
-
-        function calculateTotal() {
-            const taxameter = parseFloat(document.getElementById('taxameter').value) || 0;
-            const ohne_taxameter = parseFloat(document.getElementById('ohne_taxameter').value) || 0;
-            const kartenzahlung = parseFloat(document.getElementById('kartenzahlung').value) || 0;
-            const rechnungsfahrten = parseFloat(document.getElementById('rechnungsfahrten').value) || 0;
-            const krankenfahrten = parseFloat(document.getElementById('krankenfahrten').value) || 0;
-            const gutscheine = parseFloat(document.getElementById('gutscheine').value) || 0;
-            const alita = parseFloat(document.getElementById('alita').value) || 0;
-            const tanken_waschen = parseFloat(document.getElementById('tanken_waschen').value) || 0;
-            const sonstige_ausgaben = parseFloat(document.getElementById('sonstige_ausgaben').value) || 0;
-
-            const total = taxameter + ohne_taxameter - kartenzahlung - rechnungsfahrten -
-                          krankenfahrten - gutscheine - alita - tanken_waschen - sonstige_ausgaben;
-
-            document.getElementById('gesamtumsatz').value = total.toFixed(2);
-        }
-    </script>
+        </script>
 </body>
 </html>

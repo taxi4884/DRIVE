@@ -1,22 +1,18 @@
 <?php
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-	
+
 require_once '../../includes/bootstrap.php'; // Datenbankverbindung und Authentifizierung
+require_once '../../includes/driver_helpers.php';
 
-// Rolle für diese Route festlegen (einfachste Variante)
-$_SESSION['rolle'] = 'Fahrer';
-
-if (!isset($_SESSION['user_id'])) {
-    die('Fehler: Keine gültige Session. Bitte erneut anmelden.');
+try {
+    $fahrer_id = requireDriverId();
+    $fahrer = fetchDriverProfile($pdo, $fahrer_id);
+} catch (RuntimeException $e) {
+    die($e->getMessage());
 }
-$fahrer_id = $_SESSION['user_id'];
 
-// Fahrername abrufen
-$stmtFahrer = $pdo->prepare("SELECT Vorname, Nachname FROM Fahrer WHERE FahrerID = :id");
-$stmtFahrer->execute(['id' => $fahrer_id]);
-$fahrer = $stmtFahrer->fetch(PDO::FETCH_ASSOC);
-$fahrer_name = $fahrer ? $fahrer['Vorname'] . ' ' . $fahrer['Nachname'] : 'Unbekannter Fahrer';
+$fahrer_name = $fahrer['Vorname'] . ' ' . $fahrer['Nachname'];
 
 // Verarbeitung der Inspektionsmeldung
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['inspektion_melden'])) {

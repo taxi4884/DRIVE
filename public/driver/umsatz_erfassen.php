@@ -1,121 +1,61 @@
 <?php
 require_once '../../includes/bootstrap.php';
-
-// Rolle für diese Route festlegen (einfachste Variante)
-$_SESSION['rolle'] = 'Fahrer';
-
-if ($_SESSION['user_role'] !== 'fahrer') {
-    header("Location: ../index.php");
-    exit();
-}
+require_once '../../includes/driver_helpers.php';
+require_once '../../includes/umsatz_repository.php';
 
 $error = '';
 $success = '';
 
-$fahrer_id = $_SESSION['user_id'];
+try {
+    $fahrer_id = requireDriverId();
+    $fahrer = fetchDriverProfile($pdo, $fahrer_id);
+} catch (RuntimeException $e) {
+    die($e->getMessage());
+}
 
-// Prüfung: Offene Schichten (Schichten mit Anmeldung, aber ohne Umsatz)
-$offene_daten = [];
-$stmt = $pdo->prepare("
-    SELECT DISTINCT DATE(sfa.anmeldung) AS offenes_datum
-    FROM sync_fahreranmeldung sfa
-    JOIN Fahrer f 
-        ON sfa.fahrer = f.Fahrernummer OR sfa.fahrer = f.fms_alias
-    WHERE f.FahrerID = :fahrer_id
-      AND DATE(sfa.anmeldung) NOT IN (
-          SELECT DATE(Datum) FROM Umsatz WHERE FahrerID = :fahrer_id
-      )
-    ORDER BY offenes_datum DESC
-");
-$stmt->execute(['fahrer_id' => $fahrer_id]);
-$offene_daten = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$umsatzRepository = new UmsatzRepository($pdo);
+$offene_daten = $umsatzRepository->findOpenShiftDates($fahrer_id);
 
 // Formular wurde abgeschickt
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $fahrer_id = $_SESSION['user_id'];
     $datum = $_POST['datum'];
-    $taxameter_umsatz = floatval($_POST['taxameter_umsatz'] ?? 0);
-    $ohne_taxameter = floatval($_POST['ohne_taxameter'] ?? 0);
-    $kartenzahlung = floatval($_POST['kartenzahlung'] ?? 0);
-    $rechnungsfahrten = floatval($_POST['rechnungsfahrten'] ?? 0);
-    $krankenfahrten = floatval($_POST['krankenfahrten'] ?? 0);
-    $gutscheine = floatval($_POST['gutscheine'] ?? 0);
-    $alita = floatval($_POST['alita'] ?? 0);
-    $tanken_waschen = floatval($_POST['tanken_waschen'] ?? 0);
-    $sonstige_ausgaben = floatval($_POST['sonstige_ausgaben'] ?? 0);
-    $notiz = $_POST['notiz'] ?? null;
+    $payload = [
+        'Datum' => $datum,
+        'TaxameterUmsatz' => (float)($_POST['taxameter_umsatz'] ?? 0),
+        'OhneTaxameter' => (float)($_POST['ohne_taxameter'] ?? 0),
+        'Kartenzahlung' => (float)($_POST['kartenzahlung'] ?? 0),
+        'Rechnungsfahrten' => (float)($_POST['rechnungsfahrten'] ?? 0),
+        'Krankenfahrten' => (float)($_POST['krankenfahrten'] ?? 0),
+        'Gutscheine' => (float)($_POST['gutscheine'] ?? 0),
+        'Alita' => (float)($_POST['alita'] ?? 0),
+        'TankenWaschen' => (float)($_POST['tanken_waschen'] ?? 0),
+        'SonstigeAusgaben' => (float)($_POST['sonstige_ausgaben'] ?? 0),
+        'Notiz' => $_POST['notiz'] ?? null,
+    ];
 
     try {
-        $fahrer_stmt = $pdo->prepare("SELECT Vorname, Nachname FROM Fahrer WHERE FahrerID = ?");
-        $fahrer_stmt->execute([$fahrer_id]);
-        $fahrer = $fahrer_stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$fahrer) {
-            throw new Exception("Fahrer nicht gefunden.");
+        if ($payload['TaxameterUmsatz'] <= 0 && $payload['OhneTaxameter'] <= 0) {
+            throw new Exception('Bitte mindestens einen Umsatz (mit oder ohne Taxameter) eingeben.');
         }
 
-        $vorname = $fahrer['Vorname'];
-        $nachname = $fahrer['Nachname'];
+        $umsatzRepository->create($fahrer_id, $payload);
 
-		if ($taxameter_umsatz <= 0 && $ohne_taxameter <= 0) {
-			throw new Exception("Bitte mindestens einen Umsatz (mit oder ohne Taxameter) eingeben.");
-		}
-
-        $umsatz = $taxameter_umsatz + $ohne_taxameter;
-
-        $umsatz_stmt = $pdo->prepare("
-            INSERT INTO Umsatz (
-                FahrerID,
-                Datum,
-                TaxameterUmsatz,
-                OhneTaxameter,
-                Kartenzahlung,
-                Rechnungsfahrten,
-                Krankenfahrten,
-                Gutscheine,
-                Alita,
-                TankenWaschen,
-                SonstigeAusgaben,
-                Notiz
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        $umsatz_stmt->execute([
-            $fahrer_id,
-            $datum,
-            $taxameter_umsatz,
-            $ohne_taxameter,
-            $kartenzahlung,
-            $rechnungsfahrten,
-            $krankenfahrten,
-            $gutscheine,
-            $alita,
-            $tanken_waschen,
-            $sonstige_ausgaben,
-            $notiz
-        ]);
-
-        $notification_stmt = $pdo->prepare("
-            INSERT INTO notifications (
-                Vorname,
-                Nachname,
-                Umsatz,
-                Datum,
-                gesendet
-            ) VALUES (?, ?, ?, ?, ?)
-        ");
+        $umsatz = $payload['TaxameterUmsatz'] + $payload['OhneTaxameter'];
+        $notification_stmt = $pdo->prepare(
+            'INSERT INTO notifications (Vorname, Nachname, Umsatz, Datum, gesendet) VALUES (?, ?, ?, ?, ?)'
+        );
         $notification_stmt->execute([
-            $vorname,
-            $nachname,
+            $fahrer['Vorname'],
+            $fahrer['Nachname'],
             $umsatz,
             $datum,
-            0
+            0,
         ]);
 
-        header("Location: dashboard.php");
+        header('Location: dashboard.php');
         exit();
-
     } catch (Exception $e) {
-        $error = "Fehler: " . $e->getMessage();
+        $error = 'Fehler: ' . $e->getMessage();
     }
 }
 
@@ -317,67 +257,50 @@ include __DIR__ . '/../../includes/layout.php';
 
 	</main>
 
-	<?php include 'nav-script.php'; ?>
+        <?php include 'nav-script.php'; ?>
 
+<script src="../js/driver-cash-calculator.js"></script>
 <script>
-// --------- Summen‑ und Eingabefunktionen ---------
-function calculateTotal() {
-    const taxameter        = parseFloat(document.getElementById('taxameter').value)        || 0;
-    const ohneTaxameter    = parseFloat(document.getElementById('ohne_taxameter').value)   || 0;
-    const kartenzahlung    = parseFloat(document.getElementById('kartenzahlung').value)    || 0;
-    const rechnungsfahrten = parseFloat(document.getElementById('rechnungsfahrten').value) || 0;
-    const krankenfahrten   = parseFloat(document.getElementById('krankenfahrten').value)   || 0;
-    const gutscheine       = parseFloat(document.getElementById('gutscheine').value)       || 0;
-    const alita            = parseFloat(document.getElementById('alita').value)            || 0;
-    const tankenWaschen    = parseFloat(document.getElementById('tanken_waschen').value)   || 0;
-    const sonstigeAusgaben = parseFloat(document.getElementById('sonstige_ausgaben').value)|| 0;
+const calculator = DriverCashCalculator.init({
+    incomeFields: ['taxameter', 'ohne_taxameter'],
+    expenseFields: ['kartenzahlung', 'rechnungsfahrten', 'krankenfahrten', 'gutscheine', 'alita', 'tanken_waschen', 'sonstige_ausgaben'],
+    outputField: '#gesamtumsatz',
+    onUpdate({ elements }) {
+        Object.values(elements).forEach((input) => {
+            if (!input || input.type !== 'number') {
+                return;
+            }
 
-    // Hier nur Beispiel‑Logik – falls du etwas anderes brauchst, Formel anpassen
-    const total = taxameter + ohneTaxameter
-                - kartenzahlung - rechnungsfahrten - krankenfahrten
-                - gutscheine - alita - tankenWaschen - sonstigeAusgaben;
-
-    document.getElementById('gesamtumsatz').value = total.toFixed(2);
-}
-
-function validateInput(input) {
-    input.style.border =
-        input.value && parseFloat(input.value) >= 0
-        ? '2px solid #4caf50'
-        : '2px solid #ccc';
-}
-
-document.querySelectorAll('input[type="number"]').forEach(input => {
-    input.addEventListener('input', () => {
-        calculateTotal();
-        validateInput(input);
-    });
+            input.style.border = input.value && parseFloat(input.value) >= 0
+                ? '2px solid #4caf50'
+                : '2px solid #ccc';
+        });
+    }
 });
 
-// --------- Formular‑Handling ---------
-const form    = document.getElementById('umsatzForm');
+const form = document.getElementById('umsatzForm');
 const overlay = document.getElementById('overlay');
 
 function mindestensEinUmsatz() {
-    const tax  = parseFloat(document.getElementById('taxameter').value)      || 0;
-    const ohne = parseFloat(document.getElementById('ohne_taxameter').value) || 0;
+    const totals = calculator.getTotals();
 
-    if (tax === 0 && ohne === 0) {
+    if (totals.income <= 0) {
         alert('Bitte gib entweder einen Umsatz *mit* oder *ohne* Taxameter ein.');
         return false;
     }
+
     return true;
 }
 
 form.addEventListener('submit', function (event) {
-    event.preventDefault();                 // Standard‑Submit unterbinden
+    event.preventDefault();
 
-    if (!mindestensEinUmsatz()) {           // Validierung
-        return;                             // Abbruch ohne Overlay
+    if (!mindestensEinUmsatz()) {
+        return;
     }
 
-    overlay.style.display = 'flex';         // Animation anzeigen
-    setTimeout(() => form.submit(), 2000);  // nach 2 s wirklich senden
+    overlay.style.display = 'flex';
+    setTimeout(() => form.submit(), 2000);
 });
 </script>
 

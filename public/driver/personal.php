@@ -4,20 +4,13 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once '../../includes/bootstrap.php'; // Verbindung und Authentifizierung
+require_once '../../includes/driver_helpers.php';
 
-// Rolle für diese Route festlegen (einfachste Variante)
-$_SESSION['rolle'] = 'Fahrer';
-
-// Session prüfen
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+try {
+    $fahrer_id = requireDriverId();
+} catch (RuntimeException $e) {
+    die($e->getMessage());
 }
-
-if (!isset($_SESSION['user_id'])) {
-    die('Fehler: Keine gültige Session.');
-}
-
-$fahrer_id = $_SESSION['user_id'];
 
 // Persönliche Daten abrufen
 try {

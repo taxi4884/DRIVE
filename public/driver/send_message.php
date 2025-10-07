@@ -1,15 +1,12 @@
 <?php
 require_once '../../includes/bootstrap.php';
+require_once '../../includes/driver_helpers.php';
 
-// Rolle für diese Route festlegen (einfachste Variante)
-$_SESSION['rolle'] = 'Fahrer';
-
-if (!isDriver()) {
-    header('Location: ../index.php');
-    exit;
+try {
+    $driverId = requireDriverId();
+} catch (RuntimeException $e) {
+    die($e->getMessage());
 }
-
-$driverId = $_SESSION['user_id'];
 
 // Permitted recipients for this driver
 $permStmt = $pdo->prepare(

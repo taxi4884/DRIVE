@@ -1,33 +1,22 @@
 <?php
 //public/driver/dashboard.php
 require_once '../../includes/bootstrap.php';
-
-// Rolle für diese Route festlegen (einfachste Variante)
-$_SESSION['rolle'] = 'Fahrer';
+require_once '../../includes/driver_helpers.php';
+require_once '../../includes/umsatz_repository.php';
 
 // Fehleranzeige aktivieren (nur für Debugging, in Produktion entfernen)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Session überprüfen
-if (!isset($_SESSION['user_id'])) {
-    die('Fehler: Keine gültige Session. Bitte erneut anmelden.');
+try {
+    $fahrer_id = requireDriverId();
+    $fahrer = fetchDriverProfile($pdo, $fahrer_id);
+} catch (RuntimeException $e) {
+    die($e->getMessage());
 }
 
-$fahrer_id = $_SESSION['user_id'];
-
-// Fahrer abfragen
-$stmt = $pdo->prepare("SELECT * FROM Fahrer WHERE FahrerID = ?");
-if (!$stmt->execute([$fahrer_id])) {
-    $errorInfo = $stmt->errorInfo();
-    die('SQL-Fehler: ' . $errorInfo[2]);
-}
-
-$fahrer = $stmt->fetch(PDO::FETCH_ASSOC);
-if (!$fahrer) {
-    $fahrer = ['Vorname' => 'Unbekannter', 'Nachname' => 'Benutzer'];
-}
+$umsatzRepository = new UmsatzRepository($pdo);
 
 // ────────────────────────────────────────────────────────────
 // P-Schein-Gültigkeit prüfen
@@ -98,42 +87,10 @@ if ($zeitraum === 'monat') {
 }
 
 
-$stmt = $pdo->prepare("
-    SELECT 
-        Datum,
-        TaxameterUmsatz,
-        OhneTaxameter,
-        Kartenzahlung,
-        Rechnungsfahrten,
-        Krankenfahrten,
-        Gutscheine,
-        Alita,
-        TankenWaschen,
-        SonstigeAusgaben,
-        Abgerechnet
-    FROM Umsatz
-    WHERE FahrerID = ? AND Datum BETWEEN ? AND ?
-    ORDER BY Datum ASC
-");
-
-if (!$stmt->execute([$fahrer_id, $start_date, $end_date])) {
-    $errorInfo = $stmt->errorInfo();
-    die('SQL-Fehler: ' . $errorInfo[2]);
-}
-
-$umsatzDaten = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$gesamtUmsatz = 0;
-$gesamtBargeld = 0;
-
-foreach ($umsatzDaten as $eintrag) {
-    $umsatz = $eintrag['TaxameterUmsatz'] + $eintrag['OhneTaxameter'];
-    $ausgaben = $eintrag['Kartenzahlung'] + $eintrag['Rechnungsfahrten'] + $eintrag['Krankenfahrten'] + $eintrag['Gutscheine'] + $eintrag['Alita'] + $eintrag['TankenWaschen'] + $eintrag['SonstigeAusgaben'];
-    $bargeld = $umsatz - $ausgaben;
-
-    $gesamtUmsatz += $umsatz;
-    $gesamtBargeld += $bargeld;
-}
+$umsatzDaten = $umsatzRepository->getByDriverAndRange($fahrer_id, $start_date, $end_date);
+$summen = UmsatzRepository::calculateTotals($umsatzDaten);
+$gesamtUmsatz = $summen['umsatz'];
+$gesamtBargeld = $summen['bargeld'];
 
 // Nächste geplante Abrechnung anzeigen, wenn vorhanden
 $stmtAbrechnung = $pdo->query("
