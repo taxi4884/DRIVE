@@ -5,6 +5,10 @@
     --body-bg-color: var(--bs-body-bg);
 }
 
+html {
+    font-size: 50%;
+}
+
 body {
     font-family: var(--font-family-base);
     background-color: var(--body-bg-color);
@@ -254,7 +258,7 @@ nav {
     display: none;
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: 12px;
     color: #ffffff;
     cursor: pointer;
 }
@@ -299,7 +303,7 @@ nav {
     display: inline-block;
     background-color: red;
     color: white;
-    font-size: 12px;
+    font-size: 6px;
     font-weight: bold;
     padding: 2px 5px;
     border-radius: 10px;
@@ -547,7 +551,7 @@ input:focus, select:focus {
 .modal .close {
   color: var(--color-primary);
   float: right;
-  font-size: 28px;
+  font-size: 14px;
   font-weight: bold;
   cursor: pointer;
 }
@@ -602,7 +606,7 @@ input:focus, select:focus {
   text-decoration: none;
   display: block;
   margin-bottom: 10px;
-  font-size: 16px;
+  font-size: 8px;
   transition: color 0.2s;
 }
 
@@ -612,7 +616,7 @@ input:focus, select:focus {
 }
 
 .sidebar p {
-  font-size: 14px;
+  font-size: 7px;
   line-height: 1.5;
 }
 
@@ -902,7 +906,7 @@ nav {
     display: none;
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: 12px;
     color: #ffffff;
     cursor: pointer;
 }
@@ -945,7 +949,7 @@ nav {
     display: inline-block;
     background-color: red;
     color: white;
-    font-size: 12px;
+    font-size: 6px;
     font-weight: bold;
     padding: 2px 5px;
     border-radius: 10px;
@@ -985,7 +989,7 @@ nav {
     color: #333; /* Dunkle Schriftfarbe */
     padding: 5px 15px;
     border-radius: 20px;
-    font-size: 16px;
+    font-size: 8px;
     font-weight: bold;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -1006,7 +1010,7 @@ nav {
 }
 
 .department h3 {
-    font-size: 18px;
+    font-size: 9px;
     margin-bottom: 10px;
     color: #333;
     text-transform: uppercase;
@@ -1061,7 +1065,7 @@ button {
     padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 7px;
     transition: background 0.3s ease;
 }
 
