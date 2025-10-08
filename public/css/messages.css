@@ -86,6 +86,10 @@
     background-color: #f0f0f0;
 }
 
+.conversation-item.active {
+    background-color: #e6f0ff;
+}
+
 
 .conversation-panel {
     flex: 1;
