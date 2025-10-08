@@ -125,33 +125,38 @@ include __DIR__ . '/../includes/layout.php';
 	  background-color: #f8d7da;
 	  color: #721c24;
 	}
-	td[title] {
-	  position: relative;
-	}
-	td[title]:hover::after {
-	  content: attr(title);
-	  position: absolute;
-	  bottom: 100%; /* Tooltip über der Zelle */
-	  left: 50%;
-	  transform: translateX(-50%);
-	  background-color: #333;
-	  color: #fff;
-	  padding: 5px 10px;
-	  border-radius: 4px;
-	  white-space: nowrap;
-	  font-size: 12px;
-	  z-index: 1000;
-	  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-	}
-	td[title]:hover::before {
-	  content: '';
-	  position: absolute;
-	  bottom: calc(100% - 5px); /* Pfeil über der Zelle */
-	  left: 50%;
-	  transform: translateX(-50%);
-	  border: 5px solid transparent;
-	  border-top-color: #333;
-	}
+        .hover-wrapper {
+          position: relative;
+          display: inline-block;
+        }
+        .hover-content {
+          display: none;
+          position: absolute;
+          bottom: calc(100% + 6px);
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.85);
+          color: #fff;
+          padding: 6px 10px;
+          border-radius: 4px;
+          white-space: nowrap;
+          font-size: 12px;
+          z-index: 50;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        .hover-content::after {
+          content: '';
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border-width: 6px;
+          border-style: solid;
+          border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+        }
+        .hover-wrapper:hover .hover-content {
+          display: block;
+        }
     .month-navigation { margin: 20px auto; text-align: left; }
     .month-navigation a { padding: 10px 15px; font-size: 16px; background-color: #FFD700; color: #000; text-decoration: none; border-radius: 4px; margin: 0 5px; }
     .month-navigation a:hover { background-color: #FFC107; }
@@ -213,9 +218,9 @@ include __DIR__ . '/../includes/layout.php';
 				<?php foreach ($dates as $date): ?>
 					<?php
 					// Initialisierung der Variablen für jede Zelle
-					$cellClass = '';
-					$cellText = '-';
-					$titleText = ''; // Tooltip-Inhalt zurücksetzen
+                                        $cellClass = '';
+                                        $cellText = '-';
+                                        $hoverLines = [];
 					
 					// Abwesenheiten prüfen
 					foreach ($abwesenheiten as $absence) {
@@ -229,45 +234,65 @@ include __DIR__ . '/../includes/layout.php';
 								if ($absence['grund'] === 'krank') {
 									$cellClass = 'absent-krank';
 									$cellText = 'K';
-									$titleText = $absence['grund'];
-								} elseif ($absence['grund'] === 'Kind krank') {
-									$cellClass = 'absent-kind-krank';
-									$cellText = 'KK';
-									$titleText = $absence['grund'];
-								}
-							} elseif ($absence['abwesenheitsart'] === 'Urlaub') {
+                                                                        if (!empty($absence['grund'])) {
+                                                                                $hoverLines[] = $absence['grund'];
+                                                                        }
+                                                                } elseif ($absence['grund'] === 'Kind krank') {
+                                                                        $cellClass = 'absent-kind-krank';
+                                                                        $cellText = 'KK';
+                                                                        if (!empty($absence['grund'])) {
+                                                                                $hoverLines[] = $absence['grund'];
+                                                                        }
+                                                                }
+                                                        } elseif ($absence['abwesenheitsart'] === 'Urlaub') {
 								// Für Urlaub: Statusabhängige Darstellung
-                                                                if ($absence['status'] === 'beantragt') {
-                                                                        $cellClass = 'absent-vacation-beantragt';
-                                                                        $cellText = 'Ub';
-                                                                        $titleText = $absence['grund'];
-								} elseif ($absence['status'] === 'genehmigt') {
-									if ($absence['grund'] === 'unbezahlter Urlaub') {
-										$cellClass = 'absent-vacation-unbezahlt';
-										$cellText = 'UU';
-										$titleText = $absence['grund'];
-									} else {
-										$cellClass = 'absent-vacation-genehmigt';
-										$cellText = 'U';
-										$titleText = $absence['grund'];
-									}
-								} elseif ($absence['status'] === 'abgelehnt') {
-									$cellClass = 'absent-vacation-abgelehnt';
-									$cellText = 'Ua';
-									$titleText = $absence['grund'];
-								}
+                                                                        if ($absence['status'] === 'beantragt') {
+                                                                                $cellClass = 'absent-vacation-beantragt';
+                                                                                $cellText = 'Ub';
+                                                                                if (!empty($absence['grund'])) {
+                                                                                        $hoverLines[] = $absence['grund'];
+                                                                                }
+                                                                        } elseif ($absence['status'] === 'genehmigt') {
+                                                                                if ($absence['grund'] === 'unbezahlter Urlaub') {
+                                                                                        $cellClass = 'absent-vacation-unbezahlt';
+                                                                                        $cellText = 'UU';
+                                                                                        if (!empty($absence['grund'])) {
+                                                                                                $hoverLines[] = $absence['grund'];
+                                                                                        }
+                                                                                } else {
+                                                                                        $cellClass = 'absent-vacation-genehmigt';
+                                                                                        $cellText = 'U';
+                                                                                        if (!empty($absence['grund'])) {
+                                                                                                $hoverLines[] = $absence['grund'];
+                                                                                        }
+                                                                                }
+                                                                        } elseif ($absence['status'] === 'abgelehnt') {
+                                                                                $cellClass = 'absent-vacation-abgelehnt';
+                                                                                $cellText = 'Ua';
+                                                                                if (!empty($absence['grund'])) {
+                                                                                        $hoverLines[] = $absence['grund'];
+                                                                                }
+                                                                        }
                                                         }
                                                         if (!empty($absence['kommentar'])) {
-                                                                $titleText .= (!empty($titleText) ? ': ' : '') . $absence['kommentar'];
+                                                                $hoverLines[] = 'Kommentar: ' . $absence['kommentar'];
                                                         }
                                                         break; // Schleife beenden, sobald eine passende Abwesenheit gefunden wurde
-						}
-					}
-					?>
-					<td class="<?= $cellClass ?>"
-						<?= !empty($titleText) ? 'title="' . htmlspecialchars($titleText) . '"' : ''; ?>>
-						<?= htmlspecialchars($cellText); ?>
-					</td>
+                                                }
+                                        }
+                                        ?>
+                                        <td class="<?= $cellClass ?><?= !empty($hoverLines) ? ' has-hover' : '' ?>">
+                                                <div class="hover-wrapper">
+                                                        <span class="hover-label"><?= htmlspecialchars($cellText); ?></span>
+                                                        <?php if (!empty($hoverLines)): ?>
+                                                                <div class="hover-content">
+                                                                        <?php foreach ($hoverLines as $line): ?>
+                                                                                <div><?= htmlspecialchars($line); ?></div>
+                                                                        <?php endforeach; ?>
+                                                                </div>
+                                                        <?php endif; ?>
+                                                </div>
+                                        </td>
 				<?php endforeach; ?>
             </tr>
           <?php endforeach; ?>
