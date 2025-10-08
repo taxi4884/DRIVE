@@ -157,13 +157,28 @@ $totalActiveDrivers = array_sum(array_map('count', $activeDriversByCompany));
 $fahrer_birthdays = [];
 $zentrale_birthdays = [];
 $birthdaysError = null;
+
+$hasFahrerBirthdateColumn = tableHasColumn($pdo, 'Fahrer', 'birth_date');
 $hasZentraleBirthdateColumn = tableHasColumn($pdo, 'mitarbeiter_zentrale', 'geburtsdatum');
-try {
-    $stmt_fahrer = $pdo->prepare("SELECT CONCAT(Vorname, ' ', Nachname) AS name FROM Fahrer WHERE DATE_FORMAT(geburtsdatum, '%m-%d') = DATE_FORMAT(NOW(), '%m-%d')");
-    $stmt_fahrer->execute();
-    $fahrer_birthdays = $stmt_fahrer->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $birthdaysError = $e->getMessage();
+
+if ($hasFahrerBirthdateColumn) {
+    try {
+        $stmt_fahrer = $pdo->prepare(
+            "SELECT CONCAT(Vorname, ' ', Nachname) AS name
+             FROM Fahrer
+             WHERE birth_date IS NOT NULL
+               AND DATE_FORMAT(birth_date, '%m-%d') = DATE_FORMAT(NOW(), '%m-%d')"
+        );
+        $stmt_fahrer->execute();
+        $fahrer_birthdays = $stmt_fahrer->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        $birthdaysError = $birthdaysError ? $birthdaysError . ' / ' . $e->getMessage() : $e->getMessage();
+    }
+} else {
+    $missingBirthdateMessage = 'Spalte "birth_date" existiert nicht in der Tabelle Fahrer.';
+    $birthdaysError = $birthdaysError
+        ? $birthdaysError . ' / ' . $missingBirthdateMessage
+        : $missingBirthdateMessage;
 }
 
 if ($hasZentraleBirthdateColumn) {
