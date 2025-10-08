@@ -437,6 +437,17 @@ table tr:last-child td:last-child {
  * BUTTONS
  *********************************************/
 
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.btn-group > * {
+  margin: 0;
+}
+
 button {
   background-color: var(--color-primary);
   color: var(--color-text);
