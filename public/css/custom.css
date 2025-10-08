@@ -964,9 +964,9 @@ nav {
 
 .widget {
     background-color: white;
-    margin-top: 12px;
-    margin-bottom: 20px;
-    padding: 20px;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
     border-radius: 10px;
     border: 2px solid #FFD700; /* Gelber Rand */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Schlagschatten */
@@ -984,7 +984,7 @@ nav {
 
 .widget h2 {
     position: absolute;
-    top: -28px;
+    top: -10px;
     left: 20px;
     background-color: #FFD700; /* Gelber Hintergrund */
     color: #333; /* Dunkle Schriftfarbe */
