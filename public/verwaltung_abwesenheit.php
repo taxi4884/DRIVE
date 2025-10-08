@@ -122,7 +122,7 @@ function getAbwesenheitsKuerzel($typ) {
         case 'Urlaub':
             return 'UR';
         case 'Kommt später':
-            return 'LS';
+            return 'KS';
         case 'Geht eher':
             return 'GE';
         case 'Unterbrechung':
@@ -132,38 +132,69 @@ function getAbwesenheitsKuerzel($typ) {
     }
 }
 
-function getAbwesenheitsTooltip(array $abwesenheit) {
+function formatGermanDate(?string $date): ?string {
+    if (empty($date)) {
+        return null;
+    }
+
+    $timestamp = strtotime($date);
+    if ($timestamp === false) {
+        return null;
+    }
+
+    return date('d.m.Y', $timestamp);
+}
+
+function formatGermanTime(?string $time): ?string {
+    if (empty($time)) {
+        return null;
+    }
+
+    $timestamp = strtotime($time);
+    if ($timestamp === false) {
+        return null;
+    }
+
+    return date('H:i', $timestamp);
+}
+
+function getAbwesenheitsTooltip(array $abwesenheit): array {
     $beschreibung = trim((string)($abwesenheit['beschreibung'] ?? ''));
     $typ = $abwesenheit['typ'] ?? '';
     $lines = [];
 
     switch ($typ) {
         case 'Geht eher':
-            if (!empty($abwesenheit['endzeit'])) {
-                $lines[] = 'Uhrzeit: ' . $abwesenheit['endzeit'];
+            $zeit = formatGermanTime($abwesenheit['endzeit'] ?? null);
+            if ($zeit !== null) {
+                $lines[] = 'Uhrzeit: ' . $zeit;
             }
             if ($beschreibung !== '') {
                 $lines[] = 'Grund: ' . $beschreibung;
             }
             break;
         case 'Kommt später':
-            if (!empty($abwesenheit['startzeit'])) {
-                $lines[] = 'Uhrzeit: ' . $abwesenheit['startzeit'];
+            $zeit = formatGermanTime($abwesenheit['startzeit'] ?? null);
+            if ($zeit !== null) {
+                $lines[] = 'Uhrzeit: ' . $zeit;
             }
             if ($beschreibung !== '') {
                 $lines[] = 'Grund: ' . $beschreibung;
             }
             break;
         case 'Unterbrechung':
-            if (!empty($abwesenheit['datum'])) {
-                $lines[] = 'Datum: ' . $abwesenheit['datum'];
+            $datum = formatGermanDate($abwesenheit['datum'] ?? null);
+            if ($datum !== null) {
+                $lines[] = 'Datum: ' . $datum;
             }
             $zeitraum = [];
-            if (!empty($abwesenheit['startzeit'])) {
-                $zeitraum[] = $abwesenheit['startzeit'];
+            $start = formatGermanTime($abwesenheit['startzeit'] ?? null);
+            $ende = formatGermanTime($abwesenheit['endzeit'] ?? null);
+            if ($start !== null) {
+                $zeitraum[] = $start;
             }
-            if (!empty($abwesenheit['endzeit'])) {
-                $zeitraum[] = $abwesenheit['endzeit'];
+            if ($ende !== null) {
+                $zeitraum[] = $ende;
             }
             if (!empty($zeitraum)) {
                 $lines[] = 'Zeit: ' . implode(' bis ', $zeitraum);
@@ -175,11 +206,13 @@ function getAbwesenheitsTooltip(array $abwesenheit) {
         case 'Urlaub':
             $lines[] = 'Typ: ' . $typ;
             $zeitraum = [];
-            if (!empty($abwesenheit['startdatum'])) {
-                $zeitraum[] = $abwesenheit['startdatum'];
+            $start = formatGermanDate($abwesenheit['startdatum'] ?? null);
+            $ende = formatGermanDate($abwesenheit['enddatum'] ?? null);
+            if ($start !== null) {
+                $zeitraum[] = $start;
             }
-            if (!empty($abwesenheit['enddatum'])) {
-                $zeitraum[] = $abwesenheit['enddatum'];
+            if ($ende !== null) {
+                $zeitraum[] = $ende;
             }
             if (!empty($zeitraum)) {
                 $lines[] = 'Zeitraum: ' . implode(' bis ', $zeitraum);
@@ -187,11 +220,13 @@ function getAbwesenheitsTooltip(array $abwesenheit) {
             break;
         case 'Kind Krank':
             $zeitraum = [];
-            if (!empty($abwesenheit['startdatum'])) {
-                $zeitraum[] = $abwesenheit['startdatum'];
+            $start = formatGermanDate($abwesenheit['startdatum'] ?? null);
+            $ende = formatGermanDate($abwesenheit['enddatum'] ?? null);
+            if ($start !== null) {
+                $zeitraum[] = $start;
             }
-            if (!empty($abwesenheit['enddatum'])) {
-                $zeitraum[] = $abwesenheit['enddatum'];
+            if ($ende !== null) {
+                $zeitraum[] = $ende;
             }
             if (!empty($zeitraum)) {
                 $lines[] = 'Zeitraum: ' . implode(' bis ', $zeitraum);
@@ -204,7 +239,9 @@ function getAbwesenheitsTooltip(array $abwesenheit) {
             break;
     }
 
-    return implode("\n", array_filter($lines));
+    return array_values(array_filter($lines, static function ($line) {
+        return trim((string)$line) !== '';
+    }));
 }
 ?>
 <?php
@@ -256,6 +293,38 @@ include __DIR__ . '/../includes/layout.php';
         text-align: center;
         padding: 5px;
         border: 1px solid #ccc;
+    }
+    .hover-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    .hover-content {
+        display: none;
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+        font-size: 12px;
+        z-index: 50;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    .hover-content::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+    }
+    .hover-wrapper:hover .hover-content {
+        display: block;
     }
     .weekend {
         background-color: #f8d7da;
@@ -348,7 +417,7 @@ include __DIR__ . '/../includes/layout.php';
                           <?php
                                 $cellClass = $date['isWeekend'] ? 'weekend' : '';
                                 $cellText = '-';
-                                $cellTooltip = '';
+                                $cellTooltipLines = [];
                                 foreach ($abwesenheiten as $a) {
                                   if ($a['mitarbeiter_id'] == $person['BenutzerID']) {
                                         $currentDate = $date['date'];
@@ -356,22 +425,27 @@ include __DIR__ . '/../includes/layout.php';
                                             (isset($a['startdatum'], $a['enddatum']) && $currentDate >= $a['startdatum'] && $currentDate <= $a['enddatum'])) {
                                             $cellClass = getAbwesenheitsKlasse($a['typ']);
                                             $cellText = getAbwesenheitsKuerzel($a['typ']);
-                                            $cellTooltip = getAbwesenheitsTooltip($a);
+                                            $cellTooltipLines = getAbwesenheitsTooltip($a);
                                             break;
                                         }
                                   }
                                 }
-                                $titleAttr = '';
-                                if ($cellTooltip !== '') {
-                                  $escapedTooltip = htmlspecialchars($cellTooltip, ENT_QUOTES);
-                                  $escapedTooltip = str_replace("\n", '&#10;', $escapedTooltip);
-                                  $titleAttr = ' title="' . $escapedTooltip . '"';
-                                }
                           ?>
-                          <td class="<?= $cellClass ?>"<?= $titleAttr ?>><?= htmlspecialchars($cellText) ?></td>
+                          <td class="<?= $cellClass ?><?= !empty($cellTooltipLines) ? ' has-hover' : '' ?>">
+                            <div class="hover-wrapper">
+                              <span class="hover-label"><?= htmlspecialchars($cellText) ?></span>
+                              <?php if (!empty($cellTooltipLines)): ?>
+                                <div class="hover-content">
+                                  <?php foreach ($cellTooltipLines as $line): ?>
+                                    <div><?= htmlspecialchars($line) ?></div>
+                                  <?php endforeach; ?>
+                                </div>
+                              <?php endif; ?>
+                            </div>
+                          </td>
                         <?php endforeach; ?>
-		  </tr>
-		<?php endforeach; ?>
+                  </tr>
+                <?php endforeach; ?>
 	  </tbody>
 	</table>
   </main>
