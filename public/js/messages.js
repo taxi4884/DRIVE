@@ -6,8 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var subjectInput = document.getElementById('chat-subject');
   var bodyInput = document.getElementById('chat-body');
   var notificationPollInterval = null;
-  var conversationPollInterval = null;
-  var conversationListPollInterval = null;
+  var notificationButton = document.getElementById('enable-notifications');
   var knownUnreadMessageIds = new Set();
   var unreadInitialized = false;
   var currentOtherId = null;
@@ -375,18 +374,56 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 30000);
   }
 
-  if ('Notification' in window) {
+  function updateNotificationButtonState() {
+    if (!notificationButton) {
+      return;
+    }
+
+    if (!('Notification' in window)) {
+      notificationButton.style.display = 'inline-block';
+      notificationButton.disabled = true;
+      notificationButton.textContent = 'Desktop-Benachrichtigungen werden nicht unterstützt';
+      return;
+    }
+
     if (Notification.permission === 'granted') {
+      notificationButton.style.display = 'none';
       startNotificationPolling();
-    } else if (Notification.permission !== 'denied') {
+      return;
+    }
+
+    notificationButton.style.display = 'inline-block';
+
+    if (Notification.permission === 'denied') {
+      notificationButton.disabled = true;
+      notificationButton.textContent = 'Benachrichtigungen im Browser aktivieren';
+      notificationButton.title = 'Bitte aktivieren Sie Benachrichtigungen in den Browser-Einstellungen.';
+    } else {
+      notificationButton.disabled = false;
+      notificationButton.textContent = 'Desktop-Benachrichtigungen aktivieren';
+      notificationButton.removeAttribute('title');
+    }
+  }
+
+  if (notificationButton) {
+    notificationButton.addEventListener('click', function () {
+      if (!('Notification' in window)) {
+        return;
+      }
+
       Notification.requestPermission().then(function (permission) {
         if (permission === 'granted') {
           startNotificationPolling();
         }
+        updateNotificationButtonState();
       }).catch(function (err) {
         console.error('Benachrichtigungsberechtigung konnte nicht angefordert werden:', err);
       });
-    }
+    });
+
+    updateNotificationButtonState();
+  } else if ('Notification' in window && Notification.permission === 'granted') {
+    startNotificationPolling();
   }
 
   if (chatForm) {
