@@ -57,7 +57,7 @@
 }
 
 .messages-container .timestamp {
-    font-size: 0.8rem;
+    font-size: 0.8em;
     color: #666;
 }
 
@@ -151,7 +151,7 @@
 
 .message-meta {
     margin: 0.25rem 0 0 0;
-    font-size: 0.75rem;
+    font-size: 0.75em;
     color: #666;
 }
 

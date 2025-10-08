@@ -13,7 +13,7 @@ html {
 body {
     font-family: var(--font-family-base);
     background-color: var(--body-bg-color);
-    font-size: 1rem;
+    font-size: 1em;
 }
 
 .container {
@@ -59,7 +59,7 @@ body {
     position: absolute;
     top: 10px;
     right: 15px;
-    font-size: 1.5rem;
+    font-size: 1.5em;
 }
 
 .burger-menu span {
@@ -259,7 +259,7 @@ nav {
     display: none;
     background: none;
     border: none;
-    font-size: 1.25rem;
+    font-size: 1.25em;
     color: #ffffff;
     cursor: pointer;
 }
@@ -304,7 +304,7 @@ nav {
     display: inline-block;
     background-color: red;
     color: white;
-    font-size: 0.75rem;
+    font-size: 0.75em;
     font-weight: bold;
     padding: 0.2rem 0.45rem;
     border-radius: 10px;
@@ -552,7 +552,7 @@ input:focus, select:focus {
 .modal .close {
   color: var(--color-primary);
   float: right;
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: bold;
   cursor: pointer;
 }
@@ -607,7 +607,7 @@ input:focus, select:focus {
   text-decoration: none;
   display: block;
   margin-bottom: 10px;
-  font-size: 0.95rem;
+  font-size: 0.95em;
   transition: color 0.2s;
 }
 
@@ -617,7 +617,7 @@ input:focus, select:focus {
 }
 
 .sidebar p {
-  font-size: 0.9rem;
+  font-size: 0.9em;
   line-height: 1.5;
 }
 
@@ -781,7 +781,7 @@ header {
 }
 
 header h1 {
-    font-size: 2.5rem;
+    font-size: 2.5em;
     font-weight: bold;
     margin: 0;
     color: #333;
@@ -790,7 +790,7 @@ header h1 {
 }
 
 header p#subtitle {
-    font-size: 1.2rem;
+    font-size: 1.2em;
     font-weight: 300;
     color: #555;
     margin-top: 10px;
@@ -907,7 +907,7 @@ nav {
     display: none;
     background: none;
     border: none;
-    font-size: 1.25rem;
+    font-size: 1.25em;
     color: #ffffff;
     cursor: pointer;
 }
@@ -950,7 +950,7 @@ nav {
     display: inline-block;
     background-color: red;
     color: white;
-    font-size: 0.75rem;
+    font-size: 0.75em;
     font-weight: bold;
     padding: 0.2rem 0.45rem;
     border-radius: 10px;
@@ -990,7 +990,7 @@ nav {
     color: #333; /* Dunkle Schriftfarbe */
     padding: 5px 15px;
     border-radius: 20px;
-    font-size: 1rem;
+    font-size: 1em;
     font-weight: bold;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -1011,7 +1011,7 @@ nav {
 }
 
 .department h3 {
-    font-size: 1.05rem;
+    font-size: 1.05em;
     margin-bottom: 10px;
     color: #333;
     text-transform: uppercase;
@@ -1023,7 +1023,7 @@ nav {
 
 #zentraler-dienstplan h3 {
     margin-top: 20px;
-    font-size: 1.4rem;
+    font-size: 1.4em;
 }
 
 #zentraler-dienstplan ul {
@@ -1066,7 +1066,7 @@ button {
     padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1em;
     transition: background 0.3s ease;
 }
 
@@ -1153,21 +1153,21 @@ button:hover {
 .hero-eyebrow {
     text-transform: uppercase;
     letter-spacing: 0.22em;
-    font-size: 0.75rem;
+    font-size: 0.75em;
     font-weight: 600;
     color: #a07c00;
     margin-bottom: 0.75rem;
 }
 
 .hero-title {
-    font-size: clamp(2.2rem, 2.4vw + 1.2rem, 3.4rem);
+    font-size: clamp(2.2em, 2.4vw + 1.2em, 3.4em);
     font-weight: 700;
     margin-bottom: 0.5rem;
     color: #1f1f1f;
 }
 
 .hero-subtitle {
-    font-size: 1.05rem;
+    font-size: 1.05em;
     color: #4d4d4d;
     margin: 0;
     max-width: 36rem;
@@ -1227,7 +1227,7 @@ button:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.6rem;
+    font-size: 1.6em;
 }
 
 .stat-content {
@@ -1238,14 +1238,14 @@ button:hover {
 
 .stat-label {
     text-transform: uppercase;
-    font-size: 0.78rem;
+    font-size: 0.78em;
     letter-spacing: 0.16em;
     color: #6c757d;
     font-weight: 600;
 }
 
 .stat-value {
-    font-size: 1.85rem;
+    font-size: 1.85em;
     font-weight: 700;
     color: #212529;
 }
@@ -1292,7 +1292,7 @@ button:hover {
 }
 
 .section-title {
-    font-size: 1.3rem;
+    font-size: 1.3em;
     font-weight: 700;
     margin: 0;
     color: #1f1f1f;
@@ -1308,7 +1308,7 @@ button:hover {
 .section-subtitle {
     margin: 0;
     color: #6c757d;
-    font-size: 0.95rem;
+    font-size: 0.95em;
 }
 
 .company-card {
@@ -1330,7 +1330,7 @@ button:hover {
 
 .company-title {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.1em;
     font-weight: 600;
     color: #1f1f1f;
 }
@@ -1348,7 +1348,7 @@ button:hover {
 }
 
 .info-title {
-    font-size: 1.05rem;
+    font-size: 1.05em;
     font-weight: 600;
     margin: 0;
     display: flex;
@@ -1391,7 +1391,7 @@ button:hover {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    font-size: 0.9rem;
+    font-size: 0.9em;
     color: #495057;
 }
 
@@ -1402,7 +1402,7 @@ button:hover {
 }
 
 .list-meta {
-    font-size: 0.82rem;
+    font-size: 0.82em;
     color: #6c757d;
     display: inline-flex;
     align-items: center;
@@ -1411,7 +1411,7 @@ button:hover {
 
 .dashboard-table thead th {
     text-transform: uppercase;
-    font-size: 0.78rem;
+    font-size: 0.78em;
     letter-spacing: 0.08em;
     background: #f8f9fa;
     border-bottom: 2px solid #e9ecef;

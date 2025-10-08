@@ -68,7 +68,7 @@ button:hover {
 
 .gesamtumsatz {
     text-align: center;
-    font-size: 1.2rem;
+    font-size: 1.2em;
     font-weight: bold;
     padding: 10px;
     background: #ffeb3b;
@@ -88,7 +88,7 @@ button:hover {
     text-align: left;
     padding: 10px;
     border: 1px solid #ddd;
-    font-size: 1rem;
+    font-size: 1em;
 }
 
 .umsatz-tabelle th {
@@ -109,7 +109,7 @@ button:hover {
     text-decoration: none;
     padding: 5px 15px;
     border-radius: 5px;
-    font-size: 0.9rem;
+    font-size: 0.9em;
     font-weight: bold;
     color: #fff;
     transition: background-color 0.3s;
