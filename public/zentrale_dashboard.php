@@ -324,10 +324,31 @@ include __DIR__ . '/../includes/layout.php';
 									}
 								}
 
-								// Schicht prüfen, nur wenn kein Urlaub
-								if ($cellText === '-' && isset($dienstplanMap[$person['mitarbeiter_id']][$date['date']])) {
-									$cellText = $dienstplanMap[$person['mitarbeiter_id']][$date['date']];
-								}
+                                                                // Schicht prüfen, nur wenn kein Urlaub
+                                                                if ($cellText === '-' && isset($dienstplanMap[$person['mitarbeiter_id']][$date['date']])) {
+                                                                        $cellText = $dienstplanMap[$person['mitarbeiter_id']][$date['date']];
+                                                                }
+
+                                                                // Farben für Schichten wie im Dashboard setzen, falls keine Abwesenheit
+                                                                if ($cellClass === '' && $cellText !== '-' && isset($dienstplanMap[$person['mitarbeiter_id']][$date['date']])) {
+                                                                        switch ($cellText) {
+                                                                                case 'F0':
+                                                                                case 'F1':
+                                                                                case 'F3':
+                                                                                        $cellClass = 'early-shift';
+                                                                                        break;
+                                                                                case 'F2':
+                                                                                        $cellClass = 'mid-shift';
+                                                                                        break;
+                                                                                case 'S0':
+                                                                                case 'S1':
+                                                                                        $cellClass = 'late-shift';
+                                                                                        break;
+                                                                                case 'N':
+                                                                                        $cellClass = 'night-shift';
+                                                                                        break;
+                                                                        }
+                                                                }
 								?>
 								<td class="<?php echo $cellClass; ?>">
 									<?php echo htmlspecialchars($cellText); ?>
