@@ -6,7 +6,8 @@
 }
 
 html {
-    font-size: 50%;
+    /* Stelle eine gut lesbare Basisgröße sicher */
+    font-size: 100%;
 }
 
 body {
@@ -258,7 +259,7 @@ nav {
     display: none;
     background: none;
     border: none;
-    font-size: 12px;
+    font-size: 1.25rem;
     color: #ffffff;
     cursor: pointer;
 }
@@ -303,9 +304,9 @@ nav {
     display: inline-block;
     background-color: red;
     color: white;
-    font-size: 6px;
+    font-size: 0.75rem;
     font-weight: bold;
-    padding: 2px 5px;
+    padding: 0.2rem 0.45rem;
     border-radius: 10px;
     margin-left: 5px;
     vertical-align: middle;
@@ -551,7 +552,7 @@ input:focus, select:focus {
 .modal .close {
   color: var(--color-primary);
   float: right;
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
 }
@@ -606,7 +607,7 @@ input:focus, select:focus {
   text-decoration: none;
   display: block;
   margin-bottom: 10px;
-  font-size: 8px;
+  font-size: 0.95rem;
   transition: color 0.2s;
 }
 
@@ -616,7 +617,7 @@ input:focus, select:focus {
 }
 
 .sidebar p {
-  font-size: 7px;
+  font-size: 0.9rem;
   line-height: 1.5;
 }
 
@@ -906,7 +907,7 @@ nav {
     display: none;
     background: none;
     border: none;
-    font-size: 12px;
+    font-size: 1.25rem;
     color: #ffffff;
     cursor: pointer;
 }
@@ -949,9 +950,9 @@ nav {
     display: inline-block;
     background-color: red;
     color: white;
-    font-size: 6px;
+    font-size: 0.75rem;
     font-weight: bold;
-    padding: 2px 5px;
+    padding: 0.2rem 0.45rem;
     border-radius: 10px;
     margin-left: 5px;
     vertical-align: middle;
@@ -989,7 +990,7 @@ nav {
     color: #333; /* Dunkle Schriftfarbe */
     padding: 5px 15px;
     border-radius: 20px;
-    font-size: 8px;
+    font-size: 1rem;
     font-weight: bold;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -1010,7 +1011,7 @@ nav {
 }
 
 .department h3 {
-    font-size: 9px;
+    font-size: 1.05rem;
     margin-bottom: 10px;
     color: #333;
     text-transform: uppercase;
@@ -1065,7 +1066,7 @@ button {
     padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 7px;
+    font-size: 1rem;
     transition: background 0.3s ease;
 }
 
