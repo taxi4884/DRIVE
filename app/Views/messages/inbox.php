@@ -3,8 +3,15 @@
 ?>
 <main>
     <h1>Nachrichten</h1>
-    <div style="text-align: right;">
-        <button class="btn btn-primary" onclick="openModal('composeModal')">Neue Nachricht</button>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2" style="margin-bottom: 1rem;">
+        <div class="notification-permission">
+            <button type="button" class="btn btn-secondary" id="enable-notifications" style="display: none;">
+                Desktop-Benachrichtigungen aktivieren
+            </button>
+        </div>
+        <div style="text-align: right;">
+            <button class="btn btn-primary" onclick="openModal('composeModal')">Neue Nachricht</button>
+        </div>
     </div>
 
     <?php if (!empty($success)): ?>
