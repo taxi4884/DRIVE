@@ -229,9 +229,15 @@ include __DIR__ . '/../includes/layout.php';
     </section>
     </main>
     <script>
-        document.querySelector('.burger-menu').addEventListener('click', () => {
-            document.querySelector('.nav-links').classList.toggle('active');
-        });
+        const burgerMenu = document.querySelector('.burger-menu');
+        if (burgerMenu) {
+            burgerMenu.addEventListener('click', () => {
+                const navLinks = document.querySelector('.nav-links');
+                if (navLinks) {
+                    navLinks.classList.toggle('active');
+                }
+            });
+        }
 
         const modal = document.getElementById("fineModal");
         const btn = document.getElementById("openModal");
