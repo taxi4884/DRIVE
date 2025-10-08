@@ -25,6 +25,28 @@ define('LOGFILE', __DIR__ . '/schulung/versand.log');
  * @return bool  true bei Erfolg
  */
  
+// Funktion zum Protokollieren der Einladungshistorie
+function protokolliereEinladung($teilnehmerId, $termin = null)
+{
+    global $pdo;
+
+    try {
+        $stmt = $pdo->prepare(
+            "INSERT INTO schulungseinladungen (teilnehmer_id, termin) VALUES (:teilnehmer_id, :termin)"
+        );
+
+        $stmt->execute([
+            ':teilnehmer_id' => $teilnehmerId,
+            ':termin'        => $termin ?: null,
+        ]);
+    } catch (PDOException $e) {
+        logMessage(
+            "Fehler beim Protokollieren der Einladung für Teilnehmer-ID $teilnehmerId: " . $e->getMessage(),
+            LOGFILE
+        );
+    }
+}
+
 // Funktion zum Senden der Einladung
 function sendInvitation($id, $vorname, $email, $praxistagdatum) {
     logMessage("Versende Einladung an: $email", LOGFILE);
@@ -165,6 +187,7 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
             $vorname = $teilnehmer['vorname'];
             $email = $teilnehmer['email'];
             $praxistagdatum = $teilnehmer['schulungstermin'];
+            $originalTermin = $teilnehmer['schulungstermin'] ?? null;
 
             // Datum ins Format dd.mm.yy umwandeln
             if (!empty($praxistagdatum)) {
@@ -175,6 +198,8 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
             }
 
             if (sendInvitation($id, $vorname, $email, $praxistagdatum)) {
+                protokolliereEinladung($id, $originalTermin);
+
                 try {
                     $updateEinladung = "
                         UPDATE schulungsteilnehmer 
