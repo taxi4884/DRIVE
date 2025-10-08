@@ -11,16 +11,58 @@ $stmtAlleFahrer = $pdo->query("
 ");
 $alleFahrer = $stmtAlleFahrer->fetchAll(PDO::FETCH_ASSOC);
 
-// Standardzeitraum definieren
-$start_date = date('Y-m-01');
-$end_date = date('Y-m-t');
+// Standardzeitraum dynamisch definieren
+$heute = new DateTimeImmutable('today');
+if ((int)$heute->format('j') <= 5) {
+    $start_date = $heute->modify('first day of last month')->format('Y-m-d');
+    $end_date = $heute->modify('last day of last month')->format('Y-m-d');
+} else {
+    $start_date = $heute->modify('first day of this month')->format('Y-m-d');
+    $end_date = $heute->modify('last day of this month')->format('Y-m-d');
+}
+
+$sessionStartKey = 'fahrer_umsatz_start_date';
+$sessionEndKey = 'fahrer_umsatz_end_date';
+
+$parseDate = static function ($value) {
+    if ($value === null || $value === '') {
+        return null;
+    }
+
+    $date = DateTimeImmutable::createFromFormat('Y-m-d', $value);
+
+    return $date ? $date->format('Y-m-d') : null;
+};
 
 // Werte aus GET übernehmen
 if (isset($_GET['start_date'])) {
-    $start_date = date('Y-m-d', strtotime($_GET['start_date']));
+    $parsedStart = $parseDate($_GET['start_date']);
+    if ($parsedStart) {
+        $start_date = $parsedStart;
+        $_SESSION[$sessionStartKey] = $start_date;
+    } else {
+        unset($_SESSION[$sessionStartKey]);
+    }
+} elseif (!empty($_SESSION[$sessionStartKey])) {
+    $sessionStart = $parseDate($_SESSION[$sessionStartKey]);
+    if ($sessionStart) {
+        $start_date = $sessionStart;
+    }
 }
+
 if (isset($_GET['end_date'])) {
-    $end_date = date('Y-m-d', strtotime($_GET['end_date']));
+    $parsedEnd = $parseDate($_GET['end_date']);
+    if ($parsedEnd) {
+        $end_date = $parsedEnd;
+        $_SESSION[$sessionEndKey] = $end_date;
+    } else {
+        unset($_SESSION[$sessionEndKey]);
+    }
+} elseif (!empty($_SESSION[$sessionEndKey])) {
+    $sessionEnd = $parseDate($_SESSION[$sessionEndKey]);
+    if ($sessionEnd) {
+        $end_date = $sessionEnd;
+    }
 }
 $fahrer_id = $_GET['fahrer_id'] ?? ($alleFahrer[0]['FahrerID'] ?? null);
 
@@ -234,7 +276,7 @@ include __DIR__ . '/../includes/layout.php';
         <form method="GET" class="flex-container">
 			<div>
 				<label for="fahrer_id"><i class="fas fa-user"></i> Fahrer:</label>
-				<select id="fahrer_id" name="fahrer_id" onchange="this.form.submit()">
+                                <select id="fahrer_id" name="fahrer_id">
 					<?php foreach ($alleFahrer as $fahrerOption): ?>
 						<option value="<?= htmlspecialchars($fahrerOption['FahrerID']) ?>"
 							<?= $fahrerOption['FahrerID'] == $fahrer_id ? 'selected' : '' ?>>
@@ -570,6 +612,31 @@ include __DIR__ . '/../includes/layout.php';
 
     <!-- JavaScript für Modals -->
     <script>
+        const filterForm = document.querySelector('form.flex-container');
+        const fahrerSelect = document.getElementById('fahrer_id');
+        if (filterForm && fahrerSelect) {
+            fahrerSelect.addEventListener('change', () => {
+                const startInput = document.getElementById('start_date');
+                const endInput = document.getElementById('end_date');
+
+                if (!startInput || !startInput.value) {
+                    const sessionStart = '<?= htmlspecialchars($start_date) ?>';
+                    if (startInput) {
+                        startInput.value = sessionStart;
+                    }
+                }
+
+                if (!endInput || !endInput.value) {
+                    const sessionEnd = '<?= htmlspecialchars($end_date) ?>';
+                    if (endInput) {
+                        endInput.value = sessionEnd;
+                    }
+                }
+
+                filterForm.requestSubmit();
+            });
+        }
+
         // Funktion für das Bearbeitungsmodal
         function openEditModal(button) {
             document.getElementById('edit_umsatzid').value = button.getAttribute('data-umsatzid');
