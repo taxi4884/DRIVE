@@ -201,15 +201,17 @@ include __DIR__ . '/../includes/layout.php';
             width: 100%;
             border-collapse: collapse;
             background-color: white;
+            font-size: 0.85rem;
         }
         table th, table td {
-            padding: 10px;
+            padding: 8px;
             border: 1px solid var(--border-color);
             text-align: center;
         }
         table th {
             background-color: var(--highlight-color);
             color: var(--highlight-text);
+            font-weight: 600;
         }
         .modal, .modal-overlay {
             display: none;
@@ -378,15 +380,15 @@ include __DIR__ . '/../includes/layout.php';
                 <thead>
                     <tr>
                         <th><i class="fas fa-calendar-alt"></i> Datum</th>
-                        <th><i class="fas fa-euro-sign"></i> Taxameter (€)</th>
-                        <th><i class="fas fa-euro-sign"></i> Ohne Taxameter (€)</th>
-                        <th><i class="fas fa-credit-card"></i> Kartenzahlungen (€)</th>
-                        <th><i class="fas fa-file-invoice"></i> Rechnungsfahrten (€)</th>
-                        <th><i class="fas fa-ambulance"></i> Krankenfahrten (€)</th>
-                        <th><i class="fas fa-ticket-alt"></i> Gutscheine (€)</th>
-                        <th><i class="fas fa-bus"></i> Alita (€)</th>
-                        <th><i class="fas fa-gas-pump"></i> Tanken/Waschen (€)</th>
-                        <th><i class="fas fa-money-bill-wave"></i> Sonstige Ausgaben (€)</th>
+                        <th><i class="fas fa-euro-sign"></i> Taxameter</th>
+                        <th><i class="fas fa-euro-sign"></i> Ohne Taxameter</th>
+                        <th><i class="fas fa-credit-card"></i> Kartenzahlungen</th>
+                        <th><i class="fas fa-file-invoice"></i> Rechnungsfahrten</th>
+                        <th><i class="fas fa-ambulance"></i> Krankenfahrten</th>
+                        <th><i class="fas fa-ticket-alt"></i> Gutscheine</th>
+                        <th><i class="fas fa-bus"></i> Alita</th>
+                        <th><i class="fas fa-gas-pump"></i> Tanken/Waschen</th>
+                        <th><i class="fas fa-money-bill-wave"></i> Sonstige Ausgaben</th>
 						<th><i class="fas fa-solid fa-note-sticky"></i> Notitz</th>
                         <th>Aktionen</th>
                     </tr>
