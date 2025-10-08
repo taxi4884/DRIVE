@@ -1,3 +1,19 @@
+<?php
+$driverFetchError = null;
+$existingDrivers = [];
+
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+    $driverFetchError = 'Datenbankverbindung nicht verfügbar.';
+} else {
+    try {
+        $driverQuery = $pdo->query('SELECT * FROM Fahrer ORDER BY Nachname, Vorname');
+        $existingDrivers = $driverQuery->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    } catch (PDOException $exception) {
+        $driverFetchError = 'Fahrer konnten nicht geladen werden.';
+    }
+}
+?>
+
 <div class="modal" id="driverModal">
     <div class="modal-content">
         <span class="close" onclick="closeModal('driverModal')">&times;</span>
@@ -70,5 +86,76 @@
 
             <button type="submit" name="add_driver">Fahrer hinzufügen</button>
         </form>
+
+        <hr>
+
+        <h3>Bestehende Fahrer</h3>
+
+        <?php if ($driverFetchError !== null): ?>
+            <p class="error-message"><?= htmlspecialchars($driverFetchError) ?></p>
+        <?php elseif (empty($existingDrivers)): ?>
+            <p>Es sind derzeit keine Fahrer in der Datenbank hinterlegt.</p>
+        <?php else: ?>
+            <div class="driver-table-wrapper">
+                <table class="driver-table">
+                    <thead>
+                        <tr>
+                            <?php foreach (array_keys($existingDrivers[0]) as $column): ?>
+                                <th><?= htmlspecialchars(ucwords(str_replace('_', ' ', $column))) ?></th>
+                            <?php endforeach; ?>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($existingDrivers as $driverRow): ?>
+                            <tr>
+                                <?php foreach ($driverRow as $value): ?>
+                                    <td><?= htmlspecialchars((string) $value) ?></td>
+                                <?php endforeach; ?>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
+
+<style>
+    #driverModal .driver-table-wrapper {
+        max-height: 300px;
+        overflow: auto;
+        margin-top: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    #driverModal .driver-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    #driverModal .driver-table th,
+    #driverModal .driver-table td {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid #e0e0e0;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    #driverModal .driver-table th {
+        background-color: #f5f5f5;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    #driverModal .driver-table tr:nth-child(even) {
+        background-color: #fafafa;
+    }
+
+    #driverModal .error-message {
+        color: #d9534f;
+        font-weight: 600;
+    }
+</style>
