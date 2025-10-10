@@ -200,20 +200,11 @@ include __DIR__ . '/../includes/layout.php';
         table tbody tr:nth-child(even) {
             background-color: #f2f2f2;
         }
-        .dienstplan-layout {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-            flex-wrap: wrap;
-        }
-        .dienstplan-form {
-            flex: 1 1 700px;
-        }
         .dienstplan-form button {
             margin-top: 15px;
         }
         .arbeitszeit-summary {
-            flex: 1 1 260px;
+            margin-top: 30px;
             background: white;
             padding: 15px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -287,9 +278,8 @@ include __DIR__ . '/../includes/layout.php';
           <a href="?month=<?= $nextMonth ?>&year=<?= $nextYear ?>">Nächster Monat &raquo;</a>
       </div>
   
-      <div class="dienstplan-layout">
-          <form method="POST" class="dienstplan-form">
-              <table>
+      <form method="POST" class="dienstplan-form">
+          <table>
               <thead>
                   <tr>
                       <th>Mitarbeiter</th>
@@ -324,39 +314,38 @@ include __DIR__ . '/../includes/layout.php';
                       </tr>
                   <?php endforeach; ?>
               </tbody>
-              </table>
-              <button type="submit">Speichern</button>
-          </form>
-          <aside class="arbeitszeit-summary">
-              <h2>Arbeitszeit-Zusammenfassung</h2>
-              <table>
-                  <thead>
+          </table>
+          <button type="submit">Speichern</button>
+      </form>
+      <section class="arbeitszeit-summary">
+          <h2>Arbeitszeit-Zusammenfassung</h2>
+          <table>
+              <thead>
+                  <tr>
+                      <th>Mitarbeiter</th>
+                      <th>Arbeitszeit</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <?php foreach ($mitarbeiterListe as $mitarbeiter): ?>
+                      <?php
+                          $mitarbeiterId = $mitarbeiter['mitarbeiter_id'];
+                          $arbeitszeit = $arbeitszeitSummen[$mitarbeiterId] ?? 0;
+                      ?>
                       <tr>
-                          <th>Mitarbeiter</th>
-                          <th>Arbeitszeit</th>
+                          <td><?= htmlspecialchars($mitarbeiter['nachname'] . ', ' . $mitarbeiter['vorname']) ?></td>
+                          <td><?= formatMinutesToHours($arbeitszeit) ?></td>
                       </tr>
-                  </thead>
-                  <tbody>
-                      <?php foreach ($mitarbeiterListe as $mitarbeiter): ?>
-                          <?php
-                              $mitarbeiterId = $mitarbeiter['mitarbeiter_id'];
-                              $arbeitszeit = $arbeitszeitSummen[$mitarbeiterId] ?? 0;
-                          ?>
-                          <tr>
-                              <td><?= htmlspecialchars($mitarbeiter['nachname'] . ', ' . $mitarbeiter['vorname']) ?></td>
-                              <td><?= formatMinutesToHours($arbeitszeit) ?></td>
-                          </tr>
-                      <?php endforeach; ?>
-                  </tbody>
-                  <tfoot>
-                      <tr class="arbeitszeit-summary-total">
-                          <th>Gesamt</th>
-                          <th><?= formatMinutesToHours((int) $gesamtArbeitszeit) ?></th>
-                      </tr>
-                  </tfoot>
-              </table>
-          </aside>
-      </div>
+                  <?php endforeach; ?>
+              </tbody>
+              <tfoot>
+                  <tr class="arbeitszeit-summary-total">
+                      <th>Gesamt</th>
+                      <th><?= formatMinutesToHours((int) $gesamtArbeitszeit) ?></th>
+                  </tr>
+              </tfoot>
+          </table>
+      </section>
     </main>
 
 </body>
