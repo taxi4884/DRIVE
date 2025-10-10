@@ -7,13 +7,13 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Fahrer für Dropdown abrufen
-$sql_fahrer_list = "SELECT FahrerID, Vorname, Nachname FROM Fahrer WHERE Aktiv = 1 ORDER BY Nachname, Vorname";
+$sql_fahrer_list = "SELECT FahrerID, Vorname, Nachname FROM Fahrer WHERE Status IN ('aktiv', 'Aktiv') ORDER BY Nachname, Vorname";
 $stmt_fahrer_list = $pdo->prepare($sql_fahrer_list);
 $stmt_fahrer_list->execute();
 $fahrer_list = $stmt_fahrer_list->fetchAll(PDO::FETCH_ASSOC);
 
 $selected_fahrer = $_GET['fahrer'] ?? '';
-$where_clause = " WHERE f.Aktiv = 1";
+$where_clause = " WHERE f.Status IN ('aktiv', 'Aktiv')";
 if ($selected_fahrer) {
     $where_clause .= " AND u.FahrerID = :fahrerID";
 }
@@ -48,7 +48,7 @@ $sql_umsatz_fahrer_monate = "SELECT f.Vorname, f.Nachname, DATE_FORMAT(u.Datum, 
                              SUM(u.TaxameterUmsatz + u.OhneTaxameter) AS gesamtumsatz
                              FROM Umsatz u
                              JOIN Fahrer f ON u.FahrerID = f.FahrerID
-                             WHERE f.Aktiv = 1
+                             WHERE f.Status IN ('aktiv', 'Aktiv')
                              GROUP BY f.FahrerID, monat
                              ORDER BY f.Nachname, f.Vorname, monat";
 $stmt_umsatz_fahrer_monate = $pdo->prepare($sql_umsatz_fahrer_monate);
@@ -87,7 +87,7 @@ $sql_wochentage = "SELECT f.Vorname, f.Nachname, DAYNAME(u.Datum) AS wochentag,
                            AVG(u.TaxameterUmsatz + u.OhneTaxameter) AS durchschnitt_umsatz
                     FROM Umsatz u
                     JOIN Fahrer f ON u.FahrerID = f.FahrerID
-                    WHERE f.Aktiv = 1
+                    WHERE f.Status IN ('aktiv', 'Aktiv')
                     GROUP BY f.FahrerID, wochentag
                     ORDER BY f.Nachname, f.Vorname";
 $stmt_wochentage = $pdo->prepare($sql_wochentage);
@@ -122,7 +122,7 @@ $sql_durchschnitt_umsatz_monat = "SELECT f.Vorname, f.Nachname,
                                     SUM(u.TaxameterUmsatz + u.OhneTaxameter) / COUNT(DISTINCT DATE_FORMAT(u.Datum, '%Y-%m')) AS durchschnitt_umsatz
                                   FROM Umsatz u
                                   JOIN Fahrer f ON u.FahrerID = f.FahrerID
-                                  WHERE f.Aktiv = 1
+                                  WHERE f.Status IN ('aktiv', 'Aktiv')
                                   GROUP BY f.FahrerID
                                   ORDER BY durchschnitt_umsatz DESC
                                   LIMIT 10";
@@ -135,7 +135,7 @@ $sql_fahrer_unter_264 = "SELECT f.Vorname, f.Nachname,
                             SUM(u.TaxameterUmsatz + u.OhneTaxameter) / COUNT(DISTINCT DATE(u.Datum)) AS durchschnitt_umsatz_tag
                           FROM Umsatz u
                           JOIN Fahrer f ON u.FahrerID = f.FahrerID
-                          WHERE f.Aktiv = 1
+                          WHERE f.Status IN ('aktiv', 'Aktiv')
                           GROUP BY f.FahrerID
                           HAVING durchschnitt_umsatz_tag < 264
                           ORDER BY durchschnitt_umsatz_tag ASC";

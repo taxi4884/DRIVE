@@ -32,7 +32,7 @@ if (isset($_GET['aktion']) && isset($_GET['id'])) {
 }
 
 // Aktive Fahrer abrufen
-$stmt = $pdo->query("SELECT FahrerID, Vorname, Nachname, Telefonnummer, FuehrerscheinGueltigkeit, PScheinGueltigkeit FROM Fahrer WHERE Aktiv = 1 ORDER BY Nachname, Vorname");
+$stmt = $pdo->query("SELECT FahrerID, Vorname, Nachname, Telefonnummer, FuehrerscheinGueltigkeit, PScheinGueltigkeit FROM Fahrer WHERE Status IN ('aktiv', 'Aktiv') ORDER BY Nachname, Vorname");
 $fahrer = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Aktuelle Mitteilung abrufen

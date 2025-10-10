@@ -17,7 +17,7 @@ $stmt = $pdo->prepare("
   SELECT DISTINCT f.vorname, f.nachname, f.FahrerID
   FROM Fahrer f
   JOIN FahrerAbwesenheiten fa ON f.FahrerID = fa.FahrerID
-  WHERE fa.startdatum <= :end_date AND fa.enddatum >= :start_date AND f.Aktiv = 1
+  WHERE fa.startdatum <= :end_date AND fa.enddatum >= :start_date AND f.Status IN ('aktiv', 'Aktiv')
   ORDER BY f.nachname ASC
 ");
 $stmt->execute(['start_date' => $start_date, 'end_date' => $end_date]);
@@ -48,7 +48,7 @@ $urlaubAntraegeStmt = $pdo->prepare("
     SELECT fa.id AS abwesenheit_id, f.vorname, f.nachname, fa.startdatum, fa.enddatum, fa.status, fa.kommentar
     FROM FahrerAbwesenheiten fa
     JOIN Fahrer f ON fa.FahrerID = f.FahrerID
-    WHERE fa.abwesenheitsart = 'Urlaub' AND fa.status = 'beantragt' AND f.Aktiv = 1
+    WHERE fa.abwesenheitsart = 'Urlaub' AND fa.status = 'beantragt' AND f.Status IN ('aktiv', 'Aktiv')
     ORDER BY fa.startdatum ASC
 ");
 $urlaubAntraegeStmt->execute();

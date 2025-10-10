@@ -22,7 +22,7 @@ if (isDriver()) {
     $stmt->execute([$userId]);
     $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } else {
-    $stmt = $pdo->query('SELECT FahrerID AS id, CONCAT(Vorname, " ", Nachname) AS Name FROM Fahrer WHERE Aktiv = 1 ORDER BY Nachname, Vorname');
+    $stmt = $pdo->query("SELECT FahrerID AS id, CONCAT(Vorname, ' ', Nachname) AS Name FROM Fahrer WHERE Status IN ('aktiv', 'Aktiv') ORDER BY Nachname, Vorname");
     $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 

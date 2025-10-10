@@ -7,7 +7,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Fahrer für Dropdown abrufen
-$sql_fahrer_list = "SELECT FahrerID, Vorname, Nachname FROM Fahrer WHERE Aktiv = 1 ORDER BY Nachname, Vorname";
+$sql_fahrer_list = "SELECT FahrerID, Vorname, Nachname FROM Fahrer WHERE Status IN ('aktiv', 'Aktiv') ORDER BY Nachname, Vorname";
 $stmt_fahrer_list = $pdo->prepare($sql_fahrer_list);
 $stmt_fahrer_list->execute();
 $fahrer_list = $stmt_fahrer_list->fetchAll(PDO::FETCH_ASSOC);
@@ -20,7 +20,7 @@ $sql_tagesumsatz = "SELECT f.Vorname, f.Nachname,
                          SUM(u.TaxameterUmsatz + u.OhneTaxameter) / COUNT(DISTINCT DATE(u.Datum)) AS umsatz_pro_tag
                   FROM Umsatz u
                   JOIN Fahrer f ON u.FahrerID = f.FahrerID
-                  WHERE f.Aktiv = 1
+                  WHERE f.Status IN ('aktiv', 'Aktiv')
                   GROUP BY u.FahrerID
                   ORDER BY umsatz_pro_tag DESC";
 $stmt_tagesumsatz = $pdo->prepare($sql_tagesumsatz);
@@ -35,7 +35,7 @@ $sql_monatsumsatz = "SELECT f.Vorname, f.Nachname, DATE_FORMAT(u.Datum, '%Y-%m')
                              SUM(u.TaxameterUmsatz + u.OhneTaxameter) AS gesamtumsatz
                       FROM Umsatz u
                       JOIN Fahrer f ON u.FahrerID = f.FahrerID
-                      WHERE f.Aktiv = 1
+                      WHERE f.Status IN ('aktiv', 'Aktiv')
                       GROUP BY f.FahrerID, monat
                       ORDER BY monat DESC";
 $stmt_monatsumsatz = $pdo->prepare($sql_monatsumsatz);
@@ -46,7 +46,7 @@ $sql_wochentagsumsatz = "SELECT f.Vorname, f.Nachname, DAYNAME(u.Datum) AS woche
                                  AVG(u.TaxameterUmsatz + u.OhneTaxameter) AS durchschnitt_umsatz
                           FROM Umsatz u
                           JOIN Fahrer f ON u.FahrerID = f.FahrerID
-                          WHERE f.Aktiv = 1
+                          WHERE f.Status IN ('aktiv', 'Aktiv')
                           GROUP BY f.FahrerID, wochentag
                           ORDER BY wochentag";
 $stmt_wochentagsumsatz = $pdo->prepare($sql_wochentagsumsatz);

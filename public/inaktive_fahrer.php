@@ -6,7 +6,7 @@ if (!isLoggedIn()) {
     exit();
 }
 
-$stmt = $pdo->query("SELECT FahrerID, Vorname, Nachname, Telefonnummer, FuehrerscheinGueltigkeit, PScheinGueltigkeit FROM Fahrer WHERE Aktiv = 0 ORDER BY Nachname, Vorname");
+$stmt = $pdo->query("SELECT FahrerID, Vorname, Nachname, Telefonnummer, FuehrerscheinGueltigkeit, PScheinGueltigkeit FROM Fahrer WHERE Status IN ('inaktiv', 'Inaktiv') ORDER BY Nachname, Vorname");
 $fahrer = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $title = 'Inaktive Fahrer';

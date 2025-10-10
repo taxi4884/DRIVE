@@ -14,7 +14,7 @@ try {
     $stmtDrivers = $pdo->query("
         SELECT FahrerID, CONCAT(Vorname, ' ', Nachname) AS Name
         FROM Fahrer
-        WHERE Aktiv = 1
+        WHERE Status IN ('aktiv', 'Aktiv')
         ORDER BY Nachname ASC
     ");
     $fahrer = $stmtDrivers->fetchAll(PDO::FETCH_ASSOC);

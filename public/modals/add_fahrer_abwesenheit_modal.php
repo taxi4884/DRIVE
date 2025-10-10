@@ -8,7 +8,7 @@
       <select name="fahrer_id" id="fahrer_id" required>
         <?php
         // Fahrer abrufen, um die Dropdown-Liste zu füllen
-        $stmt = $pdo->prepare("SELECT vorname, nachname, FahrerID FROM Fahrer WHERE Aktiv = 1 ORDER BY nachname ASC");
+        $stmt = $pdo->prepare("SELECT vorname, nachname, FahrerID FROM Fahrer WHERE Status IN ('aktiv', 'Aktiv') ORDER BY nachname ASC");
         $stmt->execute();
         $fahrerList = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($fahrerList as $f):

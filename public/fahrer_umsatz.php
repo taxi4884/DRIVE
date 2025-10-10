@@ -6,7 +6,7 @@ require_once '../includes/bootstrap.php';
 $stmtAlleFahrer = $pdo->query("
     SELECT FahrerID, Personalnummer, CONCAT(Vorname, ' ', Nachname) AS Name 
     FROM Fahrer
-    WHERE Status = 'Aktiv' AND Aktiv = 1
+    WHERE Status IN ('aktiv', 'Aktiv')
     ORDER BY Personalnummer IS NULL, Personalnummer ASC, Nachname ASC
 ");
 $alleFahrer = $stmtAlleFahrer->fetchAll(PDO::FETCH_ASSOC);
