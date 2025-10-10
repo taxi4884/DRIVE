@@ -125,8 +125,8 @@ function getLastWeekSalesWithWorktime(PDO $pdo, DateTime $ws, DateTime $we): arr
           ON (sf.fahrer = f.fms_alias OR sf.fahrer = f.Fahrernummer)
          AND sf.anmeldung < :we
          AND COALESCE(sf.abmeldung, :we) > :ws
+
         WHERE f.Status IN ('aktiv', 'Aktiv')
-        GROUP BY f.FahrerID
       )
       SELECT
         f.FahrerID,
