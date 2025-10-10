@@ -27,8 +27,63 @@ $stmt = $pdo->query("SELECT mitarbeiter_id, vorname, nachname FROM mitarbeiter_z
 $mitarbeiterListe = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Schichten abrufen
-$stmt = $pdo->query("SELECT schicht_id, name FROM schichten ORDER BY startzeit ASC");
+$stmt = $pdo->query("SELECT schicht_id, name, startzeit, endzeit, pause FROM schichten ORDER BY startzeit ASC");
 $schichtenListe = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+/**
+ * @param string $time
+ * @return DateTime|null
+ */
+function createTimeReference(string $time): ?DateTime
+{
+    $formats = ['H:i:s', 'H:i'];
+    foreach ($formats as $format) {
+        $dateTime = DateTime::createFromFormat($format, $time, new DateTimeZone('UTC'));
+        if ($dateTime !== false) {
+            return $dateTime;
+        }
+    }
+
+    return null;
+}
+
+function calculateShiftDurationMinutes(string $startzeit, string $endzeit, $pauseMinutes): int
+{
+    $start = createTimeReference($startzeit);
+    $end = createTimeReference($endzeit);
+
+    if (!$start || !$end) {
+        return 0;
+    }
+
+    $startTimestamp = $start->getTimestamp();
+    $endTimestamp = $end->getTimestamp();
+
+    if ($endTimestamp <= $startTimestamp) {
+        $endTimestamp += 24 * 60 * 60; // Tageswechsel berücksichtigen
+    }
+
+    $durationMinutes = (int) round(($endTimestamp - $startTimestamp) / 60);
+    $pauseMinutes = (int) $pauseMinutes;
+
+    $netMinutes = $durationMinutes - $pauseMinutes;
+
+    return $netMinutes > 0 ? $netMinutes : 0;
+}
+
+function formatMinutesToHours(int $minutes): string
+{
+    $hours = intdiv($minutes, 60);
+    $remainingMinutes = $minutes % 60;
+
+    return sprintf('%d:%02d Std.', $hours, $remainingMinutes);
+}
+
+$schichtenMap = [];
+foreach ($schichtenListe as $schicht) {
+    $schicht['duration_minutes'] = calculateShiftDurationMinutes($schicht['startzeit'], $schicht['endzeit'], $schicht['pause']);
+    $schichtenMap[$schicht['schicht_id']] = $schicht;
+}
 
 // Wochentage für den aktuellen Monat vorbereiten
 $dates = [];
@@ -95,6 +150,23 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $currentDate = date('Y-m-d', strtotime($currentDate . ' +1 day'));
     }
 }
+
+$arbeitszeitSummen = [];
+foreach ($mitarbeiterListe as $mitarbeiter) {
+    $mitarbeiterId = $mitarbeiter['mitarbeiter_id'];
+    $arbeitszeitSummen[$mitarbeiterId] = 0;
+
+    foreach ($dates as $date) {
+        $datum = $date['date'];
+        $schichtId = $dienstplanData[$mitarbeiterId][$datum] ?? null;
+
+        if ($schichtId && isset($schichtenMap[$schichtId])) {
+            $arbeitszeitSummen[$mitarbeiterId] += $schichtenMap[$schichtId]['duration_minutes'];
+        }
+    }
+}
+
+$gesamtArbeitszeit = array_sum($arbeitszeitSummen);
 ?>
 <?php
 $title = 'Dienstplan erstellen';
@@ -127,6 +199,52 @@ include __DIR__ . '/../includes/layout.php';
         }
         table tbody tr:nth-child(even) {
             background-color: #f2f2f2;
+        }
+        .dienstplan-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .dienstplan-form {
+            flex: 1 1 700px;
+        }
+        .dienstplan-form button {
+            margin-top: 15px;
+        }
+        .arbeitszeit-summary {
+            flex: 1 1 260px;
+            background: white;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        .arbeitszeit-summary h2 {
+            margin-top: 0;
+            font-size: 18px;
+        }
+        .arbeitszeit-summary table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            box-shadow: none;
+        }
+        .arbeitszeit-summary table th,
+        .arbeitszeit-summary table td {
+            text-align: left;
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .arbeitszeit-summary table th {
+            background-color: #f1f1f1;
+            color: #333;
+        }
+        .arbeitszeit-summary table tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        .arbeitszeit-summary table tr.arbeitszeit-summary-total th {
+            background-color: #007bff;
+            color: #fff;
         }
         select {
             width: 100%;
@@ -169,8 +287,9 @@ include __DIR__ . '/../includes/layout.php';
           <a href="?month=<?= $nextMonth ?>&year=<?= $nextYear ?>">Nächster Monat &raquo;</a>
       </div>
   
-      <form method="POST">
-          <table>
+      <div class="dienstplan-layout">
+          <form method="POST" class="dienstplan-form">
+              <table>
               <thead>
                   <tr>
                       <th>Mitarbeiter</th>
@@ -205,9 +324,39 @@ include __DIR__ . '/../includes/layout.php';
                       </tr>
                   <?php endforeach; ?>
               </tbody>
-          </table>
-          <button type="submit">Speichern</button>
-      </form>
+              </table>
+              <button type="submit">Speichern</button>
+          </form>
+          <aside class="arbeitszeit-summary">
+              <h2>Arbeitszeit-Zusammenfassung</h2>
+              <table>
+                  <thead>
+                      <tr>
+                          <th>Mitarbeiter</th>
+                          <th>Arbeitszeit</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <?php foreach ($mitarbeiterListe as $mitarbeiter): ?>
+                          <?php
+                              $mitarbeiterId = $mitarbeiter['mitarbeiter_id'];
+                              $arbeitszeit = $arbeitszeitSummen[$mitarbeiterId] ?? 0;
+                          ?>
+                          <tr>
+                              <td><?= htmlspecialchars($mitarbeiter['nachname'] . ', ' . $mitarbeiter['vorname']) ?></td>
+                              <td><?= formatMinutesToHours($arbeitszeit) ?></td>
+                          </tr>
+                      <?php endforeach; ?>
+                  </tbody>
+                  <tfoot>
+                      <tr class="arbeitszeit-summary-total">
+                          <th>Gesamt</th>
+                          <th><?= formatMinutesToHours((int) $gesamtArbeitszeit) ?></th>
+                      </tr>
+                  </tfoot>
+              </table>
+          </aside>
+      </div>
     </main>
 
 </body>
