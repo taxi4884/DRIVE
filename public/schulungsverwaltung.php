@@ -159,18 +159,27 @@ if (isset($_SESSION['user_id'])) {
 }
 
 // Teilnehmer aus der Datenbank abrufen
-$query = "SELECT id, vorname, nachname, email,
+$query = "SELECT id,
+                 vorname,
+                 nachname,
+                 email,
+                 handynummer,
+                 strasse,
+                 hausnummer,
+                 postleitzahl,
+                 ort,
+                 geburtsdatum,
                  DATE_FORMAT(erstellt_am, '%d.%m.%Y') AS erstellt_am,
                  COALESCE(schulungstermin, '') AS schulungstermin,
                  DATE_FORMAT(letzte_einladung, '%d.%m.%Y') AS letzte_einladung,
                  rueckmeldung_status,
                  unternehmer,
                  gesperrt_bis,
-				 nicht_bestanden_count,
-				 abschlusstest_bestanden,
-			     abschluss_prozent,
-			     letzter_themen_id
-          FROM schulungsteilnehmer 
+                 nicht_bestanden_count,
+                 abschlusstest_bestanden,
+                 abschluss_prozent,
+                 letzter_themen_id
+          FROM schulungsteilnehmer
           ORDER BY STR_TO_DATE(erstellt_am, '%Y-%m-%d') DESC";
 $stmt = $pdo->prepare($query);
 $stmt->execute();
@@ -213,6 +222,91 @@ $einladungshistorieJson = json_encode(
 
 if ($einladungshistorieJson === false) {
     $einladungshistorieJson = '{}';
+}
+
+// Teilnehmerdetails aktualisieren
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_teilnehmer'])) {
+    $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+
+    if ($id <= 0) {
+        $_SESSION['message'] = 'Der Teilnehmer konnte nicht aktualisiert werden.';
+        header('Location: schulungsverwaltung.php');
+        exit();
+    }
+
+    $payload = [
+        'vorname'      => trim($_POST['vorname'] ?? ''),
+        'nachname'     => trim($_POST['nachname'] ?? ''),
+        'email'        => trim($_POST['email'] ?? ''),
+        'handynummer'  => trim($_POST['handynummer'] ?? ''),
+        'strasse'      => trim($_POST['strasse'] ?? ''),
+        'hausnummer'   => trim($_POST['hausnummer'] ?? ''),
+        'postleitzahl' => trim($_POST['postleitzahl'] ?? ''),
+        'ort'          => trim($_POST['ort'] ?? ''),
+        'unternehmer'  => trim($_POST['unternehmer'] ?? ''),
+    ];
+
+    $geburtsdatum = trim($_POST['geburtsdatum'] ?? '');
+    $geburtsdatumValue = null;
+
+    if ($geburtsdatum !== '') {
+        $date = DateTime::createFromFormat('Y-m-d', $geburtsdatum);
+        if ($date && $date->format('Y-m-d') === $geburtsdatum) {
+            $geburtsdatumValue = $date->format('Y-m-d');
+        } else {
+            $_SESSION['message'] = 'Das eingegebene Geburtsdatum ist ungültig.';
+            header('Location: schulungsverwaltung.php');
+            exit();
+        }
+    }
+
+    if ($payload['email'] !== '' && !filter_var($payload['email'], FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['message'] = 'Die angegebene E-Mail-Adresse ist ungültig.';
+        header('Location: schulungsverwaltung.php');
+        exit();
+    }
+
+    try {
+        $updateStmt = $pdo->prepare('
+            UPDATE schulungsteilnehmer
+               SET vorname = :vorname,
+                   nachname = :nachname,
+                   email = :email,
+                   handynummer = :handynummer,
+                   strasse = :strasse,
+                   hausnummer = :hausnummer,
+                   postleitzahl = :postleitzahl,
+                   ort = :ort,
+                   unternehmer = :unternehmer,
+                   geburtsdatum = :geburtsdatum
+             WHERE id = :id
+        ');
+
+        foreach ($payload as $key => $value) {
+            $payload[$key] = $value === '' ? null : $value;
+        }
+
+        $updateStmt->execute([
+            ':vorname'      => $payload['vorname'],
+            ':nachname'     => $payload['nachname'],
+            ':email'        => $payload['email'],
+            ':handynummer'  => $payload['handynummer'],
+            ':strasse'      => $payload['strasse'],
+            ':hausnummer'   => $payload['hausnummer'],
+            ':postleitzahl' => $payload['postleitzahl'],
+            ':ort'          => $payload['ort'],
+            ':unternehmer'  => $payload['unternehmer'],
+            ':geburtsdatum' => $geburtsdatumValue,
+            ':id'           => $id,
+        ]);
+
+        $_SESSION['message'] = 'Die Teilnehmerdaten wurden erfolgreich aktualisiert.';
+    } catch (PDOException $e) {
+        $_SESSION['message'] = 'Fehler beim Aktualisieren der Teilnehmerdaten: ' . $e->getMessage();
+    }
+
+    header('Location: schulungsverwaltung.php');
+    exit();
 }
 
 // Termin speichern
@@ -504,9 +598,17 @@ include __DIR__ . '/../includes/layout.php';
                     <tr
                         data-participant-row
                         data-id="<?php echo (int) $row['id']; ?>"
+                        data-vorname="<?php echo htmlspecialchars($row['vorname'] ?? '', ENT_QUOTES); ?>"
+                        data-nachname="<?php echo htmlspecialchars($row['nachname'] ?? '', ENT_QUOTES); ?>"
                         data-name="<?php echo htmlspecialchars($row['vorname'] . ' ' . $row['nachname'], ENT_QUOTES); ?>"
                         data-email="<?php echo htmlspecialchars($row['email'], ENT_QUOTES); ?>"
+                        data-handynummer="<?php echo htmlspecialchars($row['handynummer'] ?? '', ENT_QUOTES); ?>"
                         data-unternehmer="<?php echo htmlspecialchars($row['unternehmer'] ?? '', ENT_QUOTES); ?>"
+                        data-strasse="<?php echo htmlspecialchars($row['strasse'] ?? '', ENT_QUOTES); ?>"
+                        data-hausnummer="<?php echo htmlspecialchars($row['hausnummer'] ?? '', ENT_QUOTES); ?>"
+                        data-postleitzahl="<?php echo htmlspecialchars($row['postleitzahl'] ?? '', ENT_QUOTES); ?>"
+                        data-ort="<?php echo htmlspecialchars($row['ort'] ?? '', ENT_QUOTES); ?>"
+                        data-geburtsdatum="<?php echo htmlspecialchars($row['geburtsdatum'] ?? '', ENT_QUOTES); ?>"
                         data-schulungstermin="<?php echo htmlspecialchars($row['schulungstermin'] ?? '', ENT_QUOTES); ?>"
                         data-letzte-einladung="<?php echo htmlspecialchars($row['letzte_einladung'] ?? '', ENT_QUOTES); ?>"
                         data-rueckmeldung-status="<?php echo htmlspecialchars($row['rueckmeldung_status'] ?? '', ENT_QUOTES); ?>"
@@ -661,6 +763,10 @@ include __DIR__ . '/../includes/layout.php';
             return value === undefined || value === null || value === '' ? fallback : value;
         }
 
+        function getRawValue(value) {
+            return value === undefined || value === null ? '' : value;
+        }
+
         function escapeHtml(value) {
             return String(value)
                 .replace(/&/g, '&amp;')
@@ -668,6 +774,22 @@ include __DIR__ . '/../includes/layout.php';
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
+        }
+
+        function buildAddress(street, houseNumber, postalCode, city) {
+            const firstLine = [street, houseNumber].filter(Boolean).join(' ').trim();
+            const secondLine = [postalCode, city].filter(Boolean).join(' ').trim();
+            const lines = [];
+
+            if (firstLine) {
+                lines.push(escapeHtml(firstLine));
+            }
+
+            if (secondLine) {
+                lines.push(escapeHtml(secondLine));
+            }
+
+            return lines.length ? lines.join('<br>') : '–';
         }
 
         function formatDateGerman(value) {
@@ -707,24 +829,100 @@ include __DIR__ . '/../includes/layout.php';
 
                 const participantId = row.dataset.id;
                 const participantName = normalizeValue(row.dataset.name, 'Teilnehmer');
-                const participantEmail = normalizeValue(row.dataset.email);
-                const participantUnternehmer = normalizeValue(row.dataset.unternehmer);
+
+                const participantVorname = getRawValue(row.dataset.vorname);
+                const participantNachname = getRawValue(row.dataset.nachname);
+                const participantEmailRaw = getRawValue(row.dataset.email);
+                const participantEmailDisplay = normalizeValue(participantEmailRaw);
+                const participantUnternehmerRaw = getRawValue(row.dataset.unternehmer);
+                const participantUnternehmerDisplay = normalizeValue(participantUnternehmerRaw);
+                const participantPhoneRaw = getRawValue(row.dataset.handynummer);
+                const participantPhoneDisplay = normalizeValue(participantPhoneRaw);
+                const participantStreet = getRawValue(row.dataset.strasse);
+                const participantHouseNumber = getRawValue(row.dataset.hausnummer);
+                const participantPostalCode = getRawValue(row.dataset.postleitzahl);
+                const participantCity = getRawValue(row.dataset.ort);
+                const participantBirthdate = getRawValue(row.dataset.geburtsdatum);
+                const participantBirthdateDisplay = formatDateGerman(participantBirthdate);
                 const participantTermin = formatDateGerman(row.dataset.schulungstermin);
                 const participantLetzteEinladung = normalizeValue(row.dataset.letzteEinladung);
                 const rueckmeldungStatus = formatRueckmeldung(row.dataset.rueckmeldungStatus);
                 const erstelltAm = normalizeValue(row.dataset.erstelltAm);
                 const history = participantHistory[participantId] || [];
                 const invitesCount = history.length;
+                const addressHtml = buildAddress(
+                    participantStreet,
+                    participantHouseNumber,
+                    participantPostalCode,
+                    participantCity
+                );
 
-                const summaryHtml = '<dl class="row mb-0">'
-                    + '<dt class="col-sm-5">E-Mail</dt><dd class="col-sm-7">' + escapeHtml(participantEmail) + '</dd>'
-                    + '<dt class="col-sm-5">Unternehmer</dt><dd class="col-sm-7">' + escapeHtml(participantUnternehmer) + '</dd>'
-                    + '<dt class="col-sm-5">Angemeldet am</dt><dd class="col-sm-7">' + escapeHtml(erstelltAm) + '</dd>'
-                    + '<dt class="col-sm-5">Aktueller Schulungstermin</dt><dd class="col-sm-7">' + escapeHtml(participantTermin) + '</dd>'
-                    + '<dt class="col-sm-5">Letzte Einladung</dt><dd class="col-sm-7">' + escapeHtml(participantLetzteEinladung) + '</dd>'
-                    + '<dt class="col-sm-5">Rückmeldestatus</dt><dd class="col-sm-7">' + escapeHtml(rueckmeldungStatus) + '</dd>'
-                    + '<dt class="col-sm-5">Einladungen gesamt</dt><dd class="col-sm-7">' + invitesCount + '</dd>'
-                    + '</dl>';
+                const summaryHtml = `
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">E-Mail</dt><dd class="col-sm-7">${escapeHtml(participantEmailDisplay)}</dd>
+                        <dt class="col-sm-5">Telefon</dt><dd class="col-sm-7">${escapeHtml(participantPhoneDisplay)}</dd>
+                        <dt class="col-sm-5">Adresse</dt><dd class="col-sm-7">${addressHtml}</dd>
+                        <dt class="col-sm-5">Geburtsdatum</dt><dd class="col-sm-7">${escapeHtml(participantBirthdateDisplay)}</dd>
+                        <dt class="col-sm-5">Unternehmer</dt><dd class="col-sm-7">${escapeHtml(participantUnternehmerDisplay)}</dd>
+                        <dt class="col-sm-5">Angemeldet am</dt><dd class="col-sm-7">${escapeHtml(erstelltAm)}</dd>
+                        <dt class="col-sm-5">Aktueller Schulungstermin</dt><dd class="col-sm-7">${escapeHtml(participantTermin)}</dd>
+                        <dt class="col-sm-5">Letzte Einladung</dt><dd class="col-sm-7">${escapeHtml(participantLetzteEinladung)}</dd>
+                        <dt class="col-sm-5">Rückmeldestatus</dt><dd class="col-sm-7">${escapeHtml(rueckmeldungStatus)}</dd>
+                        <dt class="col-sm-5">Einladungen gesamt</dt><dd class="col-sm-7">${invitesCount}</dd>
+                    </dl>
+                `;
+
+                const formIdPrefix = `editParticipant-${participantId}`;
+                const editFormHtml = `
+                    <h6 class="fw-semibold">Daten bearbeiten</h6>
+                    <form method="POST" class="row g-3" autocomplete="off">
+                        <input type="hidden" name="update_teilnehmer" value="1">
+                        <input type="hidden" name="id" value="${participantId}">
+                        <div class="col-md-6">
+                            <label class="form-label" for="${formIdPrefix}-vorname">Vorname</label>
+                            <input type="text" class="form-control" id="${formIdPrefix}-vorname" name="vorname" value="${escapeHtml(participantVorname)}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="${formIdPrefix}-nachname">Nachname</label>
+                            <input type="text" class="form-control" id="${formIdPrefix}-nachname" name="nachname" value="${escapeHtml(participantNachname)}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="${formIdPrefix}-email">E-Mail</label>
+                            <input type="email" class="form-control" id="${formIdPrefix}-email" name="email" value="${escapeHtml(participantEmailRaw)}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="${formIdPrefix}-handynummer">Telefonnummer</label>
+                            <input type="text" class="form-control" id="${formIdPrefix}-handynummer" name="handynummer" value="${escapeHtml(participantPhoneRaw)}">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label" for="${formIdPrefix}-strasse">Straße</label>
+                            <input type="text" class="form-control" id="${formIdPrefix}-strasse" name="strasse" value="${escapeHtml(participantStreet)}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="${formIdPrefix}-hausnummer">Hausnummer</label>
+                            <input type="text" class="form-control" id="${formIdPrefix}-hausnummer" name="hausnummer" value="${escapeHtml(participantHouseNumber)}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="${formIdPrefix}-postleitzahl">PLZ</label>
+                            <input type="text" class="form-control" id="${formIdPrefix}-postleitzahl" name="postleitzahl" value="${escapeHtml(participantPostalCode)}">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label" for="${formIdPrefix}-ort">Ort</label>
+                            <input type="text" class="form-control" id="${formIdPrefix}-ort" name="ort" value="${escapeHtml(participantCity)}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="${formIdPrefix}-geburtsdatum">Geburtsdatum</label>
+                            <input type="date" class="form-control" id="${formIdPrefix}-geburtsdatum" name="geburtsdatum" value="${escapeHtml(participantBirthdate)}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="${formIdPrefix}-unternehmer">Unternehmer</label>
+                            <input type="text" class="form-control" id="${formIdPrefix}-unternehmer" name="unternehmer" value="${escapeHtml(participantUnternehmerRaw)}">
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn btn-primary">Änderungen speichern</button>
+                        </div>
+                    </form>
+                `;
 
                 let historyHtml;
 
@@ -756,7 +954,11 @@ include __DIR__ . '/../includes/layout.php';
                 }
 
                 participantModalTitle.textContent = 'Teilnehmerdetails – ' + participantName;
-                participantModalBody.innerHTML = summaryHtml + historyHtml;
+                participantModalBody.innerHTML = '<div class="row g-4">'
+                    + '<div class="col-lg-6">' + summaryHtml + '</div>'
+                    + '<div class="col-lg-6">' + editFormHtml + '</div>'
+                    + '</div>'
+                    + historyHtml;
 
                 const modalInstance = bootstrap.Modal.getOrCreateInstance(participantModalElement);
                 modalInstance.show();
