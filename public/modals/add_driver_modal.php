@@ -6,7 +6,7 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
     $driverFetchError = 'Datenbankverbindung nicht verfügbar.';
 } else {
     try {
-        $driverQuery = $pdo->query('SELECT * FROM Fahrer ORDER BY Nachname, Vorname');
+        $driverQuery = $pdo->query("SELECT * FROM Fahrer WHERE Status IN ('aktiv', 'Aktiv') ORDER BY Nachname, Vorname");
         $existingDrivers = $driverQuery->fetchAll(PDO::FETCH_ASSOC) ?: [];
     } catch (PDOException $exception) {
         $driverFetchError = 'Fahrer konnten nicht geladen werden.';

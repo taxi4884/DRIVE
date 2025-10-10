@@ -17,7 +17,7 @@ if (!$fahrzeug) {
 }
 
 // Alle Fahrer abrufen
-$alleFahrerStmt = $pdo->query("SELECT FahrerID, CONCAT(Vorname, ' ', Nachname) AS Name FROM Fahrer");
+$alleFahrerStmt = $pdo->query("SELECT FahrerID, CONCAT(Vorname, ' ', Nachname) AS Name FROM Fahrer WHERE Status IN ('aktiv', 'Aktiv') ORDER BY Nachname, Vorname");
 $alleFahrer = $alleFahrerStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Zugeordnete Fahrer abrufen

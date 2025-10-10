@@ -15,7 +15,7 @@ $error = '';
 $success = '';
 
 // Fahrer abrufen (für das Dropdown-Menü)
-$stmt = $pdo->query("SELECT FahrerID, CONCAT(Vorname, ' ', Nachname) AS Name FROM Fahrer");
+$stmt = $pdo->query("SELECT FahrerID, CONCAT(Vorname, ' ', Nachname) AS Name FROM Fahrer WHERE Status IN ('aktiv', 'Aktiv') ORDER BY Nachname, Vorname");
 $fahrer = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fahrzeuge abrufen mit numerischer Sortierung der Konzessionsnummer, getrennt nach Firma
@@ -26,7 +26,7 @@ $stmt = $pdo->query("
     FROM Fahrzeuge f
     LEFT JOIN companies c ON f.company_id = c.id
     LEFT JOIN FahrerFahrzeug ff ON f.FahrzeugID = ff.FahrzeugID
-    LEFT JOIN Fahrer d ON ff.FahrerID = d.FahrerID
+    LEFT JOIN Fahrer d ON ff.FahrerID = d.FahrerID AND d.Status IN ('aktiv', 'Aktiv')
     GROUP BY c.id, f.FahrzeugID
     ORDER BY c.name, CAST(f.Konzessionsnummer AS UNSIGNED) ASC
 ");
@@ -56,7 +56,8 @@ $fahrzeuge_eichung = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $stmt = $pdo->prepare("
     SELECT FahrerID, CONCAT(Vorname, ' ', Nachname) AS Name, PScheinGueltigkeit 
     FROM Fahrer 
-    WHERE PScheinGueltigkeit BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 3 MONTH) 
+    WHERE Status IN ('aktiv', 'Aktiv')
+      AND PScheinGueltigkeit BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 3 MONTH)
     ORDER BY PScheinGueltigkeit ASC
 ");
 $stmt->execute();

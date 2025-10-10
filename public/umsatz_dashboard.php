@@ -46,7 +46,8 @@ $stmtUmsatz = $pdo->prepare("
 	) AS z
 	  ON (z.fahrer_alias = f.fms_alias OR z.fahrer_alias = f.Fahrernummer)
 	 AND z.tag = u.Datum
-	WHERE u.Datum IS NOT NULL
+        WHERE f.Status IN ('aktiv', 'Aktiv')
+          AND u.Datum IS NOT NULL
 	GROUP BY companies.name, f.FahrerID, FahrerName, u.Datum, z.arbeitssekunden
 	ORDER BY companies.name ASC, u.Datum ASC, f.Nachname ASC;
 ");

@@ -124,7 +124,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $house_number = trim($_POST['house_number'] ?? '');
     $zip = trim($_POST['zip'] ?? '');
     $city = trim($_POST['city'] ?? '');
-    $status = $_POST['status'] ?? 'Aktiv';
+    $statusInput = strtolower($_POST['status'] ?? 'aktiv');
+    $status = in_array($statusInput, ['aktiv', 'inaktiv'], true) ? $statusInput : 'aktiv';
     $personalnummer = trim($_POST['personalnummer'] ?? '');
 
     $stmt = $pdo->prepare(
@@ -165,6 +166,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Daten nach Speichern aktualisieren
     $fahrer = fetchDriver($pdo, $fahrer_id);
 }
+
+$fahrerStatus = strtolower($fahrer['Status'] ?? '');
 
 $bussgelder = (function () use ($pdo, $fahrer_id) {
     $stmt = $pdo->prepare('SELECT date_of_offense, fine_amount, case_number FROM fines WHERE recipient_id = ? ORDER BY date_of_offense DESC');
@@ -341,11 +344,11 @@ include __DIR__ . '/../includes/layout.php';
 				<label for="personalnummer"><i class="fa-solid fa-id-card"></i> Personalnummer:</label>
 				<input type="text" id="personalnummer" name="personalnummer" value="<?= htmlspecialchars($fahrer['Personalnummer'] ?? '') ?>">
 
-				<label for="status"><i class="fa-solid fa-toggle-on"></i> Status:</label>
-				<select id="status" name="status">
-					<option value="Aktiv" <?= $fahrer['Status'] === 'Aktiv' ? 'selected' : '' ?>>Aktiv</option>
-					<option value="Inaktiv" <?= $fahrer['Status'] === 'Inaktiv' ? 'selected' : '' ?>>Inaktiv</option>
-				</select>
+                                <label for="status"><i class="fa-solid fa-toggle-on"></i> Status:</label>
+                                <select id="status" name="status">
+                                        <option value="aktiv" <?= $fahrerStatus === 'aktiv' ? 'selected' : '' ?>>Aktiv</option>
+                                        <option value="inaktiv" <?= $fahrerStatus === 'inaktiv' ? 'selected' : '' ?>>Inaktiv</option>
+                                </select>
 			</div>
 
             <button type="submit"><i class="fa-solid fa-save"></i> Speichern</button>

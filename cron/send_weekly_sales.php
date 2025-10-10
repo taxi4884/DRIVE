@@ -125,6 +125,7 @@ function getLastWeekSalesWithWorktime(PDO $pdo, DateTime $ws, DateTime $we): arr
           ON (sf.fahrer = f.fms_alias OR sf.fahrer = f.Fahrernummer)
          AND sf.anmeldung < :we
          AND COALESCE(sf.abmeldung, :we) > :ws
+        WHERE f.Status IN ('aktiv', 'Aktiv')
         GROUP BY f.FahrerID
       )
       SELECT
@@ -141,7 +142,7 @@ function getLastWeekSalesWithWorktime(PDO $pdo, DateTime $ws, DateTime $we): arr
       LEFT JOIN umsaetze u  ON u.FahrerID = f.FahrerID
       LEFT JOIN arbeitszeit a ON a.FahrerID = f.FahrerID
       -- Optional: Nur Fahrer mit Umsatz ODER Arbeitszeit anzeigen
-      WHERE COALESCE(u.total_sales, 0) > 0 OR COALESCE(a.work_seconds, 0) > 0
+      WHERE f.Status IN ('aktiv', 'Aktiv') AND (COALESCE(u.total_sales, 0) > 0 OR COALESCE(a.work_seconds, 0) > 0)
       ORDER BY total_sales DESC
     ";
 

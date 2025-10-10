@@ -15,13 +15,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 function fetchDriversWithFines($pdo) {
-    $sql = "SELECT d.FahrerID, d.Vorname, d.Nachname, d.Strasse, d.Hausnummer, d.PLZ, d.Ort, d.birth_date, c.name as firmenname, 
-            COUNT(DISTINCT f.id) as anzahl_bussgelder
-            FROM Fahrer d
-            LEFT JOIN Fahrzeuge v ON d.FahrerID = v.FahrerID
-            LEFT JOIN companies c ON v.company_id = c.id
-            LEFT JOIN fines f ON d.FahrerID = f.driver_id
-            GROUP BY d.FahrerID, d.Vorname, d.Nachname, d.Strasse, d.Hausnummer, d.PLZ, d.Ort, d.birth_date, c.name";
+    $sql = "SELECT d.FahrerID,\n                   d.Vorname,\n                   d.Nachname,\n                   d.Strasse,\n                   d.Hausnummer,\n                   d.PLZ,\n                   d.Ort,\n                   d.birth_date,\n                   c.name AS firmenname,\n                   COUNT(DISTINCT f.id) AS anzahl_bussgelder\n            FROM Fahrer d\n            LEFT JOIN Fahrzeuge v ON d.FahrerID = v.FahrerID\n            LEFT JOIN companies c ON v.company_id = c.id\n            LEFT JOIN fines f ON d.FahrerID = f.driver_id\n            WHERE d.Status IN ('aktiv', 'Aktiv')\n            GROUP BY d.FahrerID, d.Vorname, d.Nachname, d.Strasse, d.Hausnummer, d.PLZ, d.Ort, d.birth_date, c.name";
     $stmt = $pdo->query($sql);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
