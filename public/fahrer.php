@@ -31,8 +31,8 @@ if (isset($_GET['aktion']) && isset($_GET['id'])) {
     exit();
 }
 
-// Fahrer abrufen
-$stmt = $pdo->query("SELECT FahrerID, Vorname, Nachname, Telefonnummer, FuehrerscheinGueltigkeit, PScheinGueltigkeit FROM Fahrer");
+// Aktive Fahrer abrufen
+$stmt = $pdo->query("SELECT FahrerID, Vorname, Nachname, Telefonnummer, FuehrerscheinGueltigkeit, PScheinGueltigkeit FROM Fahrer WHERE Aktiv = 1 ORDER BY Nachname, Vorname");
 $fahrer = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Aktuelle Mitteilung abrufen
@@ -74,6 +74,7 @@ include __DIR__ . '/../includes/layout.php';
         <div class="button-group">
             <button class="btn" onclick="openModal('driverModal')">Neuen Fahrer hinzufügen</button>
             <button class="btn" onclick="openModal('messageModal')">Mitteilung an Fahrer senden</button>
+            <a class="btn" href="inaktive_fahrer.php">Inaktive Fahrer</a>
         </div>
 
         <table class="styled-table">

@@ -5,8 +5,8 @@ require_once '../includes/bootstrap.php';
 // Fahrer aus der Datenbank laden (nur aktive Fahrer, sortiert nach Personalnummer & Nachname)
 $stmtAlleFahrer = $pdo->query("
     SELECT FahrerID, Personalnummer, CONCAT(Vorname, ' ', Nachname) AS Name 
-    FROM Fahrer 
-    WHERE Status = 'Aktiv'
+    FROM Fahrer
+    WHERE Status = 'Aktiv' AND Aktiv = 1
     ORDER BY Personalnummer IS NULL, Personalnummer ASC, Nachname ASC
 ");
 $alleFahrer = $stmtAlleFahrer->fetchAll(PDO::FETCH_ASSOC);

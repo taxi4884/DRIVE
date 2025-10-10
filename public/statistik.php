@@ -7,13 +7,16 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Fahrer für Dropdown abrufen
-$sql_fahrer_list = "SELECT FahrerID, Vorname, Nachname FROM Fahrer ORDER BY Nachname, Vorname";
+$sql_fahrer_list = "SELECT FahrerID, Vorname, Nachname FROM Fahrer WHERE Aktiv = 1 ORDER BY Nachname, Vorname";
 $stmt_fahrer_list = $pdo->prepare($sql_fahrer_list);
 $stmt_fahrer_list->execute();
 $fahrer_list = $stmt_fahrer_list->fetchAll(PDO::FETCH_ASSOC);
 
 $selected_fahrer = $_GET['fahrer'] ?? '';
-$where_clause = $selected_fahrer ? " WHERE u.FahrerID = :fahrerID" : "";
+$where_clause = " WHERE f.Aktiv = 1";
+if ($selected_fahrer) {
+    $where_clause .= " AND u.FahrerID = :fahrerID";
+}
 
 // Array zur Übersetzung der Wochentage
 $wochentage_deutsch = [
@@ -30,6 +33,7 @@ $wochentage_deutsch = [
 $sql_umsatz_schicht = "SELECT ff.Schicht AS Schichtart, AVG(u.TaxameterUmsatz + u.OhneTaxameter) AS durchschnitt_umsatz
                         FROM Umsatz u
                         JOIN FahrerFahrzeug ff ON u.FahrerID = ff.FahrerID
+                        JOIN Fahrer f ON u.FahrerID = f.FahrerID
                         $where_clause
                         GROUP BY ff.Schicht";
 $stmt_umsatz_schicht = $pdo->prepare($sql_umsatz_schicht);
@@ -40,10 +44,11 @@ $stmt_umsatz_schicht->execute();
 $result_umsatz_schicht = $stmt_umsatz_schicht->fetchAll(PDO::FETCH_ASSOC);
 
 // Gesamtumsatz pro Fahrer und Monat
-$sql_umsatz_fahrer_monate = "SELECT f.Vorname, f.Nachname, DATE_FORMAT(u.Datum, '%Y-%m') AS monat, 
+$sql_umsatz_fahrer_monate = "SELECT f.Vorname, f.Nachname, DATE_FORMAT(u.Datum, '%Y-%m') AS monat,
                              SUM(u.TaxameterUmsatz + u.OhneTaxameter) AS gesamtumsatz
                              FROM Umsatz u
                              JOIN Fahrer f ON u.FahrerID = f.FahrerID
+                             WHERE f.Aktiv = 1
                              GROUP BY f.FahrerID, monat
                              ORDER BY f.Nachname, f.Vorname, monat";
 $stmt_umsatz_fahrer_monate = $pdo->prepare($sql_umsatz_fahrer_monate);
@@ -78,10 +83,11 @@ $stmt_arbeitstage->execute();
 $result_arbeitstage = $stmt_arbeitstage->fetchAll(PDO::FETCH_ASSOC);
 
 // Durchschnittlicher Umsatz pro Wochentag je Fahrer
-$sql_wochentage = "SELECT f.Vorname, f.Nachname, DAYNAME(u.Datum) AS wochentag, 
+$sql_wochentage = "SELECT f.Vorname, f.Nachname, DAYNAME(u.Datum) AS wochentag,
                            AVG(u.TaxameterUmsatz + u.OhneTaxameter) AS durchschnitt_umsatz
                     FROM Umsatz u
                     JOIN Fahrer f ON u.FahrerID = f.FahrerID
+                    WHERE f.Aktiv = 1
                     GROUP BY f.FahrerID, wochentag
                     ORDER BY f.Nachname, f.Vorname";
 $stmt_wochentage = $pdo->prepare($sql_wochentage);
@@ -97,7 +103,7 @@ foreach ($result_wochentage as $row) {
 }
 
 // Effizienteste Fahrer: Umsatz pro Arbeitstag
-$sql_effizienz = "SELECT f.Vorname, f.Nachname, 
+$sql_effizienz = "SELECT f.Vorname, f.Nachname,
                         SUM(u.TaxameterUmsatz + u.OhneTaxameter) / COUNT(DISTINCT DATE(u.Datum)) AS umsatz_pro_arbeitstag
                   FROM Umsatz u
                   JOIN Fahrer f ON u.FahrerID = f.FahrerID
@@ -112,10 +118,11 @@ $stmt_effizienz->execute();
 $result_effizienz = $stmt_effizienz->fetchAll(PDO::FETCH_ASSOC);
 
 // Durchschnittlicher Umsatz pro Monat je Fahrer (Top 10)
-$sql_durchschnitt_umsatz_monat = "SELECT f.Vorname, f.Nachname, 
+$sql_durchschnitt_umsatz_monat = "SELECT f.Vorname, f.Nachname,
                                     SUM(u.TaxameterUmsatz + u.OhneTaxameter) / COUNT(DISTINCT DATE_FORMAT(u.Datum, '%Y-%m')) AS durchschnitt_umsatz
                                   FROM Umsatz u
                                   JOIN Fahrer f ON u.FahrerID = f.FahrerID
+                                  WHERE f.Aktiv = 1
                                   GROUP BY f.FahrerID
                                   ORDER BY durchschnitt_umsatz DESC
                                   LIMIT 10";
@@ -124,10 +131,11 @@ $stmt_durchschnitt_umsatz_monat->execute();
 $result_durchschnitt_umsatz_monat = $stmt_durchschnitt_umsatz_monat->fetchAll(PDO::FETCH_ASSOC);
 
 // Fahrer mit durchschnittlichem Umsatz pro Arbeitstag unter 264 Euro
-$sql_fahrer_unter_264 = "SELECT f.Vorname, f.Nachname, 
+$sql_fahrer_unter_264 = "SELECT f.Vorname, f.Nachname,
                             SUM(u.TaxameterUmsatz + u.OhneTaxameter) / COUNT(DISTINCT DATE(u.Datum)) AS durchschnitt_umsatz_tag
                           FROM Umsatz u
                           JOIN Fahrer f ON u.FahrerID = f.FahrerID
+                          WHERE f.Aktiv = 1
                           GROUP BY f.FahrerID
                           HAVING durchschnitt_umsatz_tag < 264
                           ORDER BY durchschnitt_umsatz_tag ASC";

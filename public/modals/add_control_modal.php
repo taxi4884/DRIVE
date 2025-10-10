@@ -18,6 +18,7 @@ try {
     $stmtDrivers = $pdo->query("
         SELECT FahrerID, CONCAT(Vorname, ' ', Nachname) AS Name
         FROM Fahrer
+        WHERE Aktiv = 1
         ORDER BY Nachname ASC
     ");
     $fahrer = $stmtDrivers->fetchAll(PDO::FETCH_ASSOC);
