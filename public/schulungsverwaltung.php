@@ -444,35 +444,35 @@ include __DIR__ . '/../includes/layout.php';
 				<?php unset($_SESSION['message']); ?>
 			<?php endif; ?>
 		
-		<?php if ($berechtigt): ?>
-			<div class="d-flex flex-wrap align-items-center gap-2 mb-4">
-				<!-- Globaler Schulungstermin setzen -->
-				<form method="POST" class="d-flex align-items-center gap-2 mb-0">
-					<label for="global_schulungstermin" class="form-label mb-0">Globaler Schulungstermin:</label>
-					<input type="date" id="global_schulungstermin" name="global_schulungstermin" class="form-control" required>
-					<button type="submit" name="termin_speichern" class="btn btn-warning" style="width:100%;">Global setzen</button>
-				</form>
+                <?php if ($berechtigt): ?>
+                        <div class="training-actions d-flex align-items-center mb-4">
+                                <!-- Globaler Schulungstermin setzen -->
+                                <form method="POST" class="d-flex flex-wrap flex-md-nowrap align-items-center gap-2 mb-0">
+                                        <label for="global_schulungstermin" class="form-label mb-0">Globaler Schulungstermin:</label>
+                                        <input type="date" id="global_schulungstermin" name="global_schulungstermin" class="form-control" required>
+                                        <button type="submit" name="termin_speichern" class="btn btn-warning flex-shrink-0">Global setzen</button>
+                                </form>
 
-				<!-- Rückmeldungen zurücksetzen -->
-				<form method="POST" class="mb-0">
-					<button type="submit" name="rueckmeldung_zuruecksetzen" class="btn btn-danger">
-						Rückmeldungen zurücksetzen
-					</button>
-				</form>
+                                <!-- Rückmeldungen zurücksetzen -->
+                                <form method="POST" class="mb-0">
+                                        <button type="submit" name="rueckmeldung_zuruecksetzen" class="btn btn-danger">
+                                                Rückmeldungen zurücksetzen
+                                        </button>
+                                </form>
 
-				<!-- Alle PDFs -->
-				<form method="GET" action="pdf_alle_bestaetigt.php" class="mb-0">
-					<button type="submit" class="btn btn-success">
-						<i class="fas fa-file-pdf"></i> Alle PDF für bestätigte Teilnehmer
-					</button>
-				</form>
-				
-				<form action="/schulung/abfrage_status_schulung.php" method="post" class="mb-4">
-					<button type="submit" class="btn btn-primary">
-						<i class="fas fa-sync-alt"></i> Status aus Funkschulung abrufen
-					</button>
-				</form>
-			</div>
+                                <!-- Alle PDFs -->
+                                <form method="GET" action="pdf_alle_bestaetigt.php" class="mb-0">
+                                        <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-file-pdf"></i> Alle PDF für bestätigte Teilnehmer
+                                        </button>
+                                </form>
+
+                                <form action="/schulung/abfrage_status_schulung.php" method="post" class="mb-0">
+                                        <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-sync-alt"></i> Status aus Funkschulung abrufen
+                                        </button>
+                                </form>
+                        </div>
                  <?php endif; ?>
 
         <p class="text-muted small">Tipp: Doppelklick auf einen Teilnehmer zeigt Details zur Einladungshistorie.</p>

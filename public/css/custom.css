@@ -464,7 +464,7 @@ table tr:last-child td:last-child {
   margin: 0;
 }
 
-button {
+button:not(.btn) {
   background-color: var(--color-primary);
   color: var(--color-text);
   border: none;
@@ -478,9 +478,29 @@ button {
   box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
-button:hover {
+button:not(.btn):hover {
   background-color: var(--color-primary-dark);
   transform: translateY(-2px);
+}
+
+.training-actions {
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.training-actions form {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0;
+}
+
+.training-actions form .btn {
+  white-space: nowrap;
+}
+
+.training-actions form input[type="date"] {
+  min-width: 180px;
 }
 
 /*********************************************
