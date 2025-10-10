@@ -32,10 +32,11 @@ class Message
     {
         global $pdo;
         $stmt = $pdo->prepare('
-            SELECT m.id, m.subject, m.body, m.created_at, l.other_id, b.Name AS other_name
+            SELECT m.id, m.subject, m.body, m.created_at, l.other_id, b.Name AS other_name,
+                   COALESCE(unread.unread_count, 0) AS unread_count
             FROM messages m
             JOIN (
-                SELECT 
+                SELECT
                     CASE WHEN sender_id = :uid THEN recipient_id ELSE sender_id END AS other_id,
                     MAX(created_at) AS last_time
                 FROM messages
@@ -46,6 +47,12 @@ class Message
                 AND m.created_at = l.last_time
             )
             JOIN Benutzer b ON b.BenutzerID = l.other_id
+            LEFT JOIN (
+                SELECT sender_id AS other_id, COUNT(*) AS unread_count
+                FROM messages
+                WHERE recipient_id = :uid AND read_at IS NULL
+                GROUP BY sender_id
+            ) unread ON unread.other_id = l.other_id
             ORDER BY m.created_at DESC
         ');
         $stmt->execute(['uid' => $userId]);

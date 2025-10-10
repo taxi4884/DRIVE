@@ -17,9 +17,13 @@ if ($selectedUserId && isset($_SESSION['user_id'])) {
             <?php else: ?>
                 <ul>
                 <?php foreach ($conversations as $conv): ?>
-                    <li>
-                        <a href="/messages?user=<?= $conv['other_id'] ?>">
-                            <?= htmlspecialchars($conv['other_name']) ?>
+                    <?php $unreadCount = (int) ($conv['unread_count'] ?? 0); ?>
+                    <li class="conversation-entry<?= $unreadCount > 0 ? ' has-unread' : '' ?>">
+                        <a href="/messages?user=<?= $conv['other_id'] ?>" class="<?= $unreadCount > 0 ? 'has-unread' : '' ?>">
+                            <span class="conversation-name"><?= htmlspecialchars($conv['other_name']) ?></span>
+                            <?php if ($unreadCount > 0): ?>
+                                <span class="badge"><?= $unreadCount ?></span>
+                            <?php endif; ?>
                         </a>
                     </li>
                 <?php endforeach; ?>

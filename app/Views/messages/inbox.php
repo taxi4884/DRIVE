@@ -21,9 +21,20 @@
     <div class="inbox-container">
         <div class="conversation-list">
             <?php foreach ($conversations as $conv): ?>
-                <div class="card conversation-item" data-other-id="<?= htmlspecialchars($conv['other_id']) ?>" data-subject="<?= htmlspecialchars($conv['subject']) ?>">
-                    <strong><?= htmlspecialchars($conv['other_name']) ?></strong><br>
-                    <span><?= htmlspecialchars($conv['subject']) ?></span><br>
+                <?php $unreadCount = (int) ($conv['unread_count'] ?? 0); ?>
+                <div
+                    class="card conversation-item<?= $unreadCount > 0 ? ' has-unread' : '' ?>"
+                    data-other-id="<?= htmlspecialchars($conv['other_id']) ?>"
+                    data-subject="<?= htmlspecialchars($conv['subject']) ?>"
+                    data-unread-count="<?= $unreadCount ?>"
+                >
+                    <div class="conversation-item-header">
+                        <strong><?= htmlspecialchars($conv['other_name']) ?></strong>
+                        <?php if ($unreadCount > 0): ?>
+                            <span class="badge"><?= $unreadCount ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <span class="conversation-subject"><?= htmlspecialchars($conv['subject']) ?></span>
                     <span class="preview"><?= htmlspecialchars(mb_strimwidth($conv['body'], 0, 40, '…')) ?></span>
                 </div>
             <?php endforeach; ?>

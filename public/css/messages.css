@@ -46,6 +46,45 @@
     margin-top: 0.5rem;
 }
 
+.messages-container .conversations li.has-unread a,
+.messages-container .conversations a.has-unread {
+    background-color: #fff7e6;
+    border-left: 3px solid #ff9800;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.5rem;
+    border-radius: 4px;
+}
+
+.messages-container .conversations a .badge {
+    background-color: #ff9800;
+    color: #fff;
+    border-radius: 999px;
+    padding: 0 0.45rem;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+
+.messages-container .conversations .conversation-entry a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.messages-container .conversations .conversation-entry .conversation-name {
+    flex: 1;
+}
+
+.messages-container .conversations .conversation-entry a:hover {
+    background-color: #f0f0f0;
+}
+
 .messages-container .conversation {
     flex: 1;
     overflow-y: auto;
@@ -88,6 +127,36 @@
 
 .conversation-item.active {
     background-color: #e6f0ff;
+}
+
+.conversation-item.has-unread {
+    background-color: #fff7e6;
+    border-left: 3px solid #ff9800;
+}
+
+.conversation-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.conversation-item.has-unread .conversation-item-header strong {
+    font-weight: 700;
+}
+
+.conversation-item .badge {
+    background-color: #ff9800;
+    color: #fff;
+    border-radius: 999px;
+    padding: 0 0.45rem;
+    font-size: 0.75rem;
+}
+
+.conversation-item .conversation-subject,
+.conversation-item .preview {
+    display: block;
 }
 
 
