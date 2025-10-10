@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Fetch all drivers
 $drivers = Cache::remember($driversCacheKey, function () use ($pdo) {
-    $driversStmt = $pdo->query('SELECT FahrerID, CONCAT(Vorname, " ", Nachname) AS name FROM Fahrer ORDER BY Nachname, Vorname');
+    $driversStmt = $pdo->query('SELECT FahrerID, CONCAT(Vorname, " ", Nachname) AS name FROM Fahrer WHERE Aktiv = 1 ORDER BY Nachname, Vorname');
     return $driversStmt->fetchAll(PDO::FETCH_ASSOC);
 }, $cacheTtl);
 

@@ -126,6 +126,7 @@ try {
         LEFT JOIN Fahrzeuge v
             ON sfa.kennung = v.Konzessionsnummer OR sfa.kennung = v.fms_alias
         WHERE sfa.abmeldung IS NULL
+          AND (f.Aktiv = 1 OR f.FahrerID IS NULL)
         ORDER BY firmenname, sfa.anmeldung DESC"
     );
     $stmt->execute();
@@ -167,6 +168,7 @@ if ($hasFahrerBirthdateColumn) {
             "SELECT CONCAT(Vorname, ' ', Nachname) AS name
              FROM Fahrer
              WHERE birth_date IS NOT NULL
+               AND Aktiv = 1
                AND DATE_FORMAT(birth_date, '%m-%d') = DATE_FORMAT(NOW(), '%m-%d')"
         );
         $stmt_fahrer->execute();
@@ -252,7 +254,7 @@ try {
 $pscheinDue  = [];
 $pscheinError = null;
 try {
-    $stmt = $pdo->prepare("SELECT CONCAT(Vorname, ' ', Nachname) AS Name, DATE_FORMAT(PScheinGueltigkeit, '%d.%m.%Y') AS PScheinGueltigkeit FROM Fahrer WHERE PScheinGueltigkeit BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 3 MONTH) ORDER BY PScheinGueltigkeit ASC");
+    $stmt = $pdo->prepare("SELECT CONCAT(Vorname, ' ', Nachname) AS Name, DATE_FORMAT(PScheinGueltigkeit, '%d.%m.%Y') AS PScheinGueltigkeit FROM Fahrer WHERE Aktiv = 1 AND PScheinGueltigkeit BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 3 MONTH) ORDER BY PScheinGueltigkeit ASC");
     $stmt->execute();
     $pscheinDue = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
