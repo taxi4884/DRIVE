@@ -285,7 +285,12 @@ function buildMenu(array $items, array $userRoles, string $currentPath = ''): st
             $iconClass = htmlspecialchars($item['icon'], ENT_QUOTES, 'UTF-8');
             $iconHtml = '<i class="bi ' . $iconClass . '"></i> ';
         }
-        $html .= '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $aClassAttr . '>' . $iconHtml . $label . '</a>';
+        $badgeHtml = '';
+        global $unreadMessageCount;
+        if (!empty($unreadMessageCount) && isset($item['url']) && basename($item['url']) === 'postfach.php') {
+            $badgeHtml = '<span class="badge">' . (int) $unreadMessageCount . '</span>';
+        }
+        $html .= '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $aClassAttr . '>' . $iconHtml . $label . $badgeHtml . '</a>';
         if ($hasChildren) {
             $childHtml = buildMenu($item['children'], $userRoles, $currentPath);
             $html .= str_replace('<ul class="nav-links">', '<ul class="dropdown-menu">', $childHtml);

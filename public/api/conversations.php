@@ -24,5 +24,6 @@ echo json_encode(array_map(static function (array $conversation): array {
         'created_at' => $conversation['created_at'],
         'other_id' => (int) $conversation['other_id'],
         'other_name' => $conversation['other_name'],
+        'unread_count' => (int) ($conversation['unread_count'] ?? 0),
     ];
 }, $conversations));

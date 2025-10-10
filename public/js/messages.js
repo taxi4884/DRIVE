@@ -54,6 +54,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  function setUnreadState(item, unreadCount) {
+    if (!item) {
+      return;
+    }
+
+    var normalized = Math.max(0, parseInt(unreadCount, 10) || 0);
+    item.setAttribute('data-unread-count', normalized);
+
+    if (normalized > 0) {
+      item.classList.add('has-unread');
+    } else {
+      item.classList.remove('has-unread');
+    }
+
+    var header = item.querySelector('.conversation-item-header');
+    if (!header) {
+      return;
+    }
+
+    var badge = header.querySelector('.badge');
+    if (normalized > 0) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'badge';
+        header.appendChild(badge);
+      }
+      badge.textContent = normalized;
+    } else if (badge) {
+      badge.remove();
+    }
+  }
+
   function renderConversation(messages, otherId, options) {
     if (!content || !Array.isArray(messages)) {
       return;
@@ -146,21 +178,25 @@ document.addEventListener('DOMContentLoaded', function () {
     item.className = 'card conversation-item';
     item.setAttribute('data-other-id', conv.other_id);
     item.setAttribute('data-subject', conv.subject || '');
+    var header = document.createElement('div');
+    header.className = 'conversation-item-header';
 
     var nameEl = document.createElement('strong');
     nameEl.textContent = conv.other_name || '';
-    item.appendChild(nameEl);
-    item.appendChild(document.createElement('br'));
+    header.appendChild(nameEl);
+    item.appendChild(header);
 
     var subjectEl = document.createElement('span');
+    subjectEl.className = 'conversation-subject';
     subjectEl.textContent = conv.subject || '';
     item.appendChild(subjectEl);
-    item.appendChild(document.createElement('br'));
 
     var previewEl = document.createElement('span');
     previewEl.className = 'preview';
     previewEl.textContent = truncatePreview(conv.body || '');
     item.appendChild(previewEl);
+
+    setUnreadState(item, conv.unread_count || 0);
 
     item.addEventListener('click', function () {
       selectConversation(parseInt(conv.other_id, 10), item, { scrollToBottom: true, forceRender: true });
@@ -215,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         var snapshot = JSON.stringify(conversations.map(function (conv) {
-          return [conv.other_id, conv.id, conv.created_at].join(':');
+          return [conv.other_id, conv.id, conv.created_at, conv.unread_count || 0].join(':');
         }));
 
         if (!force && snapshot === conversationListSnapshot) {
@@ -237,6 +273,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     currentOtherId = otherId;
     setActiveConversationItem(item);
+    setUnreadState(item, 0);
 
     if (recipientInput) {
       recipientInput.value = otherId;
@@ -289,6 +326,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (conversationList) {
     Array.prototype.forEach.call(conversationList.querySelectorAll('.conversation-item'), function (item, index) {
+      var initialUnread = item.getAttribute('data-unread-count');
+      setUnreadState(item, initialUnread);
+
       item.addEventListener('click', function () {
         var otherId = parseInt(item.getAttribute('data-other-id'), 10);
         selectConversation(otherId, item, { scrollToBottom: true, forceRender: true });
