@@ -124,7 +124,10 @@ try {
         LEFT JOIN Fahrer f
             ON sfa.fahrer = f.fms_alias OR sfa.fahrer = f.Fahrernummer
         LEFT JOIN Fahrzeuge v
-            ON sfa.kennung = v.Konzessionsnummer OR sfa.kennung = v.fms_alias
+            ON sfa.kennung = CASE
+                WHEN v.fms_alias IS NOT NULL AND v.fms_alias <> '' THEN v.fms_alias
+                ELSE v.Konzessionsnummer
+            END
         WHERE sfa.abmeldung IS NULL
           AND ((f.Status IN ('aktiv', 'Aktiv')) OR f.FahrerID IS NULL)
         ORDER BY firmenname, sfa.anmeldung DESC"
