@@ -1,5 +1,10 @@
 <?php
-require_once '../../includes/db.php'; // Datenbankverbindung
+require_once __DIR__ . '/../includes/db.php'; // Datenbankverbindung
+require_once __DIR__ . '/../includes/fahrer_abwesenheit_helpers.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fahrer_id = $_POST['fahrer_id'] ?? null;
@@ -44,6 +49,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'beantragt_von_benutzer_id' => $beantragt_von_benutzer_id,
         'kommentar' => $kommentar
     ]);
+
+    if ($abwesenheitsart === 'Urlaub' && $status === 'beantragt') {
+        createVacationApprovalMessages(
+            $pdo,
+            $beantragt_von_benutzer_id !== null ? (int) $beantragt_von_benutzer_id : null,
+            (int) $fahrer_id,
+            (string) $startdatum,
+            (string) $enddatum,
+            $grund !== null ? (string) $grund : null,
+            $kommentar !== null ? (string) $kommentar : null
+        );
+    }
 
     header('Location: fahrer_abwesenheiten.php?success=1');
     exit;
