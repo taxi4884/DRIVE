@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/bootstrap.php';
+require_once '../includes/modal.php';
 require_once 'modals/process_vehicle.php';
 
 // Fahrzeuge abrufen
@@ -52,7 +53,7 @@ include __DIR__ . '/../includes/layout.php';
             </tbody>
         </table>
     </main>
-    <?php include 'modals/add_vehicle_modal.php'; ?>
+    <?php renderModal('vehicleModal', 'Neues Fahrzeug hinzufügen', __DIR__ . '/modals/add_vehicle_modal.php'); ?>
 
 </body>
 </html>

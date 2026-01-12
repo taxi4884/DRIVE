@@ -14,11 +14,7 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
 }
 ?>
 
-<div class="modal" id="driverModal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('driverModal')">&times;</span>
-        <h2>Neuen Fahrer hinzufügen</h2>
-        <form action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="POST">
+<form action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="POST">
             <!-- Vorname -->
             <label for="firstname">Vorname:</label>
             <input type="text" id="firstname" name="firstname" placeholder="Vorname" required>
@@ -84,41 +80,39 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
             <input type="text" id="code" name="code" placeholder="Passwort generieren oder manuell eingeben" required>
             <br>
 
-            <button type="submit" name="add_driver">Fahrer hinzufügen</button>
-        </form>
+    <button type="submit" name="add_driver">Fahrer hinzufügen</button>
+</form>
 
         <hr>
 
         <h3>Bestehende Fahrer</h3>
 
-        <?php if ($driverFetchError !== null): ?>
-            <p class="error-message"><?= htmlspecialchars($driverFetchError) ?></p>
-        <?php elseif (empty($existingDrivers)): ?>
-            <p>Es sind derzeit keine Fahrer in der Datenbank hinterlegt.</p>
-        <?php else: ?>
-            <div class="driver-table-wrapper">
-                <table class="driver-table">
-                    <thead>
-                        <tr>
-                            <?php foreach (array_keys($existingDrivers[0]) as $column): ?>
-                                <th><?= htmlspecialchars(ucwords(str_replace('_', ' ', $column))) ?></th>
-                            <?php endforeach; ?>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($existingDrivers as $driverRow): ?>
-                            <tr>
-                                <?php foreach ($driverRow as $value): ?>
-                                    <td><?= htmlspecialchars((string) $value) ?></td>
-                                <?php endforeach; ?>
-                            </tr>
+<?php if ($driverFetchError !== null): ?>
+    <p class="error-message"><?= htmlspecialchars($driverFetchError) ?></p>
+<?php elseif (empty($existingDrivers)): ?>
+    <p>Es sind derzeit keine Fahrer in der Datenbank hinterlegt.</p>
+<?php else: ?>
+    <div class="driver-table-wrapper">
+        <table class="driver-table">
+            <thead>
+                <tr>
+                    <?php foreach (array_keys($existingDrivers[0]) as $column): ?>
+                        <th><?= htmlspecialchars(ucwords(str_replace('_', ' ', $column))) ?></th>
+                    <?php endforeach; ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($existingDrivers as $driverRow): ?>
+                    <tr>
+                        <?php foreach ($driverRow as $value): ?>
+                            <td><?= htmlspecialchars((string) $value) ?></td>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
-</div>
+<?php endif; ?>
 
 <style>
     #driverModal .driver-table-wrapper {

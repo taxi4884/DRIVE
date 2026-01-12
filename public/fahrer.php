@@ -1,5 +1,6 @@
 <?php
 require_once '../includes/bootstrap.php';
+require_once '../includes/modal.php';
 require_once 'modals/process_driver.php';
 
 if (!isLoggedIn()) {
@@ -111,7 +112,7 @@ include __DIR__ . '/../includes/layout.php';
         </table>
     </main>
 
-    <?php include 'modals/add_driver_modal.php'; ?>
+    <?php renderModal('driverModal', 'Neuen Fahrer hinzufügen', __DIR__ . '/modals/add_driver_modal.php', ['pdo' => $pdo]); ?>
 
     <!-- Modal für Mitteilung -->
     <div class="modal" id="messageModal" style="display: none;">
