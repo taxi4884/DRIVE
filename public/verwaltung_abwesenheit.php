@@ -160,6 +160,32 @@ function formatGermanTime(?string $time): ?string {
     return date('H:i', $timestamp);
 }
 
+function formatDateForInput(?string $date): ?string {
+    if (empty($date)) {
+        return null;
+    }
+
+    $timestamp = strtotime($date);
+    if ($timestamp === false) {
+        return null;
+    }
+
+    return date('Y-m-d', $timestamp);
+}
+
+function formatTimeForInput(?string $time): ?string {
+    if (empty($time)) {
+        return null;
+    }
+
+    $timestamp = strtotime($time);
+    if ($timestamp === false) {
+        return null;
+    }
+
+    return date('H:i', $timestamp);
+}
+
 function getAbwesenheitsTooltip(array $abwesenheit): array {
     $beschreibung = trim((string)($abwesenheit['beschreibung'] ?? ''));
     $typ = $abwesenheit['typ'] ?? '';
@@ -496,11 +522,11 @@ include __DIR__ . '/../includes/layout.php';
                                                     'mitarbeiter_name' => $person['Name'],
                                                     'typ' => $a['typ'],
                                                     'beschreibung' => $a['beschreibung'],
-                                                    'datum' => $a['datum'],
-                                                    'startdatum' => $a['startdatum'],
-                                                    'enddatum' => $a['enddatum'],
-                                                    'startzeit' => $a['startzeit'],
-                                                    'endzeit' => $a['endzeit'],
+                                                    'datum' => formatDateForInput($a['datum'] ?? null),
+                                                    'startdatum' => formatDateForInput($a['startdatum'] ?? null),
+                                                    'enddatum' => formatDateForInput($a['enddatum'] ?? null),
+                                                    'startzeit' => formatTimeForInput($a['startzeit'] ?? null),
+                                                    'endzeit' => formatTimeForInput($a['endzeit'] ?? null),
                                                 ];
                                             }
                                             break;
