@@ -78,7 +78,7 @@ include __DIR__ . '/../includes/layout.php';
             <a class="btn" href="inaktive_fahrer.php">Inaktive Fahrer</a>
         </div>
 
-        <table class="styled-table">
+        <table class="table-standard">
             <thead>
                 <tr>
                     <th>Vorname</th>

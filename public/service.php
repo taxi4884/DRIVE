@@ -42,7 +42,7 @@ include __DIR__ . '/../includes/layout.php';
 		
 		<button class="btn" onclick="openModal('maintenanceModal')">Wartungstermin</button>
 		
-        <table>
+        <table class="table-standard">
             <thead>
                 <tr>
                     <th>Fahrzeug</th>

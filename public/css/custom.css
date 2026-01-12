@@ -17,6 +17,40 @@ body {
     font-size: var(--font-size-base);
 }
 
+.table-standard,
+.dashboard-table,
+.driver-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    background-color: #ffffff;
+}
+
+.table-standard th,
+.table-standard td,
+.dashboard-table th,
+.dashboard-table td,
+.driver-table th,
+.driver-table td {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #dee2e6;
+}
+
+.table-standard th,
+.dashboard-table th,
+.driver-table th {
+    background-color: #f2f4f8;
+    font-weight: 600;
+    text-align: left;
+}
+
+.table-standard tbody tr:nth-child(even),
+.dashboard-table tbody tr:nth-child(even),
+.driver-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
 .h1, h1 {
     font-size: clamp(1.75rem, 3vw, 2.15rem);
 }

@@ -376,7 +376,7 @@ include __DIR__ . '/../includes/layout.php';
         <!-- Detaillierte Umsätze -->
         <section>
             <h2>Detaillierte Umsätze</h2>
-            <table>
+            <table class="table-standard">
                 <thead>
                     <tr>
                         <th><i class="fas fa-calendar-alt"></i> Datum</th>

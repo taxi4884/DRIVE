@@ -168,7 +168,7 @@ include __DIR__ . '/../includes/layout.php';
 			</form>
 		</div>
 
-		<table>
+		<table class="table-standard">
 			<thead>
 				<tr>
 					<th>ID</th>
