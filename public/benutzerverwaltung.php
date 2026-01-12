@@ -104,7 +104,7 @@ include __DIR__ . '/../includes/layout.php';
 <?php endif; ?>
 
 <form method="post">
-    <table>
+    <table class="table-standard">
         <thead>
             <tr>
                 <th>ID</th><th>Name</th><th>Email</th><th>Rolle</th><th>Sekundärrolle</th>

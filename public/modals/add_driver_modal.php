@@ -93,7 +93,7 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
     <p>Es sind derzeit keine Fahrer in der Datenbank hinterlegt.</p>
 <?php else: ?>
     <div class="driver-table-wrapper">
-        <table class="driver-table">
+        <table class="driver-table table-standard">
             <thead>
                 <tr>
                     <?php foreach (array_keys($existingDrivers[0]) as $column): ?>

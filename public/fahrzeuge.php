@@ -107,7 +107,7 @@ include __DIR__ . '/../includes/layout.php';
 					</table>
 				<?php endif; ?>
 				<h2><?= htmlspecialchars($fahrzeug['Firma']) ?></h2>
-				<table>
+				<table class="table-standard">
 					<thead>
 						<tr>
 							<th>Konzession</th>

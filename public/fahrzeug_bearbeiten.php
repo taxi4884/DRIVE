@@ -176,7 +176,7 @@ include __DIR__ . '/../includes/layout.php';
         </section>
         <section>
             <h3>Historie</h3>
-            <table class="styled-table">
+            <table class="table-standard">
                 <thead>
                     <tr>
                         <th>Fahrer</th>

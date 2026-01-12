@@ -155,7 +155,7 @@ include __DIR__ . '/../includes/layout.php';
     <p>Hier sind die Statistiken zu den Fahrern basierend auf Umsatz, Effizienz und Arbeitstagen.</p>
     
     <h3>Durchschnittlicher Umsatz pro Schicht</h3>
-    <table>
+    <table class="table-standard">
         <tr>
             <th>Schicht</th>
             <th>Durchschnittlicher Umsatz (€)</th>
@@ -169,7 +169,7 @@ include __DIR__ . '/../includes/layout.php';
     </table>
     
     <h3>Gesamtumsatz pro Fahrer je Monat</h3>
-    <table>
+    <table class="table-standard">
         <tr>
             <th>Fahrer</th>
             <?php foreach ($monate as $monat => $_): ?>
@@ -187,7 +187,7 @@ include __DIR__ . '/../includes/layout.php';
     </table>
     
     <h3>Arbeitstage je Fahrer</h3>
-    <table>
+    <table class="table-standard">
         <tr>
             <th>Fahrer</th>
             <th>Arbeitstage</th>
@@ -201,7 +201,7 @@ include __DIR__ . '/../includes/layout.php';
     </table>
     
     <h3>Durchschnittlicher Umsatz je Wochentag</h3>
-    <table>
+    <table class="table-standard">
         <tr>
             <th>Fahrer</th>
             <?php foreach ($wochentage_deutsch as $wochentag): ?>
@@ -219,7 +219,7 @@ include __DIR__ . '/../includes/layout.php';
     </table>
     
     <h3>Effizienteste Fahrer (Umsatz pro Arbeitstag)</h3>
-    <table>
+    <table class="table-standard">
         <tr>
             <th>Fahrer</th>
             <th>Durchschnittlicher Umsatz pro Arbeitstag (€)</th>
@@ -233,7 +233,7 @@ include __DIR__ . '/../includes/layout.php';
     </table>
     
     <h3>Top-Fahrer</h3>
-    <table>
+    <table class="table-standard">
         <tr>
             <th>Fahrer</th>
             <th>Durchschnittlicher Monatsumsatz (€)</th>
@@ -247,7 +247,7 @@ include __DIR__ . '/../includes/layout.php';
     </table>
 	
 	<h3>Fahrer mit durchschnittlichem Tagesumsatz unter 264 €</h3>
-    <table>
+    <table class="table-standard">
         <tr>
             <th>Fahrer</th>
             <th>Durchschnittlicher Tagesumsatz (€)</th>

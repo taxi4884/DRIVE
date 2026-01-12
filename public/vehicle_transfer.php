@@ -36,7 +36,7 @@ include __DIR__ . '/../includes/layout.php';
         <main>
         <h1>FahrzeugÜbergaben</h1>
 
-        <table>
+        <table class="table-standard">
             <thead>
                 <tr>
                     <th>Datum</th>

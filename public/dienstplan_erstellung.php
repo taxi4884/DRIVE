@@ -279,7 +279,7 @@ include __DIR__ . '/../includes/layout.php';
       </div>
   
       <form method="POST" class="dienstplan-form">
-          <table>
+          <table class="table-standard">
               <thead>
                   <tr>
                       <th>Mitarbeiter</th>
@@ -319,7 +319,7 @@ include __DIR__ . '/../includes/layout.php';
       </form>
       <section class="arbeitszeit-summary">
           <h2>Arbeitszeit-Zusammenfassung</h2>
-          <table>
+          <table class="table-standard">
               <thead>
                   <tr>
                       <th>Mitarbeiter</th>

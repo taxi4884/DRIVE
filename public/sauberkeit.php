@@ -129,7 +129,7 @@ include __DIR__ . '/../includes/layout.php';
         <a href="sauberkeit.php?monat=<?= $nächsterMonat ?>&jahr=<?= $nächstesJahr ?>">Nächster Monat &gt;</a>
     </div>
 
-    <table>
+    <table class="table-standard">
         <thead>
             <tr>
                 <th>Fahrzeug (Konzession)</th>

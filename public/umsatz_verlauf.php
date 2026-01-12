@@ -23,7 +23,7 @@ if (empty($aenderungen)) {
 }
 ?>
 
-<table style="width: 100%; border-collapse: collapse;">
+<table class="table-standard">
     <thead>
         <tr>
             <th>🧑‍💼 Benutzer</th>

@@ -18,7 +18,7 @@ include __DIR__ . '/../includes/layout.php';
         <div class="button-group">
             <button class="btn" onclick="openModal('vehicleModal')">Neues Fahrzeug hinzufügen</button>
         </div>
-        <table class="styled-table">
+        <table class="table-standard">
             <thead>
                 <tr>
                     <th>Marke</th>

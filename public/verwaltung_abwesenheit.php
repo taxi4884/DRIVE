@@ -440,7 +440,7 @@ include __DIR__ . '/../includes/layout.php';
         <h2>Offene Abwesenheiten</h2>
 
         <?php if (!empty($offeneAbwesenheiten)): ?>
-                <table>
+                <table class="table-standard">
                         <thead>
                                 <tr>
                                         <th>Mitarbeiter</th>

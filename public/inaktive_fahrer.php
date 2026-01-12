@@ -17,7 +17,7 @@ include __DIR__ . '/../includes/layout.php';
         <div class="button-group">
             <a class="btn" href="fahrer.php">Zurück zur Fahrerübersicht</a>
         </div>
-        <table class="styled-table">
+        <table class="table-standard">
             <thead>
                 <tr>
                     <th>Vorname</th>

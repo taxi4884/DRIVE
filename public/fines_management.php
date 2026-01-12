@@ -204,7 +204,7 @@ include __DIR__ . '/../includes/layout.php';
 
     <section>
         <h2>Fahrer und Anzahl der Bußgelder</h2>
-        <table border="1">
+        <table class="table-standard">
             <thead>
                 <tr>
                     <th>Fahrer</th>

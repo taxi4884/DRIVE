@@ -150,7 +150,7 @@ include __DIR__ . '/../includes/layout.php';
 					</button>
 				</h2>
 				<!-- Tabelle mit einer eindeutigen ID -->
-				<table id="table-<?= htmlspecialchars($firma) ?>" style="display: none;">
+				<table id="table-<?= htmlspecialchars($firma) ?>" class="table-standard" style="display: none;">
 					<thead>
 						<tr>
 							<th>Datum</th>
