@@ -1,5 +1,6 @@
 <?php
 // expects $conversations and optional $conversation
+require_once __DIR__ . '/../../../includes/modal.php';
 ?>
 <main>
     <h1>Nachrichten</h1>
@@ -65,8 +66,7 @@
             </form>
         </div>
     </div>
-    <?php include __DIR__ . '/../../../public/modals/message_compose.php'; ?>
+    <?php renderModal('composeModal', 'Neue Nachricht', __DIR__ . '/../../../public/modals/message_compose.php', ['recipients' => $recipients]); ?>
 </main>
 <script src="/js/modal.js"></script>
 <script src="/js/messages.js"></script>
-

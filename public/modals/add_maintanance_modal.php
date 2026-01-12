@@ -47,43 +47,37 @@ try {
 }
 ?>
 
-<div class="modal" id="maintenanceModal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('maintenanceModal')">&times;</span>
-        <h2>Wartungstermin hinzufügen</h2>
-        <form action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="POST">
-            <label for="vehicle_id">Fahrzeug:</label>
-            <select id="vehicle_id" name="vehicle_id" required>
-                <option value="" disabled selected>Wähle ein Fahrzeug</option>
-                <?php foreach ($fahrzeuge as $fahrzeug): ?>
-                    <option value="<?= htmlspecialchars($fahrzeug['FahrzeugID']) ?>">
-                        <?= htmlspecialchars($fahrzeug['Konzessionsnummer'] ?? 'Keine Konzessionsnummer') ?> - 
-                        <?= htmlspecialchars($fahrzeug['Marke'] ?? 'Keine Marke') ?> 
-                        <?= htmlspecialchars($fahrzeug['Modell'] ?? 'Kein Modell') ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <br>
-            <label for="maintenance_date">Datum der Wartung:</label>
-            <input type="date" id="maintenance_date" name="maintenance_date" required>
-            <br>
-            <label for="description">Beschreibung:</label>
-            <textarea id="description" name="description" placeholder="Beschreibung der Wartung" required></textarea>
-            <br>
-            <label for="costs">Kosten (€):</label>
-            <input type="number" id="costs" name="costs" step="0.01" placeholder="Kosten der Wartung" required>
-            <br>
-            <label for="workshop">Werkstatt:</label>
-            <input type="text" id="workshop" name="workshop" placeholder="Name der Werkstatt" required>
-            <br>
-            <label for="mileage">Kilometerstand:</label>
-            <input type="number" id="mileage" name="mileage" placeholder="Kilometerstand bei Wartung" required>
-            <br>
-            <label for="remarks">Bemerkung:</label>
-            <textarea id="remarks" name="remarks" placeholder="Zusätzliche Hinweise"></textarea>
-            <br>
-            <button type="submit" name="add_maintenance">Wartung speichern</button>
-        </form>
-    </div>
-</div>
+<form action="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>" method="POST">
+    <label for="vehicle_id">Fahrzeug:</label>
+    <select id="vehicle_id" name="vehicle_id" required>
+        <option value="" disabled selected>Wähle ein Fahrzeug</option>
+        <?php foreach ($fahrzeuge as $fahrzeug): ?>
+            <option value="<?= htmlspecialchars($fahrzeug['FahrzeugID']) ?>">
+                <?= htmlspecialchars($fahrzeug['Konzessionsnummer'] ?? 'Keine Konzessionsnummer') ?> - 
+                <?= htmlspecialchars($fahrzeug['Marke'] ?? 'Keine Marke') ?> 
+                <?= htmlspecialchars($fahrzeug['Modell'] ?? 'Kein Modell') ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+    <br>
+    <label for="maintenance_date">Datum der Wartung:</label>
+    <input type="date" id="maintenance_date" name="maintenance_date" required>
+    <br>
+    <label for="description">Beschreibung:</label>
+    <textarea id="description" name="description" placeholder="Beschreibung der Wartung" required></textarea>
+    <br>
+    <label for="costs">Kosten (€):</label>
+    <input type="number" id="costs" name="costs" step="0.01" placeholder="Kosten der Wartung" required>
+    <br>
+    <label for="workshop">Werkstatt:</label>
+    <input type="text" id="workshop" name="workshop" placeholder="Name der Werkstatt" required>
+    <br>
+    <label for="mileage">Kilometerstand:</label>
+    <input type="number" id="mileage" name="mileage" placeholder="Kilometerstand bei Wartung" required>
+    <br>
+    <label for="remarks">Bemerkung:</label>
+    <textarea id="remarks" name="remarks" placeholder="Zusätzliche Hinweise"></textarea>
+    <br>
+    <button type="submit" name="add_maintenance">Wartung speichern</button>
+</form>
 

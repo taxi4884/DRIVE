@@ -2,6 +2,7 @@
 // service.php
 // Verbindung zur Datenbank herstellen
 require_once '../includes/bootstrap.php'; // Inklusive Authentifizierung und PDO-Datenbankverbindung
+require_once '../includes/modal.php';
 
 // Daten aus der Tabelle Wartung abrufen
 $query = "
@@ -79,7 +80,7 @@ include __DIR__ . '/../includes/layout.php';
         </table>
     </main>
 	
-        <?php include 'modals/add_maintanance_modal.php'; ?>
+        <?php renderModal('maintenanceModal', 'Wartungstermin hinzufügen', __DIR__ . '/modals/add_maintanance_modal.php', ['pdo' => $pdo]); ?>
         <script>
         document.querySelector('.burger-menu').addEventListener('click', () => {
             document.querySelector('.nav-links').classList.toggle('active');
