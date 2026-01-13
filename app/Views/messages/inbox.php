@@ -58,7 +58,7 @@ require_once __DIR__ . '/../../../includes/modal.php';
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-            <form id="chat-form" method="post" action="/postfach.php?action=store">
+            <form id="chat-form" method="post" action="/postfach/store">
                 <input type="hidden" name="recipient_id" id="chat-recipient-id">
                 <input type="hidden" name="subject" id="chat-subject">
                 <textarea name="body" id="chat-body" rows="3" placeholder="Nachricht" required></textarea>
@@ -66,7 +66,7 @@ require_once __DIR__ . '/../../../includes/modal.php';
             </form>
         </div>
     </div>
-    <?php renderModal('composeModal', 'Neue Nachricht', __DIR__ . '/../../../public/modals/message_compose.php', ['recipients' => $recipients]); ?>
+    <?php renderModal('composeModal', 'Neue Nachricht', __DIR__ . '/modal_compose.php', ['recipients' => $recipients]); ?>
 </main>
 <script src="/js/modal.js"></script>
 <script src="/js/messages.js"></script>

@@ -1,4 +1,4 @@
-<form action="/postfach.php?action=store" method="post">
+<form action="/postfach/store" method="post">
     <label for="recipient_id">Empfänger</label>
     <select id="recipient_id" name="recipient_id" required>
         <?php foreach ($recipients as $r): ?>

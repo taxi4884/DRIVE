@@ -10,7 +10,7 @@ $menuEntries = [
     ],
     [
         'label' => 'Postfach',
-        'url' => 'postfach.php',
+        'url' => '/postfach',
         'roles' => ['Admin', 'Mitarbeiter', 'Fahrer', 'Zentrale', 'Abrechnung'],
         'icon' => 'bi-envelope',
     ],
@@ -216,7 +216,7 @@ $menuEntries = [
     ],
     [
         'label' => 'Postfach',
-        'url' => 'postfach.php',
+        'url' => '/postfach',
         'roles' => ['Fahrer'],
         'context' => 'bottom',
         'icon' => 'bi-envelope',
@@ -287,7 +287,7 @@ function buildMenu(array $items, array $userRoles, string $currentPath = ''): st
         }
         $badgeHtml = '';
         global $unreadMessageCount;
-        if (!empty($unreadMessageCount) && isset($item['url']) && basename($item['url']) === 'postfach.php') {
+        if (!empty($unreadMessageCount) && isset($item['url']) && basename($item['url']) === 'postfach') {
             $badgeHtml = '<span class="badge">' . (int) $unreadMessageCount . '</span>';
         }
         $html .= '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $aClassAttr . '>' . $iconHtml . $label . $badgeHtml . '</a>';
