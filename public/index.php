@@ -1,5 +1,5 @@
 <?php
-// Simple front controller
+// Front controller for MVC routing
 
 spl_autoload_register(function (string $class): void {
     $prefix = 'App\\';
@@ -15,27 +15,71 @@ spl_autoload_register(function (string $class): void {
     }
 });
 
-$uri = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+$publicDir = __DIR__;
+$request = App\Core\Request::fromGlobals();
+$router = new App\Core\Router();
 
-if ($uri === '' || $uri === 'index.php' || $uri === 'login') {
+$router->get('/', static function (): void {
     require __DIR__ . '/login.php';
-} elseif ($uri === 'postfach') {
+});
+
+$router->get('/postfach', static function (): void {
     (new App\Controllers\PostfachController())->inbox();
-} elseif ($uri === 'postfach/compose') {
+});
+$router->get('/postfach/compose', static function (): void {
     (new App\Controllers\PostfachController())->compose();
-} elseif ($uri === 'postfach/store') {
+});
+$router->post('/postfach/store', static function (): void {
     (new App\Controllers\PostfachController())->store();
-} elseif ($uri === 'messages') {
+});
+$router->get('/messages', static function (): void {
     (new App\Controllers\MessageController())->index();
-} elseif (preg_match('#^messages/([0-9]+)$#', $uri, $matches)) {
-    (new App\Controllers\MessageController())->show((int)$matches[1]);
-} elseif ($uri === 'messages/store') {
+});
+$router->get('/messages/{id}', static function (string $id): void {
+    (new App\Controllers\MessageController())->show((int) $id);
+});
+$router->post('/messages/store', static function (): void {
     (new App\Controllers\MessageController())->store();
-} elseif ($uri === 'messages/mark-as-read') {
+});
+$router->post('/messages/mark-as-read', static function (): void {
     (new App\Controllers\MessageController())->markAsRead();
-} elseif ($uri === 'messages/inbox') {
+});
+$router->get('/messages/inbox', static function (): void {
     (new App\Controllers\MessageController())->inbox();
-} else {
-    http_response_code(404);
-    echo 'Seite nicht gefunden';
+});
+
+if ($router->dispatch($request)) {
+    return;
 }
+
+$path = $request->path();
+$trimmedPath = trim($path, '/');
+
+if ($trimmedPath === '' || $trimmedPath === 'index.php') {
+    $trimmedPath = 'login.php';
+}
+
+if (str_contains($trimmedPath, '..')) {
+    http_response_code(400);
+    echo 'Ungültiger Pfad';
+    return;
+}
+
+$staticCandidate = $publicDir . '/' . $trimmedPath;
+if (is_file($staticCandidate) && !str_ends_with($staticCandidate, '.php')) {
+    $mime = mime_content_type($staticCandidate) ?: 'application/octet-stream';
+    header('Content-Type: ' . $mime);
+    readfile($staticCandidate);
+    return;
+}
+
+$viewFile = str_ends_with($trimmedPath, '.php') ? $trimmedPath : $trimmedPath . '.php';
+$viewCandidate = $publicDir . '/' . $viewFile;
+
+if (is_file($viewCandidate)) {
+    (new App\Controllers\LegacyController($publicDir))->render($viewFile);
+    return;
+}
+
+http_response_code(404);
+echo 'Seite nicht gefunden';
