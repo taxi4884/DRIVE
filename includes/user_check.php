@@ -4,7 +4,7 @@ require_once __DIR__ . '/cache.php';
 // Prüfen, ob ein Benutzer eingeloggt ist
 if (!isset($_SESSION['user_id'])) {
     // Wenn nicht eingeloggt, Umleitung zur Login-Seite
-    header("Location: login.php");
+    header("Location: /login.php");
     exit;
 }
 

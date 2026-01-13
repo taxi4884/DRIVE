@@ -14,7 +14,9 @@ if (isset($_SESSION['user_id'])) {
     $unreadMessageCount = count(Message::getUnreadByUser((int) $_SESSION['user_id']));
 }
 global $sekundarRolle;
-$currentPage = basename($_SERVER['PHP_SELF']);
+$path = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '', '/');
+$segments = $path === '' ? [] : explode('/', $path);
+$currentPage = $segments[0] ?? basename($_SERVER['PHP_SELF']);
 
 $primaryRole    = $_SESSION['rolle'] ?? '';
 $secondaryRoles = $_SESSION['sekundarRolle'] ?? [];

@@ -19,6 +19,12 @@ $uri = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 
 if ($uri === '' || $uri === 'index.php' || $uri === 'login') {
     require __DIR__ . '/login.php';
+} elseif ($uri === 'postfach') {
+    (new App\Controllers\PostfachController())->inbox();
+} elseif ($uri === 'postfach/compose') {
+    (new App\Controllers\PostfachController())->compose();
+} elseif ($uri === 'postfach/store') {
+    (new App\Controllers\PostfachController())->store();
 } elseif ($uri === 'messages') {
     (new App\Controllers\MessageController())->index();
 } elseif (preg_match('#^messages/([0-9]+)$#', $uri, $matches)) {

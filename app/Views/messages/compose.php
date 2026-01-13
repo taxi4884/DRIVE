@@ -3,7 +3,7 @@
 ?>
 <main>
     <h1>Neue Nachricht</h1>
-    <form method="post" action="/postfach.php?action=store" class="message-form">
+    <form method="post" action="/postfach/store" class="message-form">
         <div class="form-group">
             <label for="recipient_id">Empfänger</label>
             <select id="recipient_id" name="recipient_id" required>
@@ -23,4 +23,3 @@
         <button type="submit">Senden</button>
     </form>
 </main>
-
