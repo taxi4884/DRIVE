@@ -2,7 +2,7 @@
 require_once '../includes/bootstrap.php';
 
 if (!isAdmin()) {
-    header('Location: login.php');
+    header('Location: /login');
     exit;
 }
 

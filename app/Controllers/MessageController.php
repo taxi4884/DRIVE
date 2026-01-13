@@ -11,14 +11,13 @@ class MessageController
     {
         session_start();
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /login.php');
+            header('Location: /login');
             exit;
         }
 
         $userId = (int) $_SESSION['user_id'];
         $conversations = Message::getConversationsByUser($userId);
         $title = 'Nachrichten';
-        $extraCss = 'css/messages.css';
         include __DIR__ . '/../../includes/layout.php';
         include __DIR__ . '/../Views/messages/index.php';
         echo "</body></html>";
@@ -28,7 +27,7 @@ class MessageController
     {
         session_start();
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /login.php');
+            header('Location: /login');
             exit;
         }
 
@@ -36,7 +35,6 @@ class MessageController
         Message::markConversationAsRead($userId, $otherId);
         $messages = Message::getMessagesBetween($userId, $otherId);
         $title = 'Nachrichtenverlauf';
-        $extraCss = 'css/messages.css';
         include __DIR__ . '/../../includes/layout.php';
         include __DIR__ . '/../Views/messages/show.php';
         echo "</body></html>";
@@ -46,7 +44,7 @@ class MessageController
     {
         session_start();
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /login.php');
+            header('Location: /login');
             exit;
         }
 
@@ -60,7 +58,6 @@ class MessageController
         }
         $success = ($_GET['success'] ?? '') !== '';
         $title = 'Postfach';
-        $extraCss = 'css/messages.css';
         $currentUserId = $userId;
         include __DIR__ . '/../../includes/layout.php';
         include __DIR__ . '/../Views/messages/inbox.php';
@@ -71,7 +68,7 @@ class MessageController
     {
         session_start();
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /login.php');
+            header('Location: /login');
             exit;
         }
 

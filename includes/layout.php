@@ -5,5 +5,5 @@ include __DIR__ . '/../public/head.php';
 // Allow pages to disable the navigation bar by setting $showNav = false
 $showNav = $showNav ?? true;
 ?>
-<body>
+<body class="<?= htmlspecialchars($bodyClass ?? '') ?>">
 <?php if ($showNav) { include __DIR__ . '/../public/nav.php'; } ?>

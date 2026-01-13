@@ -20,7 +20,22 @@ $request = App\Core\Request::fromGlobals();
 $router = new App\Core\Router();
 
 $router->get('/', static function (): void {
-    require __DIR__ . '/login.php';
+    (new App\Controllers\AuthController())->showLogin();
+});
+$router->get('/login', static function (): void {
+    (new App\Controllers\AuthController())->showLogin();
+});
+$router->post('/login', static function (): void {
+    (new App\Controllers\AuthController())->login();
+});
+$router->get('/login.php', static function (): void {
+    (new App\Controllers\AuthController())->showLogin();
+});
+$router->post('/login.php', static function (): void {
+    (new App\Controllers\AuthController())->login();
+});
+$router->get('/index.php', static function (): void {
+    (new App\Controllers\AuthController())->showLogin();
 });
 
 $router->get('/postfach', static function (): void {
@@ -54,10 +69,6 @@ if ($router->dispatch($request)) {
 
 $path = $request->path();
 $trimmedPath = trim($path, '/');
-
-if ($trimmedPath === '' || $trimmedPath === 'index.php') {
-    $trimmedPath = 'login.php';
-}
 
 if (str_contains($trimmedPath, '..')) {
     http_response_code(400);
