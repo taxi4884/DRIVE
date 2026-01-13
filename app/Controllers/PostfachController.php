@@ -21,7 +21,7 @@ class PostfachController
         }
 
         if (!isset($_SESSION['user_id'])) {
-            header('Location: /login.php');
+            header('Location: /login');
             exit;
         }
     }
@@ -82,7 +82,6 @@ class PostfachController
         }
         $success = ($_GET['success'] ?? '') !== '';
         $title = 'Postfach';
-        $extraCss = 'css/messages.css';
         $currentUserId = $userId;
 
         include __DIR__ . '/../../includes/layout.php';
@@ -99,8 +98,6 @@ class PostfachController
         $recipients = $this->getRecipients($userId, $isDriver);
 
         $title = 'Neue Nachricht';
-        $extraCss = 'css/messages.css';
-
         include __DIR__ . '/../../includes/layout.php';
         include __DIR__ . '/../Views/messages/compose.php';
         echo "</body></html>";

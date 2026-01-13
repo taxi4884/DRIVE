@@ -9,8 +9,7 @@ require_once __DIR__ . '/../includes/bootstrap.php';
     <title><?= htmlspecialchars($title ?? 'DRIVE'); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/custom.css?v=<?= filemtime(__DIR__ . '/css/custom.css'); ?>">
-    <link rel="stylesheet" href="css/costum.css?v=<?= file_exists(__DIR__ . '/css/costum.css') ? filemtime(__DIR__ . '/css/costum.css') : time(); ?>">
+    <link rel="stylesheet" href="css/app.css?v=<?= filemtime(__DIR__ . '/css/app.css'); ?>">
     <?php
     if (!empty($extraCss)) {
         foreach ((array) $extraCss as $css) {

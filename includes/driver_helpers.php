@@ -28,7 +28,7 @@ if (!function_exists('ensureDriverAccess')) {
         $_SESSION['rolle'] = 'Fahrer';
 
         if (!isset($_SESSION['user_id'])) {
-            header('Location: ../login.php');
+            header('Location: /login');
             exit();
         }
 
