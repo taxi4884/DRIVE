@@ -6,6 +6,63 @@ error_reporting(E_ALL);
 
 require_once '../includes/bootstrap.php';
 require_once __DIR__ . '/versand.php';
+require_once '../includes/logger.php';
+
+define('SCHULUNG_FMS_LOG', __DIR__ . '/schulung/fms_gateway.log');
+
+function loadEnv($pfad)
+{
+    if (!file_exists($pfad)) {
+        return [];
+    }
+    $zeilen = file($pfad, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $env = [];
+    foreach ($zeilen as $zeile) {
+        $zeile = trim($zeile);
+        if (str_starts_with($zeile, '#')) {
+            continue;
+        }
+        if (strpos($zeile, '=') !== false) {
+            [$key, $value] = explode('=', $zeile, 2);
+            $env[trim($key)] = trim($value);
+        }
+    }
+    return $env;
+}
+
+function sendeFmsPayload(array $payload): array
+{
+    $env = loadEnv(__DIR__ . '/../includes/.env');
+    $gatewayUrl = $env['FMS_URL'] ?? null;
+
+    if (!$gatewayUrl) {
+        logMessage('FMS_URL fehlt in der .env-Datei.', SCHULUNG_FMS_LOG);
+        return [null, null, 'FMS_URL fehlt'];
+    }
+
+    $gatewayUrl .= (str_contains($gatewayUrl, '?') ? '&' : '?') . 'funktion=ADDFAHRER';
+    $ch = curl_init($gatewayUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+
+    $response = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = $response === false ? curl_error($ch) : null;
+    curl_close($ch);
+
+    $logEntry = sprintf(
+        'FMS-Request [%s]: payload=%s response=%s error=%s',
+        $status ?? 'n/a',
+        json_encode($payload, JSON_UNESCAPED_UNICODE),
+        $response !== false ? $response : 'false',
+        $error ?? 'none'
+    );
+    logMessage($logEntry, SCHULUNG_FMS_LOG);
+
+    return [$status, $response, $error];
+}
 
 function checkUndVersendeEinladungen($termin, $maxEinladungen = 8){
     global $pdo;
@@ -382,7 +439,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['rueckmeldung_zuruecks
 $statsQuery = "
     SELECT 
         COUNT(*) AS gesamt,
-        SUM(bestanden_status = 1) AS bestanden,
+        SUM(bestanden_status >= 1) AS bestanden,
         SUM(bestanden_status = 0) AS nicht_bestanden,
         SUM(bestanden_status IS NULL) AS offen
     FROM schulungsteilnehmer
@@ -397,10 +454,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_bestanden'])) {
 
     try {
         if ($status === 1) {
-            // Teilnehmer hat bestanden → löschen
-            $stmt = $pdo->prepare("DELETE FROM schulungsteilnehmer WHERE id = :id");
-            $stmt->execute([':id' => $id]);
-            $_SESSION['message'] = "Teilnehmer hat bestanden und wurde gelöscht.";
+            $stageStmt = $pdo->prepare("SELECT bestanden_status FROM schulungsteilnehmer WHERE id = :id");
+            $stageStmt->execute([':id' => $id]);
+            $currentStage = $stageStmt->fetchColumn();
+            $currentStage = $currentStage !== null ? (int) $currentStage : 0;
+            $nextStage = $currentStage + 1;
+
+            if ($nextStage >= 3) {
+                $deleteStmt = $pdo->prepare("DELETE FROM schulungsteilnehmer WHERE id = :id");
+                $deleteStmt->execute([':id' => $id]);
+                $_SESSION['message'] = 'Teilnehmer hat Stufe 3 erreicht und wurde gelöscht.';
+            } else {
+                $updateStmt = $pdo->prepare("
+                    UPDATE schulungsteilnehmer
+                       SET bestanden_status = :stage
+                     WHERE id = :id
+                ");
+                $updateStmt->execute([':stage' => $nextStage, ':id' => $id]);
+                $_SESSION['message'] = "Teilnehmer wurde auf Stufe {$nextStage} gesetzt.";
+            }
         } else {
             // Teilnehmer hat nicht bestanden → Count ermitteln und erhöhen
             $stmt = $pdo->prepare("SELECT nicht_bestanden_count FROM schulungsteilnehmer WHERE id = :id");
@@ -431,6 +503,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_bestanden'])) {
         }
     } catch (PDOException $e) {
         $_SESSION['message'] = "Fehler beim Speichern des Ergebnisses: " . $e->getMessage();
+    }
+
+    header("Location: schulungsverwaltung.php");
+    exit();
+}
+
+// Teilnehmer in FMS anlegen
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fms_anlegen'])) {
+    $id = (int)$_POST['id'];
+
+    try {
+        $teilnehmerStmt = $pdo->prepare("
+            SELECT id, vorname, nachname, strasse, hausnummer, postleitzahl, ort, handynummer, geburtsdatum, unternehmer
+              FROM schulungsteilnehmer
+             WHERE id = :id
+        ");
+        $teilnehmerStmt->execute([':id' => $id]);
+        $teilnehmer = $teilnehmerStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$teilnehmer) {
+            $_SESSION['message'] = 'Teilnehmerdaten konnten nicht geladen werden.';
+            header("Location: schulungsverwaltung.php");
+            exit();
+        }
+
+        $pdo->beginTransaction();
+        $counterStmt = $pdo->query("SELECT id, letzte_nummer FROM fahrernummer_counter ORDER BY id DESC LIMIT 1 FOR UPDATE");
+        $counterRow = $counterStmt ? $counterStmt->fetch(PDO::FETCH_ASSOC) : null;
+
+        if (!$counterRow) {
+            $pdo->rollBack();
+            $_SESSION['message'] = 'Fahrernummer-Counter konnte nicht geladen werden.';
+            header("Location: schulungsverwaltung.php");
+            exit();
+        }
+
+        $neueNummer = (int) $counterRow['letzte_nummer'] + 1;
+        $updateCounterStmt = $pdo->prepare("UPDATE fahrernummer_counter SET letzte_nummer = :nummer WHERE id = :id");
+        $updateCounterStmt->execute([
+            ':nummer' => $neueNummer,
+            ':id' => $counterRow['id'],
+        ]);
+        $pdo->commit();
+
+        $fahrercode = str_pad((string) $neueNummer, 6, '0', STR_PAD_LEFT);
+        $aktivVon = (new DateTime())->format('Y-m-d');
+        $aktivBis = (new DateTime('yesterday'))->modify('+6 months')->format('Y-m-d');
+
+        $payload = [
+            'FAHRER_NR' => $neueNummer,
+            'FAHRERCODE' => $fahrercode,
+            'UNTERNEHMER_NR' => $teilnehmer['unternehmer'] !== null ? (int) $teilnehmer['unternehmer'] : null,
+            'VORNAME' => $teilnehmer['vorname'],
+            'NACHNAME' => $teilnehmer['nachname'],
+            'STRASSE_NAME' => $teilnehmer['strasse'],
+            'HAUSNUMMER' => $teilnehmer['hausnummer'],
+            'PLZ' => $teilnehmer['postleitzahl'],
+            'mobiltelefonnummer' => $teilnehmer['handynummer'],
+            'geburtsdatum' => $teilnehmer['geburtsdatum'],
+            'ORT_NAME' => $teilnehmer['ort'],
+            'aktivVon' => $aktivVon,
+            'aktivBis' => $aktivBis,
+        ];
+
+        [$statusCode, $response, $error] = sendeFmsPayload($payload);
+
+        if ($error) {
+            $_SESSION['message'] = "FMS-Versand fehlgeschlagen: {$error}";
+        } else {
+            $_SESSION['message'] = "FMS-Versand durchgeführt (HTTP {$statusCode}).";
+        }
+    } catch (PDOException $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        $_SESSION['message'] = "Fehler beim FMS-Versand: " . $e->getMessage();
     }
 
     header("Location: schulungsverwaltung.php");
@@ -661,18 +809,22 @@ include __DIR__ . '/../includes/layout.php';
 							<?php endif; ?>
 						</td>
 						<?php if ($berechtigt): ?>
-							<td>
-								<form method="POST" class="d-inline">
-									<input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-									<input type="hidden" name="status" value="1">
-									<button type="submit" name="set_bestanden" class="btn btn-success btn-sm">Bestanden</button>
-								</form>
-								<form method="POST" class="d-inline">
-									<input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-									<input type="hidden" name="status" value="0">
-									<button type="submit" name="set_bestanden" class="btn btn-danger btn-sm">Nicht bestanden</button>
-								</form>
-							</td>
+								<td>
+									<form method="POST" class="d-inline">
+										<input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+										<input type="hidden" name="status" value="1">
+										<button type="submit" name="set_bestanden" class="btn btn-success btn-sm">Bestanden</button>
+									</form>
+									<form method="POST" class="d-inline">
+										<input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+										<input type="hidden" name="status" value="0">
+										<button type="submit" name="set_bestanden" class="btn btn-danger btn-sm">Nicht bestanden</button>
+									</form>
+									<form method="POST" class="d-inline">
+										<input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+										<button type="submit" name="fms_anlegen" class="btn btn-primary btn-sm">In FMS anlegen</button>
+									</form>
+								</td>
 							<td>
 								<div class="d-flex gap-2">
 									<a href="versand.php?id=<?php echo $row['id']; ?>" class="btn btn-primary">Einladung senden</a>
