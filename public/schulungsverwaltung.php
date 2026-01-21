@@ -6,6 +6,62 @@ error_reporting(E_ALL);
 
 require_once '../includes/bootstrap.php';
 require_once __DIR__ . '/versand.php';
+require_once '../includes/logger.php';
+
+define('SCHULUNG_GATEWAY_LOG', __DIR__ . '/schulung/gateway.log');
+
+function loadEnv($pfad)
+{
+    if (!file_exists($pfad)) {
+        return [];
+    }
+    $zeilen = file($pfad, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $env = [];
+    foreach ($zeilen as $zeile) {
+        $zeile = trim($zeile);
+        if (str_starts_with($zeile, '#')) {
+            continue;
+        }
+        if (strpos($zeile, '=') !== false) {
+            [$key, $value] = explode('=', $zeile, 2);
+            $env[trim($key)] = trim($value);
+        }
+    }
+    return $env;
+}
+
+function sendeGatewayPayload(array $payload): array
+{
+    $env = loadEnv(__DIR__ . '/../includes/.env');
+    $gatewayUrl = $env['GATEWAY_URL'] ?? null;
+
+    if (!$gatewayUrl) {
+        logMessage('GATEWAY_URL fehlt in der .env-Datei.', SCHULUNG_GATEWAY_LOG);
+        return [null, null, 'GATEWAY_URL fehlt'];
+    }
+
+    $ch = curl_init($gatewayUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+
+    $response = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = $response === false ? curl_error($ch) : null;
+    curl_close($ch);
+
+    $logEntry = sprintf(
+        'Gateway-Request [%s]: payload=%s response=%s error=%s',
+        $status ?? 'n/a',
+        json_encode($payload, JSON_UNESCAPED_UNICODE),
+        $response !== false ? $response : 'false',
+        $error ?? 'none'
+    );
+    logMessage($logEntry, SCHULUNG_GATEWAY_LOG);
+
+    return [$status, $response, $error];
+}
 
 function checkUndVersendeEinladungen($termin, $maxEinladungen = 8){
     global $pdo;
@@ -397,10 +453,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_bestanden'])) {
 
     try {
         if ($status === 1) {
+            $messageParts = [];
+            $teilnehmerStmt = $pdo->prepare("
+                SELECT id, vorname, nachname, email, handynummer, unternehmer
+                  FROM schulungsteilnehmer
+                 WHERE id = :id
+            ");
+            $teilnehmerStmt->execute([':id' => $id]);
+            $teilnehmer = $teilnehmerStmt->fetch(PDO::FETCH_ASSOC);
+
+            $counterStmt = $pdo->query("SELECT * FROM fahrernummern_counter ORDER BY id DESC LIMIT 1");
+            $counterRow = $counterStmt ? $counterStmt->fetch(PDO::FETCH_ASSOC) : null;
+
+            if ($teilnehmer) {
+                $payload = [
+                    'event' => 'schulung_bestanden',
+                    'teilnehmer' => $teilnehmer,
+                    'fahrernummern_counter' => $counterRow,
+                ];
+                [$gatewayStatus, $gatewayResponse, $gatewayError] = sendeGatewayPayload($payload);
+
+                if ($gatewayError) {
+                    $messageParts[] = "Gateway-Fehler beim Versand: {$gatewayError}";
+                } else {
+                    $messageParts[] = "Gateway-Antwort: HTTP {$gatewayStatus}";
+                }
+            } else {
+                $messageParts[] = "Teilnehmerdaten konnten nicht geladen werden.";
+            }
+
             // Teilnehmer hat bestanden → löschen
             $stmt = $pdo->prepare("DELETE FROM schulungsteilnehmer WHERE id = :id");
             $stmt->execute([':id' => $id]);
-            $_SESSION['message'] = "Teilnehmer hat bestanden und wurde gelöscht.";
+            $messageParts[] = "Teilnehmer hat bestanden und wurde gelöscht.";
+            $_SESSION['message'] = implode(' ', $messageParts);
         } else {
             // Teilnehmer hat nicht bestanden → Count ermitteln und erhöhen
             $stmt = $pdo->prepare("SELECT nicht_bestanden_count FROM schulungsteilnehmer WHERE id = :id");
