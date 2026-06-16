@@ -1,0 +1,34 @@
+<?php
+require_once '../includes/bootstrap.php';
+$title='Projektmanagement';
+include __DIR__ . '/../includes/layout.php';
+function esc($v){return htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');}
+$pdo->exec("CREATE TABLE IF NOT EXISTS pm_project_members (id INT AUTO_INCREMENT PRIMARY KEY, project_id INT NOT NULL, member_name VARCHAR(120) NOT NULL, UNIQUE KEY uq(project_id, member_name)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+$pdo->exec("CREATE TABLE IF NOT EXISTS pm_tasks (id INT AUTO_INCREMENT PRIMARY KEY, project_id INT NOT NULL, title VARCHAR(190) NOT NULL, notes TEXT NULL, status VARCHAR(40) NOT NULL DEFAULT 'Offen', priority VARCHAR(20) NOT NULL DEFAULT 'Normal', due_date DATE NULL, assignee VARCHAR(120) NULL, created_by VARCHAR(120) NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+$actor=$_SESSION['user_name']??'System';
+$view=$_GET['view']??'portfolio';
+$projectId=(int)($_GET['project_id']??0);
+$users=$pdo->query("SELECT Name FROM Benutzer ORDER BY Name")->fetchAll(PDO::FETCH_COLUMN)?:[];
+if($_SERVER['REQUEST_METHOD']==='POST'){
+ $a=$_POST['action']??'';
+ if($a==='update_project_members'){ $pid=(int)$_POST['project_id']; $pdo->prepare("DELETE FROM pm_project_members WHERE project_id=?")->execute([$pid]); if(!empty($_POST['members'])){ $ins=$pdo->prepare("INSERT IGNORE INTO pm_project_members(project_id,member_name) VALUES(?,?)"); foreach($_POST['members'] as $m){$m=trim($m); if($m!=='')$ins->execute([$pid,$m]);}} header('Location: ?view=project&project_id='.$pid); exit; }
+ if($a==='update_project_notes'){ $pid=(int)$_POST['project_id']; $pdo->prepare("UPDATE pm_projects SET notes=? WHERE id=?")->execute([trim($_POST['notes']??''),$pid]); header('Location: ?view=project&project_id='.$pid); exit; }
+ if($a==='create_task'){ $pid=(int)$_POST['project_id']; $pdo->prepare("INSERT INTO pm_tasks(project_id,title,notes,status,priority,due_date,assignee,created_by) VALUES(?,?,?,?,?,?,?,?)")->execute([$pid,trim($_POST['title']??''),trim($_POST['notes']??''),$_POST['status']??'Offen',$_POST['priority']??'Normal',$_POST['due_date']?:null,trim($_POST['assignee']??''),$actor]); header('Location: ?view=project&project_id='.$pid); exit; }
+}
+$projects=$pdo->query("SELECT p.*,(SELECT COUNT(*) FROM pm_tasks t WHERE t.project_id=p.id) task_count FROM pm_projects p ORDER BY updated_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+$project=null;$members=[];$tasks=[];
+if($projectId){$s=$pdo->prepare("SELECT * FROM pm_projects WHERE id=?");$s->execute([$projectId]);$project=$s->fetch(PDO::FETCH_ASSOC); if($project){$m=$pdo->prepare("SELECT member_name FROM pm_project_members WHERE project_id=?");$m->execute([$projectId]);$members=$m->fetchAll(PDO::FETCH_COLUMN); $t=$pdo->prepare("SELECT * FROM pm_tasks WHERE project_id=? ORDER BY updated_at DESC");$t->execute([$projectId]);$tasks=$t->fetchAll(PDO::FETCH_ASSOC);} }
+$my=$pdo->prepare("SELECT t.*,p.title project_title FROM pm_tasks t JOIN pm_projects p ON p.id=t.project_id WHERE t.assignee=? ORDER BY t.updated_at DESC");$my->execute([$actor]);$myTasks=$my->fetchAll(PDO::FETCH_ASSOC);
+?>
+<div class='container' style='max-width:1200px;margin:16px auto'>
+<h1>Projektmanagement</h1><p><a href='?view=portfolio'>Portfolio</a> · <a href='?view=mywork'>Meine Arbeit</a></p>
+<?php if($view==='portfolio'): foreach($projects as $p): ?><div style='border:1px solid #ddd;padding:10px;margin:8px 0'><b><?=esc($p['title'])?></b> · Aufgaben: <?=esc($p['task_count'])?> · <a href='?view=project&project_id=<?=(int)$p['id']?>'>Öffnen</a></div><?php endforeach; endif; ?>
+<?php if($view==='project' && $project): ?>
+<h2><?=esc($project['title'])?></h2>
+<form method='post'><input type='hidden' name='action' value='update_project_notes'><input type='hidden' name='project_id' value='<?= (int)$project['id'] ?>'><textarea name='notes' rows='4' style='width:100%'><?=esc($project['notes'])?></textarea><button>Notizen speichern</button></form>
+<form method='post' style='margin-top:10px'><input type='hidden' name='action' value='update_project_members'><input type='hidden' name='project_id' value='<?= (int)$project['id'] ?>'><label>Projektteam</label><br><select name='members[]' multiple size='7'><?php foreach($users as $u): ?><option value='<?=esc($u)?>' <?=in_array($u,$members,true)?'selected':''?>><?=esc($u)?></option><?php endforeach; ?></select><br><button>Team speichern</button></form>
+<form method='post' style='margin-top:10px'><input type='hidden' name='action' value='create_task'><input type='hidden' name='project_id' value='<?= (int)$project['id'] ?>'><input name='title' placeholder='Aufgabe' required><input name='notes' placeholder='Notiz'><select name='assignee' required><option value=''>Mitarbeiter wählen</option><?php foreach($users as $u): ?><option value='<?=esc($u)?>'><?=esc($u)?></option><?php endforeach; ?></select><button>Aufgabe zuweisen</button></form>
+<table style='width:100%;margin-top:10px'><tr><th>Titel</th><th>Status</th><th>Assignee</th></tr><?php foreach($tasks as $t): ?><tr><td><?=esc($t['title'])?></td><td><?=esc($t['status'])?></td><td><?=esc($t['assignee'])?></td></tr><?php endforeach; ?></table>
+<?php endif; ?>
+<?php if($view==='mywork'): ?><h2>Meine Aufgaben</h2><?php foreach($myTasks as $t): ?><div><?=esc($t['project_title'])?> · <?=esc($t['title'])?> (<?=esc($t['status'])?>)</div><?php endforeach; endif; ?>
+</div></body></html>

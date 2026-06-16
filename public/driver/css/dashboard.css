@@ -1,0 +1,458 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    padding: 20px;
+}
+
+h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.6rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.pschein-warnung,
+.hinweis-box {
+    background-color: #fff9d6;
+    border: 1px solid #ffcc00;
+    color: #856404;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.pschein-warnung .warn-icon,
+.hinweis-icon {
+    font-size: 2rem;
+    color: #ffcc00;
+}
+
+.hinweis-box--important {
+    background-color: #ffe4e4;
+    border-color: #cc0000;
+    color: #7d0a0a;
+}
+
+.hinweis-box--important .hinweis-icon,
+.hinweis-icon--important {
+    color: #cc0000;
+}
+
+.hinweis-box--notice {
+    background-color: #fff9d6;
+    border-color: #ffcc00;
+}
+
+.hinweis-text {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.hinweis-text strong {
+    color: inherit;
+}
+
+section {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+}
+
+section form {
+    margin-bottom: 20px;
+}
+
+section form label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+section form select,
+section form input[type="date"],
+section form button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+section form button {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+section form button:hover {
+    background-color: #0056b3;
+}
+
+.gesamt-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.gesamt-container .card {
+    flex: 1 1 150px;
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    font-size: 1rem;
+    transition: transform 0.2s;
+}
+
+.gesamt-container .card:hover {
+    transform: translateY(-3px);
+}
+
+.card.umsatz {
+    background: #e0f0ff;
+    border-color: #b8e0ff;
+}
+
+.card.bargeld {
+    background: #e7f9ed;
+    border-color: #b2f2bb;
+}
+
+.card .icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.card-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.card-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.umsatz-tabelle {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.umsatz-tabelle th {
+    background-color: #007bff;
+    color: white;
+    padding: 12px;
+    text-align: center;
+}
+
+.umsatz-tabelle td {
+    background: white;
+    padding: 12px 8px;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 1px solid #ddd;
+}
+
+.umsatz-tabelle td[data-label="Gesamtumsatz"] {
+    background: #e0f0ff;
+    font-weight: bold;
+    color: #004085;
+    border-radius: 6px;
+}
+
+.umsatz-tabelle td[data-label="Bargeld"] {
+    background: #e7f9ed;
+    font-weight: bold;
+    color: #155724;
+    border-radius: 6px;
+}
+
+.umsatz-tabelle tr:hover td {
+    background: #f1f3f5;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.edit-btn,
+.delete-btn {
+    text-decoration: none;
+    font-weight: bold;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.edit-btn {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.edit-btn:hover {
+    background-color: #99ccff;
+}
+
+.delete-btn {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.delete-btn:hover {
+    background-color: #f5b7b9;
+}
+
+.buttons {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.buttons .btn {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.buttons .btn:hover {
+    background-color: #218838;
+}
+
+a[href="statistics.php"] {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+    color: #007bff;
+    text-decoration: none;
+}
+
+a[href="statistics.php"]:hover {
+    text-decoration: underline;
+}
+
+.individuell-fields {
+    display: none;
+}
+
+.period-error {
+    margin: 0 0 15px 0;
+}
+
+.individuell-fields.is-visible {
+    display: block;
+}
+
+.abgerechnet-hinweis {
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.monatsübersicht {
+    margin-bottom: 2rem;
+}
+
+.progress-wrapper {
+    margin-top: 0.75rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    transition: width 0.3s ease;
+}
+
+.progress-label {
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+.umsatz-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.umsatz-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.umsatz-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.umsatz-card-date {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.umsatz-card-badge {
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.umsatz-card-badge--crown {
+    background: rgba(255, 215, 0, 0.18);
+}
+
+.umsatz-card-badge--diamond {
+    background: rgba(135, 206, 250, 0.25);
+}
+
+.umsatz-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.umsatz-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.95rem;
+}
+
+.umsatz-card-row--highlight {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.umsatz-card-label {
+    opacity: 0.85;
+}
+
+.umsatz-card-value {
+    font-variant-numeric: tabular-nums;
+}
+
+.umsatz-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    align-items: center;
+}
+
+.btn-plain {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+
+.btn-edit {
+    background: #e6f0ff;
+    border-color: #c5d9ff;
+}
+
+.btn-delete {
+    background: #ffe6e6;
+    border-color: #ffcccc;
+}
+
+.btn-plain i {
+    font-size: 0.85rem;
+}
+
+.abgerechnet-hinweis {
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: #e8f9e6;
+}
+
+@media (max-width: 480px) {
+    .umsatz-card {
+        padding: 0.85rem 0.9rem;
+    }
+    .umsatz-card-actions {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+}
+
+/* Header für das Burger-Menü */
+.app-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: var(--color-brand, #FFD700); /* Goldgelb */
+    color: var(--color-brand-contrast, #000);      /* Schwarzer Text */
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+

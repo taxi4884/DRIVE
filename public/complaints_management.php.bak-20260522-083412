@@ -1,0 +1,1696 @@
+<?php
+require_once '../includes/bootstrap.php';
+require_once '../includes/config.php';
+require_once __DIR__ . '/../phpmailer/Exception.php';
+require_once __DIR__ . '/../phpmailer/PHPMailer.php';
+require_once __DIR__ . '/../phpmailer/SMTP.php';
+require_once __DIR__ . '/../fpdf/fpdf.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+$title = 'Beschwerdemanagement';
+$extraCss = [];
+
+$role = (string)($_SESSION['rolle'] ?? '');
+$secondaryRoles = $_SESSION['sekundarRolle'] ?? [];
+if (!is_array($secondaryRoles)) {
+    $secondaryRoles = array_filter(array_map('trim', explode(',', (string)$secondaryRoles)));
+}
+$canManage = in_array($role, ['Admin', 'Mitarbeiter'], true) || in_array('Beschwerdemanagement', $secondaryRoles, true);
+
+$ok = '';
+$err = '';
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS complaint_entrepreneurs (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  company_name VARCHAR(190) NOT NULL,
+  external_number VARCHAR(30) NULL,
+  first_name VARCHAR(120) NULL,
+  last_name VARCHAR(120) NULL,
+  street VARCHAR(190) NULL,
+  house_no VARCHAR(30) NULL,
+  postal_code VARCHAR(20) NULL,
+  city VARCHAR(120) NULL,
+  email VARCHAR(190) NULL,
+  email2 VARCHAR(190) NULL,
+  phone VARCHAR(80) NULL,
+  mobile VARCHAR(80) NULL,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS complaint_drivers (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  display_number VARCHAR(30) NOT NULL UNIQUE,
+  driver_number VARCHAR(30) NULL,
+  first_name VARCHAR(120) NULL,
+  last_name VARCHAR(120) NULL,
+  street VARCHAR(190) NULL,
+  house_no VARCHAR(30) NULL,
+  postal_code VARCHAR(20) NULL,
+  city VARCHAR(120) NULL,
+  email VARCHAR(190) NULL,
+  mobile VARCHAR(80) NULL,
+  entrepreneur_id INT UNSIGNED NULL,
+  raw_payload LONGTEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_driver_number (driver_number),
+  CONSTRAINT fk_complaint_drivers_entrepreneur FOREIGN KEY (entrepreneur_id) REFERENCES complaint_entrepreneurs(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+$pdo->exec("ALTER TABLE complaint_entrepreneurs ADD COLUMN IF NOT EXISTS external_number VARCHAR(30) NULL AFTER company_name");
+$pdo->exec("ALTER TABLE complaint_drivers ADD COLUMN IF NOT EXISTS driver_number VARCHAR(30) NULL AFTER display_number");
+$pdo->exec("ALTER TABLE complaint_drivers ADD COLUMN IF NOT EXISTS display_number VARCHAR(30) NULL");
+
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS complaints (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_number VARCHAR(50) NOT NULL,
+  display_number VARCHAR(30) NOT NULL,
+  driver_id INT UNSIGNED NULL,
+  entrepreneur_id INT UNSIGNED NULL,
+  subject TEXT NOT NULL,
+  action_type ENUM('strafe','kuendigung') NOT NULL DEFAULT 'strafe',
+  due_date DATE NULL,
+  fine_paid TINYINT(1) NULL,
+  status ENUM('neu','in_pruefung','geschlossen') NOT NULL DEFAULT 'neu',
+  created_by INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_complaints_driver (driver_id),
+  INDEX idx_complaints_status (status),
+  CONSTRAINT fk_complaints_driver FOREIGN KEY (driver_id) REFERENCES complaint_drivers(id) ON DELETE SET NULL,
+  CONSTRAINT fk_complaints_entrepreneur FOREIGN KEY (entrepreneur_id) REFERENCES complaint_entrepreneurs(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$pdo->exec("CREATE TABLE IF NOT EXISTS complaint_audit (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  complaint_id INT UNSIGNED NULL,
+  action_type VARCHAR(80) NOT NULL,
+  action_text TEXT NOT NULL,
+  user_id INT UNSIGNED NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_complaint_id (complaint_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$pdo->exec("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS action_type ENUM('strafe','kuendigung') NOT NULL DEFAULT 'strafe' AFTER subject");
+$pdo->exec("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS due_date DATE NULL AFTER action_type");
+$pdo->exec("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS penalty_amount ENUM('50','100') NULL AFTER due_date");
+$pdo->exec("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS fine_paid TINYINT(1) NULL AFTER penalty_amount");
+$pdo->exec("ALTER TABLE complaints ADD COLUMN IF NOT EXISTS no_misconduct TINYINT(1) NOT NULL DEFAULT 0 AFTER fine_paid");
+$pdo->exec("ALTER TABLE complaints MODIFY COLUMN status ENUM('neu','pruefen','in_pruefung','geschlossen') NOT NULL DEFAULT 'neu'");
+
+function v(array $row, array $keys): ?string {
+    foreach ($keys as $k) {
+        if (array_key_exists($k, $row) && $row[$k] !== null && $row[$k] !== '') {
+            return trim((string)$row[$k]);
+        }
+    }
+    return null;
+}
+
+$gatewayLastDebug = '';
+
+function gatewayCall(array $payload): array {
+    $ch = curl_init('https://4884gateway.de/fms');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Accept: application/json'],
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    $raw = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr = curl_error($ch);
+    curl_close($ch);
+
+    $decoded = null;
+    if (is_string($raw) && $raw !== '') {
+        $tmp = json_decode($raw, true);
+        if (is_array($tmp)) {
+            $decoded = $tmp;
+        }
+    }
+
+    return [
+        'ok' => ($curlErr === '' && $code >= 200 && $code < 300),
+        'http_code' => $code,
+        'curl_error' => $curlErr,
+        'raw' => is_string($raw) ? $raw : '',
+        'decoded' => $decoded,
+    ];
+}
+
+function findDriverByDisplayRecursive($node, string $display): ?array {
+    $norm = ltrim($display, '0');
+    $norm = $norm === '' ? '0' : $norm;
+
+    if (is_array($node)) {
+        $map = [];
+        foreach ($node as $k => $val) {
+            $map[strtolower((string)$k)] = $val;
+        }
+        $displayKeys = ['displaynummer', 'display_number', 'fahrer_displaynummer', 'fahrerdisplaynummer'];
+        foreach ($displayKeys as $dk) {
+            if (!isset($map[$dk])) continue;
+            $candidate = ltrim((string)$map[$dk], '0');
+            $candidate = $candidate === '' ? '0' : $candidate;
+            if ($candidate === $norm) {
+                return $node;
+            }
+        }
+        foreach ($node as $child) {
+            $found = findDriverByDisplayRecursive($child, $display);
+            if ($found) return $found;
+        }
+    }
+    return null;
+}
+
+function findByNumberRecursive($node, string $number, array $keys): ?array {
+    $norm = ltrim($number, '0');
+    $norm = $norm === '' ? '0' : $norm;
+
+    if (is_array($node)) {
+        $map = [];
+        foreach ($node as $k => $val) {
+            $map[strtolower((string)$k)] = $val;
+        }
+        foreach ($keys as $k) {
+            $lk = strtolower($k);
+            if (!isset($map[$lk])) continue;
+            $candidate = ltrim((string)$map[$lk], '0');
+            $candidate = $candidate === '' ? '0' : $candidate;
+            if ($candidate === $norm) {
+                return $node;
+            }
+        }
+        foreach ($node as $child) {
+            $found = findByNumberRecursive($child, $number, $keys);
+            if ($found) return $found;
+        }
+    }
+    return null;
+}
+
+function loadEntrepreneurFromGateway(string $number): ?array {
+    $attempts = [
+        ['GETUNTERNEHMER' => ['UNTERNEHMER_NR' => (int)$number]],
+        ['GETUNTERNEHMER' => ['nummer' => (int)$number]],
+        ['getunternehmer' => ['unternehmernummer' => $number]],
+        ['GETUNTERNEHMERLISTE' => new stdClass()],
+    ];
+
+    foreach ($attempts as $payload) {
+        $result = gatewayCall($payload);
+        $response = $result['decoded'];
+        if (!is_array($response)) continue;
+
+        $candidate = findByNumberRecursive($response, $number, ['unternehmerNr','unternehmernummer','unternehmer_nr','nummer']);
+        if (!$candidate) continue;
+
+        return [
+            'external_number' => (string)(v($candidate, ['unternehmerNr','unternehmernummer','unternehmer_nr','nummer']) ?? $number),
+            'company_name' => (string)(v($candidate, ['firma','firmenname','company_name','name']) ?? ('Unternehmer #' . $number)),
+            'first_name' => v($candidate, ['vorname','first_name']),
+            'last_name' => v($candidate, ['nachname','last_name']),
+            'street' => v($candidate, ['strasseName','strasse','street']),
+            'house_no' => v($candidate, ['hausnummerEcke','hausnummer','house_no']),
+            'postal_code' => v($candidate, ['plz','postal_code']),
+            'city' => v($candidate, ['ortName','ort','city']),
+            'email' => v($candidate, ['email','e_mail']),
+            'phone' => v($candidate, ['telefon','phone']),
+            'mobile' => v($candidate, ['mobiltelefonnummer','mobilnummer','mobile']),
+        ];
+    }
+    return null;
+}
+
+function loadDriverFromGateway(string $display): ?array {
+    global $gatewayLastDebug;
+
+    $attempts = [
+        ['GETFAHRER' => ['FAHRER_NR' => (int)$display]],
+        ['GETFAHRER' => ['nummer' => (int)$display]],
+        ['getfahrer' => ['displaynummer' => $display]],
+        ['GETFAHRERLISTE' => new stdClass()],
+    ];
+
+    foreach ($attempts as $payload) {
+        $result = gatewayCall($payload);
+        $response = $result['decoded'];
+        $gatewayLastDebug = json_encode([
+            'payload' => $payload,
+            'http_code' => $result['http_code'],
+            'curl_error' => $result['curl_error'],
+            'raw_head' => mb_substr((string)$result['raw'], 0, 400),
+        ], JSON_UNESCAPED_UNICODE);
+
+        if (!is_array($response)) {
+            continue;
+        }
+
+        $candidate = findDriverByDisplayRecursive($response, $display);
+        if (!$candidate && isset($response['displaynummer'])) {
+            $candidate = $response;
+        }
+        if (!$candidate && isset($response['fahrerNr']) && (string)$response['fahrerNr'] == (string)(int)$display) {
+            $candidate = $response;
+        }
+        if (!$candidate) {
+            continue;
+        }
+
+        return [
+            'display_number' => (string)(v($candidate, ['displaynummer','display_number']) ?? $display),
+            'driver_number' => v($candidate, ['fahrerNr','fahrernummer','fahrer_nr','nummer','fahrernr']),
+            'first_name' => v($candidate, ['vorname','first_name']),
+            'last_name' => v($candidate, ['nachname','last_name']),
+            'street' => v($candidate, ['strasseName','strasse','street']),
+            'house_no' => v($candidate, ['hausnummerEcke','hausnummer','house_no']),
+            'postal_code' => v($candidate, ['plz','postal_code']),
+            'city' => v($candidate, ['ortName','ort','city']),
+            'email' => v($candidate, ['email','e_mail']),
+            'mobile' => v($candidate, ['mobiltelefonnummer','handynummer','mobilnummer','mobile']),
+            'entrepreneur_number' => v($candidate, ['unternehmerNr','unternehmernummer','unternehmer_nr','unternehmer','unternehmernummer_extern']),
+            'raw_payload' => json_encode($response, JSON_UNESCAPED_UNICODE),
+        ];
+    }
+    return null;
+}
+
+function isSmokingComplaint(array $row): bool {
+    $subject = mb_strtolower((string)($row['subject'] ?? ''));
+    return str_contains($subject, 'rauch');
+}
+
+function buildSmokingSubjectFromInput(array $input, string $fallback = ''): string {
+    $when = trim((string)($input['smoking_when'] ?? ''));
+    $where = trim((string)($input['smoking_where'] ?? ''));
+    $vehicle = trim((string)($input['smoking_vehicle'] ?? ''));
+    if ($when === '' && $where === '' && $vehicle === '') {
+        return trim($fallback);
+    }
+    if ($vehicle !== '' && !preg_match('/^Taxi\s+/i', $vehicle)) {
+        $vehicle = 'Taxi ' . $vehicle;
+    }
+    return 'Sie wurden am ' . ($when !== '' ? $when : '____________')
+        . ' rauchend im ' . ($vehicle !== '' ? $vehicle : 'Taxi ____')
+        . ' an der ' . ($where !== '' ? $where : '____________________')
+        . ' beim Rauchen im Fahrzeug gesehen.';
+}
+
+function renderComplaintLetter(array $row, string $template, string $extra, string $recipientType = 'entrepreneur'): string {
+    if ($template === '') {
+        if ($recipientType === 'driver') {
+            $template = "{{fahrer_name}}\n{{fahrer_strasse}}\n{{fahrer_ort}}\n\n\nBeschwerde zu Auftrag {{auftragsnummer}}\n\n{{anrede}}\n\nhiermit informieren wir Sie über das Fehlverhalten Ihres Mitarbeiters {{fahrer_name}}.\n\n{{sachverhalt}}\n\n{{massnahme_text}}\n\n{{zusaetzlicher_text}}\n\n\nMit freundlichen Grüßen\n\n\nGeschäftsführung\n4884 - Ihr Funktaxi GmbH\n";
+        } else {
+            $template = "{{firma}}\n{{firma_strasse}}\n{{firma_ort}}\n\n\nBeschwerde zu Auftrag {{auftragsnummer}}\n\n{{anrede}}\n\nhiermit informieren wir Sie über das Fehlverhalten Ihres Mitarbeiters {{fahrer_name}}.\n\n{{sachverhalt}}\n\n{{massnahme_text}}\n\n{{zusaetzlicher_text}}\n\n\nMit freundlichen Grüßen\n\n\nGeschäftsführung\n4884 - Ihr Funktaxi GmbH\n";
+        }
+    }
+
+    $dueDateRaw = (string)($row['due_date'] ?? '');
+    $printDate = date('d.m.Y');
+    if ($dueDateRaw !== '') {
+        $ts = strtotime($dueDateRaw);
+        if ($ts !== false) {
+            $printDate = date('d.m.Y', $ts);
+        }
+    }
+
+    $actionType = (string)($row['action_type'] ?? 'strafe');
+    $penaltyAmount = (string)($row['penalty_amount'] ?? '50');
+    if (!in_array($penaltyAmount, ['50', '100'], true)) {
+        $penaltyAmount = '50';
+    }
+    $amountText = $penaltyAmount === '100' ? '100,00 Euro' : '50,00 Euro';
+
+    $massnahmeText = 'Wir sprechen hiermit eine Maßnahme gemäß den geltenden Richtlinien aus.';
+    if ($actionType === 'kuendigung') {
+        $massnahmeText = 'Wir sprechen hiermit eine Kündigung als Maßnahme aus. Wirksamkeitsdatum: ' . $printDate . '.';
+    } else {
+        if (isSmokingComplaint($row)) {
+            $massnahmeText = 'Aus diesem Grund wird gegen Sie eine Vertragsstrafe in Höhe von ' . $amountText . ' ausgesprochen.'
+                . "\n\n"
+                . 'Außerdem stellen Sie das Fahrzeug bitte bis spätestens ' . $printDate . ', 12 Uhr in unserer Werkstatt Brünner Straße 26a vor, damit wir sicher sein können, dass wir unseren Kunden ein nicht nach Rauch riechendes Taxi vermitteln.'
+                . "\n\n"
+                . 'Sollte das Taxi nicht vorgestellt werden, wird es ab diesem Zeitpunkt von der Vermittlung ausgeschlossen.'
+                . "\n\n"
+                . 'Bitte überweisen Sie die Vertragsstrafe bis spätestens ' . $printDate . ' auf das unten ersichtliche Konto von 4884 und unterlassen Sie zukünftig das Rauchen im Taxi.'
+                . "\n\n"
+                . 'Sollte die Vertragsstrafe nicht fristgerecht eingehen, werden Sie von der weiteren Fahrauftragsvermittlung ausgeschlossen.';
+        } else {
+            $massnahmeText = 'Wir sprechen eine Strafe über ' . $amountText . ' aus. Bitte begleichen Sie diese bis ' . $printDate . '. Sollte dies nicht erfolgen, werden Sie von der Vermittlung ausgeschlossen.';
+        }
+    }
+
+    $fahrerName = trim((string)($row['first_name'] ?? '') . ' ' . (string)($row['last_name'] ?? ''));
+    $entrepreneurContact = trim((string)($row['e_first_name'] ?? '') . ' ' . (string)($row['e_last_name'] ?? ''));
+    if ($recipientType === 'driver') {
+        $anrede = $fahrerName !== '' ? ('Guten Tag ' . $fahrerName . ',') : 'Sehr geehrte Damen und Herren,';
+    } else {
+        $anrede = $entrepreneurContact !== '' ? ('Guten Tag ' . $entrepreneurContact . ',') : 'Sehr geehrte Damen und Herren,';
+    }
+    $vars = [
+        '{{datum}}' => $printDate,
+        '{{auftragsnummer}}' => (string)($row['order_number'] ?? ''),
+        '{{anrede}}' => $anrede,
+        '{{sachverhalt}}' => (string)($row['subject'] ?? ''),
+        '{{massnahme_text}}' => $massnahmeText,
+        '{{zusaetzlicher_text}}' => $extra,
+        '{{displaynummer}}' => (string)($row['display_number'] ?? ''),
+        '{{fahrernummer}}' => (string)($row['driver_number'] ?? ''),
+        '{{fahrer_vorname}}' => (string)($row['first_name'] ?? ''),
+        '{{fahrer_nachname}}' => (string)($row['last_name'] ?? ''),
+        '{{fahrer_name}}' => $fahrerName,
+        '{{fahrer_strasse}}' => trim((string)($row['street'] ?? '') . ' ' . (string)($row['house_no'] ?? '')),
+        '{{fahrer_ort}}' => trim((string)($row['postal_code'] ?? '') . ' ' . (string)($row['city'] ?? '')),
+        '{{firma}}' => (string)($row['company_name'] ?? 'Ihr Unternehmen'),
+        '{{firma_strasse}}' => trim((string)($row['e_street'] ?? '') . ' ' . (string)($row['e_house_no'] ?? '')),
+        '{{firma_ort}}' => trim((string)($row['e_postal_code'] ?? '') . ' ' . (string)($row['e_city'] ?? '')),
+    ];
+    return strtr($template, $vars);
+}
+
+function removeInternalSentenceFromPreview(string $text): string {
+    $needle = 'hiermit informieren wir Sie über das Fehlverhalten Ihres Mitarbeiters';
+    $text = str_replace(["\r\n", "\r"], "\n", $text);
+    $lines = explode("\n", $text);
+    $filtered = [];
+    foreach ($lines as $line) {
+        $normalizedLine = mb_strtolower(trim($line));
+        if (str_starts_with($normalizedLine, mb_strtolower($needle))) {
+            continue;
+        }
+        $filtered[] = $line;
+    }
+    return trim(preg_replace("/\n{3,}/", "\n\n", implode("\n", $filtered)) ?? '');
+}
+
+function addComplaintLetterBackground(FPDF $pdf): void {
+    $background = __DIR__ . '/images/briefpapier_4884.jpg';
+    if (is_file($background)) {
+        $pdf->Image($background, 0, 0, 210, 297, 'JPG');
+    }
+}
+
+function pdfText(string $text): string {
+    $converted = @iconv('UTF-8', 'Windows-1252//TRANSLIT', $text);
+    if ($converted === false) {
+        return utf8_decode($text);
+    }
+    return $converted;
+}
+
+function writeComplaintLetterBody(FPDF $pdf, string $text, string $dateText, float $x = 20, float $y = 58): void {
+    $lines = preg_split('/\R/u', str_replace(["\r\n", "\r"], "\n", $text)) ?: [];
+
+    $subjectIdx = null;
+    foreach ($lines as $i => $line) {
+        if (mb_stripos(trim($line), 'Beschwerde zu Auftrag') === 0) {
+            $subjectIdx = $i;
+            break;
+        }
+    }
+
+    $addr = [];
+    foreach ($lines as $i => $line) {
+        if ($subjectIdx !== null && $i >= $subjectIdx) break;
+        if (trim($line) !== '') $addr[] = $line;
+    }
+    $addr = array_slice($addr, 0, 3);
+
+    $pdf->SetFont('Arial', '', 11);
+    $pdf->SetXY($x, $y);
+    foreach ($addr as $line) {
+        $pdf->SetX($x);
+        $pdf->MultiCell(170, 5.5, pdfText($line), 0, 'L');
+    }
+
+    $pdf->SetFont('Arial', '', 11);
+    $pdf->SetXY(140, 86);
+    $pdf->Cell(50, 5.5, pdfText($dateText), 0, 0, 'R');
+
+    if ($subjectIdx !== null) {
+        $pdf->SetFont('Arial', 'B', 11);
+        $pdf->SetXY($x, 97);
+        $pdf->MultiCell(170, 5.5, pdfText(trim((string)$lines[$subjectIdx])), 0, 'L');
+
+        $pdf->SetFont('Arial', '', 11);
+        $pdf->SetXY($x, 109);
+        for ($i = $subjectIdx + 1; $i < count($lines); $i++) {
+            $pdf->SetX($x);
+            $pdf->MultiCell(170, 5.5, pdfText((string)$lines[$i]), 0, 'L');
+        }
+    } else {
+        $pdf->SetXY($x, 98);
+        foreach ($lines as $line) {
+            $pdf->SetX($x);
+            $pdf->MultiCell(170, 5.5, pdfText((string)$line), 0, 'L');
+        }
+    }
+
+    $pdf->SetFont('Arial', '', 11);
+}
+
+$templateVariables = [
+    ['key' => '{{datum}}', 'desc' => 'Fristdatum aus Vorgang (bei Strafe standardmäßig heute +7 Tage)'],
+    ['key' => '{{auftragsnummer}}', 'desc' => 'Auftragsnummer der Beschwerde'],
+    ['key' => '{{anrede}}', 'desc' => 'Persönliche Anrede für den Fahrer'],
+    ['key' => '{{sachverhalt}}', 'desc' => 'Sachverhalt aus der Beschwerde'],
+    ['key' => '{{massnahme_text}}', 'desc' => 'Automatischer Maßnahmetext inkl. Zahlungs-/Wirksamkeitsdatum'],
+    ['key' => '{{zusaetzlicher_text}}', 'desc' => 'Zusatztext aus dem Feld "Zusatztext"'],
+    ['key' => '{{displaynummer}}', 'desc' => 'Displaynummer des Fahrers'],
+    ['key' => '{{fahrernummer}}', 'desc' => 'Fahrernummer'],
+    ['key' => '{{fahrer_vorname}}', 'desc' => 'Vorname des Fahrers'],
+    ['key' => '{{fahrer_nachname}}', 'desc' => 'Nachname des Fahrers'],
+    ['key' => '{{fahrer_name}}', 'desc' => 'Vollständiger Fahrername'],
+    ['key' => '{{fahrer_strasse}}', 'desc' => 'Straße + Hausnummer des Fahrers'],
+    ['key' => '{{fahrer_ort}}', 'desc' => 'PLZ + Ort des Fahrers'],
+    ['key' => '{{firma}}', 'desc' => 'Name des Unternehmers / der Firma'],
+    ['key' => '{{firma_strasse}}', 'desc' => 'Straße + Hausnummer der Firma'],
+    ['key' => '{{firma_ort}}', 'desc' => 'PLZ + Ort der Firma'],
+];
+
+function audit(PDO $pdo, ?int $complaintId, string $type, string $text): void {
+    $stmt = $pdo->prepare('INSERT INTO complaint_audit (complaint_id, action_type, action_text, user_id) VALUES (:cid,:type,:txt,:uid)');
+    $stmt->execute([
+        ':cid' => $complaintId,
+        ':type' => $type,
+        ':txt' => $text,
+        ':uid' => (int)($_SESSION['user_id'] ?? 0) ?: null,
+    ]);
+}
+
+$letterOutput = '';
+$letterRenderedRaw = '';
+$lastComplaintId = 0;
+$lastTemplate = '';
+$lastExtra = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $action = (string)($_POST['action'] ?? '');
+
+        if ($action === 'sync_driver' && $canManage) {
+            $driverNoInput = trim((string)($_POST['driver_number'] ?? ''));
+            if ($driverNoInput === '') {
+                throw new RuntimeException('Fahrernummer fehlt.');
+            }
+
+            $driver = loadDriverFromGateway($driverNoInput);
+            if (!$driver) {
+                throw new RuntimeException('Fahrer konnte vom Gateway nicht geladen werden. Debug: ' . $gatewayLastDebug);
+            }
+
+            $entrepreneurIdResolved = null;
+            $entrepreneurNo = trim((string)($driver['entrepreneur_number'] ?? ''));
+            if ($entrepreneurNo !== '') {
+                $es = $pdo->prepare('SELECT id FROM complaint_entrepreneurs WHERE external_number = ? LIMIT 1');
+                $es->execute([$entrepreneurNo]);
+                $entrepreneurIdResolved = (int)$es->fetchColumn();
+
+                if ($entrepreneurIdResolved <= 0) {
+                    $eData = loadEntrepreneurFromGateway($entrepreneurNo);
+                    if ($eData) {
+                        $ei = $pdo->prepare('INSERT INTO complaint_entrepreneurs (external_number, company_name, first_name, last_name, street, house_no, postal_code, city, email, phone, mobile, active) VALUES (:nr,:company,:first,:last,:street,:house,:plz,:city,:email,:phone,:mobile,1)');
+                        $ei->execute([
+                            ':nr' => $eData['external_number'],
+                            ':company' => $eData['company_name'],
+                            ':first' => $eData['first_name'],
+                            ':last' => $eData['last_name'],
+                            ':street' => $eData['street'],
+                            ':house' => $eData['house_no'],
+                            ':plz' => $eData['postal_code'],
+                            ':city' => $eData['city'],
+                            ':email' => $eData['email'],
+                            ':phone' => $eData['phone'],
+                            ':mobile' => $eData['mobile'],
+                        ]);
+                        $entrepreneurIdResolved = (int)$pdo->lastInsertId();
+                    }
+                }
+            }
+
+            $st = $pdo->prepare('SELECT id FROM complaint_drivers WHERE driver_number = ? OR display_number = ? LIMIT 1');
+            $st->execute([$driverNoInput, $driverNoInput]);
+            $existing = (int)$st->fetchColumn();
+            if ($existing > 0) {
+                $up = $pdo->prepare('UPDATE complaint_drivers SET display_number=:display, driver_number=:dno, first_name=:first, last_name=:last, street=:street, house_no=:house, postal_code=:plz, city=:city, email=:email, mobile=:mobile, entrepreneur_id=:eid, raw_payload=:raw WHERE id=:id');
+                $up->execute([
+                    ':display' => $driver['display_number'],
+                    ':dno' => $driver['driver_number'],
+                    ':first' => $driver['first_name'],
+                    ':last' => $driver['last_name'],
+                    ':street' => $driver['street'],
+                    ':house' => $driver['house_no'],
+                    ':plz' => $driver['postal_code'],
+                    ':city' => $driver['city'],
+                    ':email' => $driver['email'],
+                    ':mobile' => $driver['mobile'],
+                    ':eid' => $entrepreneurIdResolved ?: null,
+                    ':raw' => $driver['raw_payload'],
+                    ':id' => $existing,
+                ]);
+                $ok = 'Fahrer aus Gateway aktualisiert.';
+            } else {
+                $ins = $pdo->prepare('INSERT INTO complaint_drivers (display_number, driver_number, first_name, last_name, street, house_no, postal_code, city, email, mobile, entrepreneur_id, raw_payload) VALUES (:display,:dno,:first,:last,:street,:house,:plz,:city,:email,:mobile,:eid,:raw)');
+                $ins->execute([
+                    ':display' => $driver['display_number'],
+                    ':dno' => $driver['driver_number'],
+                    ':first' => $driver['first_name'],
+                    ':last' => $driver['last_name'],
+                    ':street' => $driver['street'],
+                    ':house' => $driver['house_no'],
+                    ':plz' => $driver['postal_code'],
+                    ':city' => $driver['city'],
+                    ':email' => $driver['email'],
+                    ':mobile' => $driver['mobile'],
+                    ':eid' => $entrepreneurIdResolved ?: null,
+                    ':raw' => $driver['raw_payload'],
+                ]);
+                $ok = 'Fahrer aus Gateway übernommen.';
+            }
+        }
+
+        if ($action === 'save_entrepreneur' && $canManage) {
+            $companyName = trim((string)($_POST['company_name'] ?? ''));
+            if ($companyName === '') throw new RuntimeException('Firmenname ist Pflicht.');
+            $stmt = $pdo->prepare('INSERT INTO complaint_entrepreneurs (company_name, first_name, last_name, street, house_no, postal_code, city, email, email2, phone, mobile, active) VALUES (:company_name,:first_name,:last_name,:street,:house_no,:postal_code,:city,:email,:email2,:phone,:mobile,:active)');
+            $stmt->execute([
+                ':company_name' => $companyName,
+                ':first_name' => trim((string)($_POST['first_name'] ?? '')) ?: null,
+                ':last_name' => trim((string)($_POST['last_name'] ?? '')) ?: null,
+                ':street' => trim((string)($_POST['street'] ?? '')) ?: null,
+                ':house_no' => trim((string)($_POST['house_no'] ?? '')) ?: null,
+                ':postal_code' => trim((string)($_POST['postal_code'] ?? '')) ?: null,
+                ':city' => trim((string)($_POST['city'] ?? '')) ?: null,
+                ':email' => trim((string)($_POST['email'] ?? '')) ?: null,
+                ':email2' => trim((string)($_POST['email2'] ?? '')) ?: null,
+                ':phone' => trim((string)($_POST['phone'] ?? '')) ?: null,
+                ':mobile' => trim((string)($_POST['mobile'] ?? '')) ?: null,
+                ':active' => isset($_POST['active']) ? 1 : 0,
+            ]);
+            $ok = 'Unternehmer gespeichert.';
+        }
+
+        if ($action === 'create_complaint' && $canManage) {
+            $orderNo = trim((string)($_POST['order_number'] ?? ''));
+            $subject = buildSmokingSubjectFromInput($_POST, trim((string)($_POST['subject'] ?? '')));
+            $driverId = (int)($_POST['driver_id'] ?? 0);
+            $status = (string)($_POST['status'] ?? 'neu');
+            $entrepreneurId = (int)($_POST['entrepreneur_id'] ?? 0);
+            $actionType = (string)($_POST['action_type'] ?? 'strafe');
+            if (!in_array($actionType, ['strafe', 'kuendigung'], true)) {
+                $actionType = 'strafe';
+            }
+            $penaltyAmount = (string)($_POST['penalty_amount'] ?? '50');
+            if (!in_array($penaltyAmount, ['50', '100'], true)) {
+                $penaltyAmount = '50';
+            }
+            if ($actionType === 'kuendigung') {
+                $penaltyAmount = null;
+            }
+            $dueDateInput = trim((string)($_POST['due_date'] ?? ''));
+            $dueDate = null;
+            if ($dueDateInput !== '') {
+                $tsDue = strtotime($dueDateInput);
+                if ($tsDue !== false) {
+                    $dueDate = date('Y-m-d', $tsDue);
+                }
+            }
+            if ($actionType === 'strafe' && $dueDate === null) {
+                $dueDate = date('Y-m-d', strtotime('+7 days'));
+            }
+            $isSmokingCase = str_contains(mb_strtolower($subject), 'rauch');
+            if ($subject === '' || $driverId <= 0 || (!$isSmokingCase && $orderNo === '')) {
+                throw new RuntimeException($isSmokingCase
+                    ? 'Fahrer und Sachverhalt sind Pflicht.'
+                    : 'Auftragsnummer, Fahrer und Sachverhalt sind Pflicht.');
+            }
+            if (!in_array($status, ['neu','pruefen','in_pruefung','geschlossen'], true)) $status = 'neu';
+
+            $ds = $pdo->prepare('SELECT display_number, entrepreneur_id FROM complaint_drivers WHERE id=?');
+            $ds->execute([$driverId]);
+            $driverMeta = $ds->fetch(PDO::FETCH_ASSOC);
+            $displayNo = (string)($driverMeta['display_number'] ?? '');
+            if ($displayNo === '') throw new RuntimeException('Ungültiger Fahrer.');
+            if ($entrepreneurId <= 0 && !empty($driverMeta['entrepreneur_id'])) {
+                $entrepreneurId = (int)$driverMeta['entrepreneur_id'];
+            }
+
+            $stmt = $pdo->prepare('INSERT INTO complaints (order_number, display_number, driver_id, entrepreneur_id, subject, action_type, due_date, penalty_amount, status, created_by) VALUES (:order_number,:display_number,:driver_id,:entrepreneur_id,:subject,:action_type,:due_date,:penalty_amount,:status,:created_by)');
+            $stmt->execute([
+                ':order_number' => $orderNo,
+                ':display_number' => $displayNo,
+                ':driver_id' => $driverId,
+                ':entrepreneur_id' => $entrepreneurId ?: null,
+                ':subject' => $subject,
+                ':action_type' => $actionType,
+                ':due_date' => $dueDate,
+                ':penalty_amount' => $penaltyAmount,
+                ':status' => $status,
+                ':created_by' => (int)($_SESSION['user_id'] ?? 0) ?: null,
+            ]);
+            $cid = (int)$pdo->lastInsertId();
+            audit($pdo, $cid, 'create', 'Beschwerde angelegt');
+            $ok = 'Beschwerde angelegt.';
+        }
+
+        if ($action === 'update_complaint' && $canManage) {
+            $complaintId = (int)($_POST['complaint_id'] ?? 0);
+            $orderNo = trim((string)($_POST['order_number'] ?? ''));
+            $subject = buildSmokingSubjectFromInput($_POST, trim((string)($_POST['subject'] ?? '')));
+            $driverId = (int)($_POST['driver_id'] ?? 0);
+            $entrepreneurId = (int)($_POST['entrepreneur_id'] ?? 0);
+            $actionType = (string)($_POST['action_type'] ?? 'strafe');
+            $penaltyAmount = (string)($_POST['penalty_amount'] ?? '50');
+            $status = (string)($_POST['status'] ?? 'neu');
+            $dueDateInput = trim((string)($_POST['due_date'] ?? ''));
+            $dueDate = null;
+            if ($dueDateInput !== '') {
+                $tsDue = strtotime($dueDateInput);
+                if ($tsDue !== false) {
+                    $dueDate = date('Y-m-d', $tsDue);
+                }
+            }
+            if (!in_array($actionType, ['strafe', 'kuendigung'], true)) $actionType = 'strafe';
+            if (!in_array($penaltyAmount, ['50', '100'], true)) $penaltyAmount = '50';
+            if ($actionType === 'kuendigung') $penaltyAmount = null;
+            if (!in_array($status, ['neu','pruefen','in_pruefung','geschlossen'], true)) $status = 'neu';
+            $isSmokingCase = str_contains(mb_strtolower($subject), 'rauch');
+            if ($complaintId <= 0 || $subject === '' || $driverId <= 0 || (!$isSmokingCase && $orderNo === '')) {
+                throw new RuntimeException($isSmokingCase
+                    ? 'Bitte Fahrer und Sachverhalt für die Bearbeitung ausfüllen.'
+                    : 'Bitte alle Pflichtfelder für die Bearbeitung ausfüllen.');
+            }
+
+            $ds = $pdo->prepare('SELECT display_number, entrepreneur_id FROM complaint_drivers WHERE id=?');
+            $ds->execute([$driverId]);
+            $driverMeta = $ds->fetch(PDO::FETCH_ASSOC);
+            $displayNo = (string)($driverMeta['display_number'] ?? '');
+            if ($displayNo === '') throw new RuntimeException('Ungültiger Fahrer.');
+            if ($entrepreneurId <= 0 && !empty($driverMeta['entrepreneur_id'])) {
+                $entrepreneurId = (int)$driverMeta['entrepreneur_id'];
+            }
+
+            $up = $pdo->prepare('UPDATE complaints SET order_number=:order_number, display_number=:display_number, driver_id=:driver_id, entrepreneur_id=:entrepreneur_id, subject=:subject, action_type=:action_type, due_date=:due_date, penalty_amount=:penalty_amount, status=:status WHERE id=:id');
+            $up->execute([
+                ':order_number' => $orderNo,
+                ':display_number' => $displayNo,
+                ':driver_id' => $driverId,
+                ':entrepreneur_id' => $entrepreneurId ?: null,
+                ':subject' => $subject,
+                ':action_type' => $actionType,
+                ':due_date' => $dueDate,
+                ':penalty_amount' => $penaltyAmount,
+                ':status' => $status,
+                ':id' => $complaintId,
+            ]);
+            audit($pdo, $complaintId, 'update', 'Beschwerde bearbeitet (Doppelklick-Editor)');
+            $ok = 'Beschwerde aktualisiert.';
+        }
+
+        if ($action === 'set_no_misconduct' && $canManage) {
+            $complaintId = (int)($_POST['complaint_id'] ?? 0);
+            if ($complaintId <= 0) {
+                throw new RuntimeException('Ungültiger Fall.');
+            }
+            $up = $pdo->prepare("UPDATE complaints SET no_misconduct=1, fine_paid=NULL, status='geschlossen' WHERE id=:id");
+            $up->execute([':id' => $complaintId]);
+            audit($pdo, $complaintId, 'no_misconduct', 'Prüfung abgeschlossen: kein Fehlverhalten festgestellt');
+            $ok = 'Fall als geprüft ohne Fehlverhalten abgeschlossen.';
+        }
+
+        if ($action === 'set_fine_payment' && $canManage) {
+            $complaintId = (int)($_POST['complaint_id'] ?? 0);
+            $finePaid = (int)($_POST['fine_paid'] ?? -1);
+            if ($complaintId <= 0 || !in_array($finePaid, [0, 1], true)) {
+                throw new RuntimeException('Ungültige Zahlungsangabe.');
+            }
+
+            $st = $pdo->prepare('SELECT c.id, c.display_number, c.action_type, d.driver_number FROM complaints c LEFT JOIN complaint_drivers d ON d.id=c.driver_id WHERE c.id=? LIMIT 1');
+            $st->execute([$complaintId]);
+            $rowPayment = $st->fetch(PDO::FETCH_ASSOC);
+            if (!$rowPayment) {
+                throw new RuntimeException('Beschwerde nicht gefunden.');
+            }
+
+            $up = $pdo->prepare("UPDATE complaints SET fine_paid=:paid, no_misconduct=0, status='geschlossen' WHERE id=:id");
+            $up->execute([':paid' => $finePaid, ':id' => $complaintId]);
+
+            if ($finePaid === 0) {
+                $displayNumber = (string)($rowPayment['display_number'] ?? '');
+                if ($displayNumber === '') {
+                    throw new RuntimeException('Displaynummer fehlt für Gateway-Call.');
+                }
+                $today = date('Y-m-d');
+                $gwPayload = [
+                    'SETFahrer' => [
+                        'displaynummer' => $displayNumber,
+                        'display_number' => $displayNumber,
+                        'aktiv_bis' => $today,
+                        'AKTIV_BIS' => $today,
+                    ],
+                ];
+                $gw = gatewayCall($gwPayload);
+                if (!$gw['ok']) {
+                    $gwPayload = [
+                        'SETFAHRER' => [
+                            'displaynummer' => $displayNumber,
+                            'display_number' => $displayNumber,
+                            'aktiv_bis' => $today,
+                            'AKTIV_BIS' => $today,
+                        ],
+                    ];
+                    $gw = gatewayCall($gwPayload);
+                }
+                if (!$gw['ok']) {
+                    throw new RuntimeException('Gateway-Call fehlgeschlagen (SETFahrer): HTTP ' . (int)$gw['http_code'] . ' ' . (string)$gw['curl_error']);
+                }
+                audit($pdo, $complaintId, 'fine_unpaid_gateway', 'Strafe offen: SETFAHRER mit aktiv_bis=' . $today . ' für Display ' . $displayNumber);
+                $ok = 'Zahlungsstatus auf "nicht gezahlt" gesetzt und Gateway informiert.';
+            } else {
+                audit($pdo, $complaintId, 'fine_paid', 'Strafe als gezahlt markiert');
+                $ok = 'Zahlungsstatus auf "gezahlt" gesetzt.';
+            }
+        }
+
+        if ($action === 'build_letter' || $action === 'send_letter_email' || $action === 'preview_letter_pdf') {
+            $complaintId = (int)($_POST['complaint_id'] ?? 0);
+            $template = trim((string)($_POST['template'] ?? ''));
+            $extra = trim((string)($_POST['extra_text'] ?? ''));
+            if ($complaintId <= 0) throw new RuntimeException('Bitte Beschwerde wählen.');
+
+            $st = $pdo->prepare('SELECT c.*, d.driver_number, d.first_name, d.last_name, d.street, d.house_no, d.postal_code, d.city, d.email AS driver_email, d.mobile,
+                e.company_name, e.first_name AS e_first_name, e.last_name AS e_last_name, e.street AS e_street, e.house_no AS e_house_no, e.postal_code AS e_postal_code, e.city AS e_city, e.email AS e_email, e.email2 AS e_email2
+                FROM complaints c
+                LEFT JOIN complaint_drivers d ON d.id=c.driver_id
+                LEFT JOIN complaint_entrepreneurs e ON e.id=c.entrepreneur_id
+                WHERE c.id=? LIMIT 1');
+            $st->execute([$complaintId]);
+            $row = $st->fetch(PDO::FETCH_ASSOC);
+            if (!$row) throw new RuntimeException('Beschwerde nicht gefunden.');
+
+            $renderedPreview = renderComplaintLetter($row, $template, $extra, 'driver');
+            $previewRendered = removeInternalSentenceFromPreview($renderedPreview);
+            $letterRenderedRaw = $previewRendered;
+            $letterOutput = nl2br(htmlspecialchars($previewRendered, ENT_QUOTES, 'UTF-8'));
+            $lastComplaintId = $complaintId;
+            $lastTemplate = $template;
+            $lastExtra = $extra;
+
+            if ($action === 'build_letter') {
+                audit($pdo, $complaintId, 'letter_preview', 'Briefvorschau erzeugt');
+                $ok = 'Briefvorschau erzeugt.';
+            }
+
+            if ($action === 'preview_letter_pdf') {
+                $pdf = new FPDF('P', 'mm', 'A4');
+                $pdf->AddPage();
+                addComplaintLetterBackground($pdf);
+                $pdf->SetFont('Arial', '', 11);
+                writeComplaintLetterBody($pdf, $previewRendered, date('d.m.Y'), 20, 58);
+                header('Content-Type: application/pdf');
+                header('Content-Disposition: inline; filename="brief_vorschau_' . $complaintId . '.pdf"');
+                $pdf->Output('I', 'brief_vorschau_' . $complaintId . '.pdf');
+                exit;
+            }
+
+            if ($action === 'send_letter_email') {
+                if (empty($row['due_date'])) {
+                    $dueDateToSet = null;
+                    if ((string)($row['action_type'] ?? 'strafe') === 'strafe') {
+                        $dueDateToSet = date('Y-m-d', strtotime('+7 days'));
+                    } elseif ((string)($row['action_type'] ?? '') === 'kuendigung') {
+                        $dueDateToSet = date('Y-m-d');
+                    }
+                    if ($dueDateToSet !== null) {
+                        $upDue = $pdo->prepare('UPDATE complaints SET due_date = :due_date WHERE id = :id');
+                        $upDue->execute([':due_date' => $dueDateToSet, ':id' => (int)$row['id']]);
+                        $row['due_date'] = $dueDateToSet;
+                    }
+                }
+
+                // Unternehmer erhält exakt dieselbe PDF-Fassung wie der Mitarbeiter (keine Abwandlung)
+                $rendered = $previewRendered;
+
+                $recipient = trim((string)($row['e_email'] ?? ''));
+                if ($recipient === '' && !empty($row['e_email2'])) $recipient = trim((string)$row['e_email2']);
+                if ($recipient === '' || !filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+                    throw new RuntimeException('Keine gültige Unternehmer-E-Mail hinterlegt.');
+                }
+
+                $outDir = __DIR__ . '/output';
+                if (!is_dir($outDir)) @mkdir($outDir, 0775, true);
+                $pdfFile = $outDir . '/beschwerde_' . $complaintId . '_' . date('Ymd_His') . '.pdf';
+
+                $pdf = new FPDF('P', 'mm', 'A4');
+                $pdf->AddPage();
+                addComplaintLetterBackground($pdf);
+                $pdf->SetFont('Arial', '', 11);
+                writeComplaintLetterBody($pdf, $rendered, date('d.m.Y'), 20, 58);
+                $pdf->Output('F', $pdfFile);
+
+                $mail = new PHPMailer(true);
+                $mail->isSMTP();
+                $mail->Host = SMTP_HOST;
+                $mail->SMTPAuth = true;
+                $mail->Username = SMTP_USER;
+                $mail->Password = SMTP_PASS;
+                $mail->SMTPSecure = SMTP_SECURE;
+                $mail->Port = SMTP_PORT;
+                $mail->CharSet = 'UTF-8';
+                $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
+                $mail->addAddress($recipient);
+                $mail->addCC('verwaltung@taxi4884.de');
+                $mail->addCC('buero@taxi4884.de');
+                if (isSmokingComplaint($row)) {
+                    $mail->addCC('werkstatt@taxi4884.de');
+                }
+                $mail->Subject = 'Kopie eines Schreibens an Ihren Mitarbeiter';
+                $mail->Body = "Sehr geehrte Damen und Herren,
+
+anbei erhalten Sie eine Kopie eines Schreibens, das an Ihren Mitarbeiter versendet wurde.
+Das Schreiben dient Ihrer Information als Unternehmer.
+Die ausgesprochene Maßnahme richtet sich ausschließlich an den genannten Mitarbeiter.
+
+Mit freundlichen Grüßen
+
+Geschäftsführung
+4884 - Ihr Funktaxi GmbH";
+                $mail->addAttachment($pdfFile, 'Beschwerdeschreiben.pdf');
+                $mail->send();
+
+                $upStatus = $pdo->prepare("UPDATE complaints SET status='in_pruefung' WHERE id=:id");
+                $upStatus->execute([':id' => $complaintId]);
+
+                audit($pdo, $complaintId, 'letter_email', 'Beschwerdeschreiben per E-Mail versendet an ' . $recipient . '; Status auf in_pruefung gesetzt');
+                $ok = 'E-Mail mit Schreiben wurde an ' . $recipient . ' versendet. Status: warten auf Zahlung.';
+            }
+
+        }
+
+    } catch (Throwable $e) {
+        $err = 'Fehler: ' . $e->getMessage();
+    }
+}
+
+$drivers = $pdo->query('SELECT id, display_number, driver_number, first_name, last_name FROM complaint_drivers ORDER BY last_name, first_name')->fetchAll(PDO::FETCH_ASSOC);
+$entrepreneurs = $pdo->query('SELECT * FROM complaint_entrepreneurs ORDER BY company_name')->fetchAll(PDO::FETCH_ASSOC);
+
+$statusFilter = trim((string)($_GET['status_filter'] ?? ''));
+$allowedStatusFilter = ['pruefen', 'neu', 'in_pruefung', 'geschlossen'];
+if (!in_array($statusFilter, $allowedStatusFilter, true)) {
+    $statusFilter = '';
+}
+$paymentFilter = trim((string)($_GET['payment_filter'] ?? ''));
+$allowedPaymentFilter = ['paid', 'unpaid'];
+if (!in_array($paymentFilter, $allowedPaymentFilter, true)) {
+    $paymentFilter = '';
+}
+if ($statusFilter !== 'geschlossen') {
+    $paymentFilter = '';
+}
+
+$driverSearch = trim((string)($_GET['driver_search'] ?? ''));
+$page = max(1, (int)($_GET['page'] ?? 1));
+$perPage = 10;
+$offsetRows = ($page - 1) * $perPage;
+
+$whereParts = [];
+$params = [];
+if ($statusFilter !== '') {
+    $whereParts[] = 'c.status = :status_filter';
+    $params[':status_filter'] = $statusFilter;
+}
+if ($driverSearch !== '') {
+    $whereParts[] = '(d.first_name LIKE :driver_search OR d.last_name LIKE :driver_search OR CONCAT_WS(" ", d.first_name, d.last_name) LIKE :driver_search OR d.driver_number LIKE :driver_search OR d.display_number LIKE :driver_search)';
+    $params[':driver_search'] = '%' . $driverSearch . '%';
+}
+if ($paymentFilter === 'paid') {
+    $whereParts[] = 'c.fine_paid = 1';
+} elseif ($paymentFilter === 'unpaid') {
+    $whereParts[] = 'c.fine_paid = 0';
+}
+$whereSql = $whereParts ? (' WHERE ' . implode(' AND ', $whereParts)) : '';
+
+$countSql = "SELECT COUNT(*)
+FROM complaints c
+LEFT JOIN complaint_drivers d ON d.id=c.driver_id
+LEFT JOIN complaint_entrepreneurs e ON e.id=c.entrepreneur_id" . $whereSql;
+$countStmt = $pdo->prepare($countSql);
+$countStmt->execute($params);
+$totalComplaints = (int)$countStmt->fetchColumn();
+$totalPages = max(1, (int)ceil($totalComplaints / $perPage));
+if ($page > $totalPages) {
+    $page = $totalPages;
+    $offsetRows = ($page - 1) * $perPage;
+}
+
+$complaintsSql = "SELECT c.*, d.first_name, d.last_name, d.driver_number, e.company_name
+FROM complaints c
+LEFT JOIN complaint_drivers d ON d.id=c.driver_id
+LEFT JOIN complaint_entrepreneurs e ON e.id=c.entrepreneur_id" . $whereSql .
+" ORDER BY (c.status='pruefen') DESC, c.created_at DESC LIMIT :limit OFFSET :offset";
+$complaintsStmt = $pdo->prepare($complaintsSql);
+foreach ($params as $k => $v) {
+    $complaintsStmt->bindValue($k, $v, PDO::PARAM_STR);
+}
+$complaintsStmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+$complaintsStmt->bindValue(':offset', $offsetRows, PDO::PARAM_INT);
+$complaintsStmt->execute();
+$complaints = $complaintsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$stats = $pdo->query("SELECT d.id, d.display_number, d.first_name, d.last_name,
+COUNT(c.id) AS total_count,
+SUM(CASE WHEN c.status <> 'geschlossen' THEN 1 ELSE 0 END) AS open_count
+FROM complaint_drivers d
+LEFT JOIN complaints c ON c.driver_id=d.id
+GROUP BY d.id, d.display_number, d.first_name, d.last_name
+ORDER BY total_count DESC, d.last_name ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+$driverComplaintMetaStmt = $pdo->query("SELECT c.driver_id, c.id, c.order_number, c.status, c.action_type, c.fine_paid, c.no_misconduct, c.created_at, c.entrepreneur_id, COALESCE(e.company_name, '') AS company_name
+FROM complaints c
+LEFT JOIN complaint_entrepreneurs e ON e.id = c.entrepreneur_id
+WHERE c.driver_id IS NOT NULL
+ORDER BY c.created_at DESC, c.id DESC");
+$driverComplaintMeta = [];
+while ($m = $driverComplaintMetaStmt->fetch(PDO::FETCH_ASSOC)) {
+    $driverId = (int)($m['driver_id'] ?? 0);
+    if ($driverId <= 0) continue;
+    if (!isset($driverComplaintMeta[$driverId])) {
+        $driverComplaintMeta[$driverId] = [
+            'count' => 0,
+            'latest_entrepreneur_id' => null,
+            'recent' => [],
+        ];
+    }
+    $driverComplaintMeta[$driverId]['count']++;
+    if ($driverComplaintMeta[$driverId]['latest_entrepreneur_id'] === null && !empty($m['entrepreneur_id'])) {
+        $driverComplaintMeta[$driverId]['latest_entrepreneur_id'] = (int)$m['entrepreneur_id'];
+    }
+    if (count($driverComplaintMeta[$driverId]['recent']) < 5) {
+        $driverComplaintMeta[$driverId]['recent'][] = [
+            'id' => (int)($m['id'] ?? 0),
+            'order_number' => (string)($m['order_number'] ?? ''),
+            'status' => (string)($m['status'] ?? ''),
+            'action_type' => (string)($m['action_type'] ?? ''),
+            'fine_paid' => isset($m['fine_paid']) ? (int)$m['fine_paid'] : null,
+            'no_misconduct' => isset($m['no_misconduct']) ? (int)$m['no_misconduct'] : 0,
+            'created_at' => (string)($m['created_at'] ?? ''),
+            'company_name' => (string)($m['company_name'] ?? ''),
+        ];
+    }
+}
+
+$orderLookupStmt = $pdo->query("SELECT id, order_number FROM complaints WHERE order_number IS NOT NULL AND order_number <> '' ORDER BY id DESC");
+$orderLookup = [];
+while ($or = $orderLookupStmt->fetch(PDO::FETCH_ASSOC)) {
+    $key = trim((string)($or['order_number'] ?? ''));
+    if ($key === '' || isset($orderLookup[$key])) continue;
+    $orderLookup[$key] = (int)($or['id'] ?? 0);
+}
+
+include __DIR__ . '/../includes/layout.php';
+?>
+<main class="container py-4">
+    <h1 class="mb-2">Beschwerdemanagement</h1>
+    <p class="text-muted mb-1">Alle Nutzer sehen die Übersicht. Neue Beschwerden/Änderungen nur mit Berechtigung.</p>
+    <div class="quick-kpis">
+      <span class="chip">Gesamt: <?= (int)$totalComplaints ?></span>
+      <span class="chip warn">Statusfilter: <?= $statusFilter !== '' ? htmlspecialchars($statusFilter, ENT_QUOTES, 'UTF-8') : 'alle' ?></span>
+      <span class="chip info">Seite <?= (int)$page ?> / <?= (int)$totalPages ?></span>
+      <span class="chip ok">Filter: <?= $driverSearch !== '' ? 'Fahrer aktiv' : 'keiner' ?></span>
+    </div>
+
+    <?php if ($ok): ?><div class="alert alert-success"><?= htmlspecialchars($ok, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+    <?php if ($err): ?><div class="alert alert-danger"><?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+
+    <?php if ($canManage): ?>
+    <div class="card mb-4"><div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalDriverSync">Fahrer laden</button>
+            <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalEntrepreneur">Unternehmer anlegen</button>
+            <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#modalComplaint">Neue Beschwerde</button>
+        </div>
+    </div></div>
+
+    <div class="modal fade" id="modalDriverSync" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form method="post">
+            <input type="hidden" name="action" value="sync_driver">
+            <div class="modal-header">
+              <h5 class="modal-title">Fahrer aus 4884gateway laden</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+              <p class="text-muted mb-2"><strong>Hinweis:</strong> Bitte <strong>Fahrernummer</strong> eingeben (nicht Displaynummer).</p>
+              <label class="form-label">Fahrernummer</label>
+              <input class="form-control" name="driver_number" required>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Abbrechen</button>
+              <button class="btn btn-primary" type="submit">Laden</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalEntrepreneur" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <form method="post">
+            <input type="hidden" name="action" value="save_entrepreneur">
+            <div class="modal-header">
+              <h5 class="modal-title">Unternehmer-Stammdaten</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-2">
+                <div class="col-md-6"><input class="form-control" name="company_name" placeholder="Firmenname *" required></div>
+                <div class="col-md-3"><input class="form-control" name="first_name" placeholder="Vorname"></div>
+                <div class="col-md-3"><input class="form-control" name="last_name" placeholder="Nachname"></div>
+                <div class="col-md-6"><input class="form-control" name="email" placeholder="E-Mail"></div>
+                <div class="col-md-6"><input class="form-control" name="email2" placeholder="E-Mail 2"></div>
+                <div class="col-md-5"><input class="form-control" name="street" placeholder="Straße"></div>
+                <div class="col-md-2"><input class="form-control" name="house_no" placeholder="Nr."></div>
+                <div class="col-md-2"><input class="form-control" name="postal_code" placeholder="PLZ"></div>
+                <div class="col-md-3"><input class="form-control" name="city" placeholder="Ort"></div>
+                <div class="col-md-6"><input class="form-control" name="phone" placeholder="Telefon"></div>
+                <div class="col-md-6"><input class="form-control" name="mobile" placeholder="Mobil"></div>
+                <div class="col-12 form-check ms-2 mt-2"><input class="form-check-input" type="checkbox" checked name="active" id="modalActive"><label class="form-check-label" for="modalActive">Aktiv</label></div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Abbrechen</button>
+              <button class="btn btn-outline-primary" type="submit">Speichern</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalComplaint" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <form method="post">
+            <input type="hidden" name="action" value="create_complaint">
+            <div class="modal-header">
+              <h5 class="modal-title">Neue Beschwerde</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-2">
+                <div class="col-md-2"><label class="form-label">Auftragsnr.</label><input class="form-control" name="order_number" id="create_order_number"><div id="createOrderDuplicateAlert" class="small mt-1"></div></div>
+                <div class="col-md-4"><label class="form-label">Fahrer</label>
+                  <input class="form-control form-control-sm mb-1" type="text" id="create_driver_search" placeholder="Displaynr., Fahrernr. oder Name suchen…">
+                  <select class="form-select" name="driver_id" id="create_driver_id" required>
+                    <option value="">Bitte wählen</option>
+                    <?php foreach ($drivers as $d): ?>
+                    <option value="<?= (int)$d['id'] ?>">Fahrer-Nr <?= htmlspecialchars((string)($d['driver_number'] ?? '-')) ?> · Display <?= htmlspecialchars((string)($d['display_number'] ?? '-')) ?> · <?= htmlspecialchars(trim(($d['first_name'] ?? '') . ' ' . ($d['last_name'] ?? ''))) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-md-3"><label class="form-label">Unternehmer</label>
+                  <select class="form-select" name="entrepreneur_id" id="create_entrepreneur_id">
+                    <option value="">—</option>
+                    <?php foreach ($entrepreneurs as $e): ?>
+                    <option value="<?= (int)$e['id'] ?>"><?= htmlspecialchars((string)$e['company_name']) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <div id="driverRepeatAlert" class="alert alert-secondary py-2 mb-2">Bitte Fahrer auswählen.</div>
+                  <div id="driverRecentComplaints" class="small text-muted"></div>
+                </div>
+                <div class="col-md-3"><label class="form-label">Maßnahme</label>
+                  <select class="form-select" name="action_type" id="actionTypeSelect">
+                    <option value="strafe">Strafe</option>
+                    <option value="kuendigung">Kündigung</option>
+                  </select>
+                </div>
+                <div class="col-md-3" id="penaltyAmountWrap"><label class="form-label">Strafhöhe</label>
+                  <select class="form-select" name="penalty_amount">
+                    <option value="50">50,00 €</option>
+                    <option value="100">100,00 €</option>
+                  </select>
+                </div>
+                <div class="col-md-3"><label class="form-label">Frist-/Kündigungsdatum</label><input type="date" class="form-control" name="due_date"></div>
+                <div class="col-md-3"><label class="form-label">Status</label>
+                  <select class="form-select" name="status"><option>neu</option><option>pruefen</option><option>in_pruefung</option><option>geschlossen</option></select>
+                </div>
+                <div class="col-12"><label class="form-label">Sachverhalt</label>
+                  <div class="row g-2 mb-2 d-none" id="create_smoking_fields">
+                    <div class="col-md-4"><input class="form-control" name="smoking_when" id="create_smoking_when" placeholder="Wann (z. B. 21.05.2024 gegen 10:15 Uhr)"></div>
+                    <div class="col-md-4"><input class="form-control" name="smoking_where" id="create_smoking_where" placeholder="Wo (z. B. Lützner Straße 179, 04179 Leipzig)"></div>
+                    <div class="col-md-4"><input class="form-control" name="smoking_vehicle" id="create_smoking_vehicle" placeholder="Fahrzeug (z. B. 857)"></div>
+                  </div>
+                  <div class="d-flex flex-wrap gap-1 mb-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary js-subject-template" data-target="create" data-text="Der Auftrag wurde angenommen, jedoch nicht ausgeführt.">Nicht abgeholt</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary js-subject-template" data-target="create" data-text="Der Fahrer ist verspätet am Abholort erschienen.">Verspätet</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary js-subject-template" data-target="create" data-text="Der Kunde meldete sich, da kein Fahrzeug erschienen ist.">Kein Fahrzeug erschienen</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary js-subject-template" data-target="create" data-text="Es erfolgte keine rechtzeitige Rückmeldung an die Zentrale.">Keine Rückmeldung an Zentrale</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger js-subject-template" data-target="create" data-smoking-template="1" data-text="Sie wurden am __.__.____ gegen __:__ Uhr rauchend im Taxi ____ an der ____________________ beim Rauchen im Fahrzeug gesehen.">Rauchen im Auto</button>
+                  </div>
+                  <textarea class="form-control" name="subject" id="create_subject" rows="4" required></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Abbrechen</button>
+              <button class="btn btn-success" type="submit">Anlegen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalEditComplaint" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <form method="post" id="editComplaintForm">
+            <input type="hidden" name="action" value="update_complaint">
+            <input type="hidden" name="complaint_id" id="edit_complaint_id">
+            <div class="modal-header">
+              <h5 class="modal-title">Beschwerde bearbeiten</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-2">
+                <div class="col-md-2"><label class="form-label">Auftragsnr.</label><input class="form-control" name="order_number" id="edit_order_number"><div id="editOrderDuplicateAlert" class="small mt-1"></div></div>
+                <div class="col-md-4"><label class="form-label">Fahrer</label>
+                  <input class="form-control form-control-sm mb-1" type="text" id="edit_driver_search" placeholder="Displaynr., Fahrernr. oder Name suchen…">
+                  <select class="form-select" name="driver_id" id="edit_driver_id" required>
+                    <option value="">Bitte wählen</option>
+                    <?php foreach ($drivers as $d): ?>
+                    <option value="<?= (int)$d['id'] ?>">Fahrer-Nr <?= htmlspecialchars((string)($d['driver_number'] ?? '-')) ?> · Display <?= htmlspecialchars((string)($d['display_number'] ?? '-')) ?> · <?= htmlspecialchars(trim(($d['first_name'] ?? '') . ' ' . ($d['last_name'] ?? ''))) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-md-3"><label class="form-label">Unternehmer</label>
+                  <select class="form-select" name="entrepreneur_id" id="edit_entrepreneur_id">
+                    <option value="">—</option>
+                    <?php foreach ($entrepreneurs as $e): ?>
+                    <option value="<?= (int)$e['id'] ?>"><?= htmlspecialchars((string)$e['company_name']) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <div id="editDriverRepeatAlert" class="alert alert-secondary py-2 mb-2">Bitte Fahrer auswählen.</div>
+                  <div id="editDriverRecentComplaints" class="small text-muted"></div>
+                </div>
+                <div class="col-md-4"><label class="form-label">Erfasst von</label><input class="form-control" id="edit_intake_employee_code" readonly></div>
+                <div class="col-md-3"><label class="form-label">Maßnahme</label>
+                  <select class="form-select" name="action_type" id="edit_action_type">
+                    <option value="strafe">Strafe</option>
+                    <option value="kuendigung">Kündigung</option>
+                  </select>
+                </div>
+                <div class="col-md-3" id="edit_penalty_wrap"><label class="form-label">Strafhöhe</label>
+                  <select class="form-select" name="penalty_amount" id="edit_penalty_amount">
+                    <option value="50">50,00 €</option>
+                    <option value="100">100,00 €</option>
+                  </select>
+                </div>
+                <div class="col-md-3"><label class="form-label">Frist-/Kündigungsdatum</label><input type="date" class="form-control" name="due_date" id="edit_due_date"></div>
+                <div class="col-md-3"><label class="form-label">Status</label>
+                  <select class="form-select" name="status" id="edit_status"><option value="neu">neu</option><option value="pruefen">pruefen</option><option value="in_pruefung">in_pruefung</option><option value="geschlossen">geschlossen</option></select>
+                </div>
+                <div class="col-12"><label class="form-label">Sachverhalt</label>
+                  <div class="row g-2 mb-2 d-none" id="edit_smoking_fields">
+                    <div class="col-md-4"><input class="form-control" name="smoking_when" id="edit_smoking_when" placeholder="Wann (z. B. 21.05.2024 gegen 10:15 Uhr)"></div>
+                    <div class="col-md-4"><input class="form-control" name="smoking_where" id="edit_smoking_where" placeholder="Wo (z. B. Lützner Straße 179, 04179 Leipzig)"></div>
+                    <div class="col-md-4"><input class="form-control" name="smoking_vehicle" id="edit_smoking_vehicle" placeholder="Fahrzeug (z. B. 857)"></div>
+                  </div>
+                  <div class="d-flex flex-wrap gap-1 mb-1">
+                    <button type="button" class="btn btn-sm btn-outline-secondary js-subject-template" data-target="edit" data-text="Der Auftrag wurde angenommen, jedoch nicht ausgeführt.">Nicht abgeholt</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary js-subject-template" data-target="edit" data-text="Der Fahrer ist verspätet am Abholort erschienen.">Verspätet</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary js-subject-template" data-target="edit" data-text="Der Kunde meldete sich, da kein Fahrzeug erschienen ist.">Kein Fahrzeug erschienen</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary js-subject-template" data-target="edit" data-text="Es erfolgte keine rechtzeitige Rückmeldung an die Zentrale.">Keine Rückmeldung an Zentrale</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger js-subject-template" data-target="edit" data-smoking-template="1" data-text="Sie wurden am __.__.____ gegen __:__ Uhr rauchend im Taxi ____ an der ____________________ beim Rauchen im Fahrzeug gesehen.">Rauchen im Auto</button>
+                  </div>
+                  <textarea class="form-control" name="subject" id="edit_subject" rows="5" required></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Abbrechen</button>
+              <button class="btn btn-primary" type="submit">Speichern</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <div class="row g-3 align-items-start">
+        <div class="col-lg-8">
+            <div class="card"><div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                    <h2 class="h5 mb-0">Beschwerden</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-sm <?= $statusFilter === '' ? 'btn-secondary' : 'btn-outline-secondary' ?>" href="complaints_management.php<?= $paymentFilter !== '' ? ('?payment_filter=' . urlencode($paymentFilter)) : '' ?>">Alle</a>
+                        <a class="btn btn-sm <?= $statusFilter === 'pruefen' ? 'btn-warning' : 'btn-outline-warning' ?>" href="?<?= htmlspecialchars(http_build_query(array_filter(['status_filter' => 'pruefen', 'payment_filter' => $paymentFilter ?: null])), ENT_QUOTES, 'UTF-8') ?>">prüfen</a>
+                        <a class="btn btn-sm <?= $statusFilter === 'neu' ? 'btn-dark' : 'btn-outline-dark' ?>" href="?<?= htmlspecialchars(http_build_query(array_filter(['status_filter' => 'neu', 'payment_filter' => $paymentFilter ?: null])), ENT_QUOTES, 'UTF-8') ?>">neu</a>
+                        <a class="btn btn-sm <?= $statusFilter === 'in_pruefung' ? 'btn-primary' : 'btn-outline-primary' ?>" href="?<?= htmlspecialchars(http_build_query(array_filter(['status_filter' => 'in_pruefung', 'payment_filter' => $paymentFilter ?: null])), ENT_QUOTES, 'UTF-8') ?>">warte auf Zahlung</a>
+                        <a class="btn btn-sm <?= $statusFilter === 'geschlossen' ? 'btn-success' : 'btn-outline-success' ?>" href="?<?= htmlspecialchars(http_build_query(array_filter(['status_filter' => 'geschlossen', 'payment_filter' => $paymentFilter ?: null])), ENT_QUOTES, 'UTF-8') ?>">geschlossen</a>
+                        <?php if ($statusFilter === 'geschlossen'): ?>
+                            <a class="btn btn-sm <?= $paymentFilter === 'paid' ? 'btn-success' : 'btn-outline-success' ?>" href="?<?= htmlspecialchars(http_build_query(array_filter(['status_filter' => 'geschlossen', 'payment_filter' => 'paid'])), ENT_QUOTES, 'UTF-8') ?>">gezahlt</a>
+                            <a class="btn btn-sm <?= $paymentFilter === 'unpaid' ? 'btn-danger' : 'btn-outline-danger' ?>" href="?<?= htmlspecialchars(http_build_query(array_filter(['status_filter' => 'geschlossen', 'payment_filter' => 'unpaid'])), ENT_QUOTES, 'UTF-8') ?>">nicht gezahlt</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <form method="get" class="row g-2 mb-2">
+                    <?php if ($statusFilter !== ''): ?>
+                        <input type="hidden" name="status_filter" value="<?= htmlspecialchars($statusFilter, ENT_QUOTES, 'UTF-8') ?>">
+                    <?php endif; ?>
+                    <?php if ($paymentFilter !== ''): ?>
+                        <input type="hidden" name="payment_filter" value="<?= htmlspecialchars($paymentFilter, ENT_QUOTES, 'UTF-8') ?>">
+                    <?php endif; ?>
+                    <div class="col-md-5">
+                        <input class="form-control form-control-sm" type="text" name="driver_search" value="<?= htmlspecialchars($driverSearch, ENT_QUOTES, 'UTF-8') ?>" placeholder="Suche nach Fahrername, Fahrer-Nr oder Displaynummer">
+                    </div>
+                    <div class="col-md-2 d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" type="submit">Suchen</button>
+                        <a class="btn btn-sm btn-outline-secondary" href="?<?= htmlspecialchars(http_build_query(array_filter(['status_filter' => $statusFilter ?: null, 'payment_filter' => $paymentFilter ?: null])), ENT_QUOTES, 'UTF-8') ?>">Reset</a>
+                    </div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle">
+                        <thead><tr><th>ID</th><th>Auftrag</th><th>Fahrer</th><th>Maßnahme/Frist</th><th>Status</th><th>Zahlung</th><th>Unternehmer</th><th>Sachverhalt</th><th>Datum</th></tr></thead>
+                        <tbody>
+                        <?php foreach ($complaints as $c): ?>
+                            <tr class="js-complaint-row" style="cursor:pointer;" title="Doppelklick zum Bearbeiten"
+                                data-id="<?= (int)$c['id'] ?>"
+                                data-order-number="<?= htmlspecialchars((string)$c['order_number'], ENT_QUOTES, 'UTF-8') ?>"
+                                data-driver-id="<?= (int)($c['driver_id'] ?? 0) ?>"
+                                data-entrepreneur-id="<?= (int)($c['entrepreneur_id'] ?? 0) ?>"
+                                data-action-type="<?= htmlspecialchars((string)($c['action_type'] ?? 'strafe'), ENT_QUOTES, 'UTF-8') ?>"
+                                data-penalty-amount="<?= htmlspecialchars((string)($c['penalty_amount'] ?? '50'), ENT_QUOTES, 'UTF-8') ?>"
+                                data-due-date="<?= htmlspecialchars((string)($c['due_date'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                data-status="<?= htmlspecialchars((string)($c['status'] ?? 'neu'), ENT_QUOTES, 'UTF-8') ?>"
+                                data-intake-employee-code="<?= htmlspecialchars((string)($c['intake_employee_code'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
+                                data-subject="<?= htmlspecialchars((string)$c['subject'], ENT_QUOTES, 'UTF-8') ?>">
+                                <td><?= (int)$c['id'] ?></td>
+                                <td><?= htmlspecialchars((string)$c['order_number']) ?></td>
+                                <td><?= htmlspecialchars(trim((string)($c['first_name'] ?? '') . ' ' . (string)($c['last_name'] ?? ''))) ?><br><small>Fahrer-Nr <?= htmlspecialchars((string)($c['driver_number'] ?? '-')) ?> · Display <?= htmlspecialchars((string)($c['display_number'] ?? '-')) ?></small></td>
+                                <td>
+                                    <?= htmlspecialchars((string)($c['action_type'] ?? 'strafe')) ?>
+                                    <?php if ((string)($c['action_type'] ?? '') === 'strafe' && !empty($c['penalty_amount'])): ?>
+                                        <br><small>Strafe: <?= htmlspecialchars((string)$c['penalty_amount']) ?>,00 €</small>
+                                    <?php endif; ?>
+                                    <br><small>Frist: <?php if (!empty($c['due_date'])) { $tsDue = strtotime((string)$c['due_date']); echo htmlspecialchars($tsDue ? date('d.m.Y', $tsDue) : (string)$c['due_date']); } else { echo '-'; } ?></small>
+                                </td>
+                                <td>
+                                    <?php $statusVal = (string)($c['status'] ?? 'neu'); ?>
+                                    <?php if ($statusVal === 'pruefen'): ?>
+                                        <span class="badge text-bg-warning">prüfen</span>
+                                    <?php elseif ($statusVal === 'in_pruefung'): ?>
+                                        <span class="badge bg-primary">warten auf Zahlung</span>
+                                    <?php elseif ($statusVal === 'geschlossen' && (int)($c['no_misconduct'] ?? 0) === 1): ?>
+                                        <span class="badge bg-secondary">abgeschlossen · kein Fehlverhalten</span>
+                                    <?php elseif ($statusVal === 'geschlossen' && (int)($c['fine_paid'] ?? -1) === 1): ?>
+                                        <span class="badge bg-success">abgeschlossen</span>
+                                    <?php elseif ($statusVal === 'geschlossen' && (int)($c['fine_paid'] ?? -1) === 0): ?>
+                                        <span class="badge bg-danger">abgeschlossen</span>
+                                    <?php elseif ($statusVal === 'geschlossen'): ?>
+                                        <span class="badge bg-success">abgeschlossen</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary">neu</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if ((int)($c['fine_paid'] ?? -1) === 1): ?>
+                                        <span class="badge bg-success">gezahlt</span>
+                                    <?php elseif ((int)($c['fine_paid'] ?? -1) === 0): ?>
+                                        <span class="badge bg-danger">nicht gezahlt</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary">offen</span>
+                                    <?php endif; ?>
+                                    <?php if ($canManage): ?>
+                                        <form method="post" class="mt-1 d-flex gap-1 flex-wrap">
+                                            <input type="hidden" name="action" value="set_fine_payment">
+                                            <input type="hidden" name="complaint_id" value="<?= (int)$c['id'] ?>">
+                                            <button class="btn btn-sm btn-outline-success" name="fine_paid" value="1" type="submit">Gezahlt</button>
+                                            <button class="btn btn-sm btn-outline-danger" name="fine_paid" value="0" type="submit">Nicht gezahlt</button>
+                                        </form>
+                                        <?php if ((string)($c['status'] ?? '') === 'pruefen' || (string)($c['status'] ?? '') === 'neu' || (string)($c['status'] ?? '') === 'in_pruefung'): ?>
+                                        <form method="post" class="mt-1 d-flex gap-1 flex-wrap">
+                                            <input type="hidden" name="action" value="set_no_misconduct">
+                                            <input type="hidden" name="complaint_id" value="<?= (int)$c['id'] ?>">
+                                            <button class="btn btn-sm btn-outline-secondary" type="submit">Kein Fehlverhalten</button>
+                                        </form>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars((string)($c['company_name'] ?? '-')) ?></td>
+                                <td style="max-width:420px; white-space:pre-wrap; word-break:break-word;"><?= nl2br(htmlspecialchars((string)$c['subject'])) ?></td>
+                                <td><?= htmlspecialchars((string)$c['created_at']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php if ($totalPages > 1): ?>
+                <nav class="mt-2">
+                    <ul class="pagination pagination-sm mb-0">
+                        <?php for ($p = 1; $p <= $totalPages; $p++): ?>
+                            <?php $qs = http_build_query(array_filter(['status_filter' => $statusFilter ?: null, 'payment_filter' => $paymentFilter ?: null, 'driver_search' => $driverSearch ?: null, 'page' => $p])); ?>
+                            <li class="page-item <?= $p === $page ? 'active' : '' ?>">
+                                <a class="page-link" href="?<?= htmlspecialchars($qs, ENT_QUOTES, 'UTF-8') ?>"><?= $p ?></a>
+                            </li>
+                        <?php endfor; ?>
+                    </ul>
+                </nav>
+                <?php endif; ?>
+            </div></div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card"><div class="card-body">
+                <h2 class="h5">Beschwerden pro Fahrer</h2>
+                <ul class="list-group list-group-flush">
+                    <?php foreach ($stats as $s): ?>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Display <?= htmlspecialchars((string)$s['display_number']) ?> · <?= htmlspecialchars(trim((string)($s['first_name'] ?? '') . ' ' . (string)($s['last_name'] ?? ''))) ?></span>
+                        <span class="badge bg-secondary">offen <?= (int)$s['open_count'] ?> / gesamt <?= (int)$s['total_count'] ?></span>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="card mt-3"><div class="card-body">
+        <h2 class="h5">Brief-Vorschau (DIN 5008)</h2>
+        <form method="post" class="row g-2" id="letterForm">
+            <input type="hidden" name="action" id="letterAction" value="build_letter">
+            <input type="hidden" name="template" value="">
+            <input type="hidden" name="extra_text" value="">
+            <div class="col-md-6">
+                <label class="form-label">Beschwerde</label>
+                <select class="form-select" name="complaint_id" required>
+                    <option value="">Bitte wählen</option>
+                    <?php foreach ($complaints as $c): ?>
+                    <option value="<?= (int)$c['id'] ?>" <?= $lastComplaintId === (int)$c['id'] ? 'selected' : '' ?>>#<?= (int)$c['id'] ?> · Auftrag <?= htmlspecialchars((string)$c['order_number']) ?> · <?= htmlspecialchars(trim((string)($c['first_name'] ?? '') . ' ' . (string)($c['last_name'] ?? ''))) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-2 align-self-end"><button class="btn btn-outline-dark w-100" type="submit">Vorschau</button></div>
+        </form>
+
+        <?php if ($letterOutput !== ''): ?>
+        <div class="mt-2 d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-secondary" onclick="openPreviewPdf()">Vorschau als PDF öffnen</button>
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('letterAction').value='send_letter_email'; document.getElementById('letterForm').submit();">E-Mail an Unternehmer senden</button>
+        </div>
+        <div class="mt-3 p-4 border bg-light" style="max-width: 210mm; min-height: 297mm; margin:auto;">
+            <div style="margin-top:45mm; white-space: pre-wrap;"><?= $letterOutput ?></div>
+        </div>
+        <?php endif; ?>
+    </div></div>
+</main>
+<style>
+/* complaints page only */
+main.container.py-4 .card { border: 1px solid #e9ecef; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+main.container.py-4 .row.g-3.align-items-start > [class*='col-'] { align-self: flex-start; }
+main.container.py-4 .col-lg-4 .card { height: auto !important; }
+main.container.py-4 .col-lg-8 .card { height: auto !important; }
+main.container.py-4 .card, main.container.py-4 .card-body { min-height: 0 !important; }
+main.container.py-4 .card .card-body { padding: 1rem 1rem; }
+main.container.py-4 .h5 { font-weight: 700; }
+main.container.py-4 .table { --bs-table-striped-bg: #fafbfc; }
+main.container.py-4 .table-responsive { height: auto !important; min-height: 0 !important; max-height: none !important; overflow-y: visible !important; }
+main.container.py-4 .table { margin-bottom: .5rem; }
+main.container.py-4 div.dataTables_scrollBody,
+main.container.py-4 .dataTables_wrapper .dataTables_scrollBody {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow-y: visible !important;
+}
+main.container.py-4 .dataTables_wrapper .dataTables_scroll {
+  margin-bottom: .5rem;
+}
+main.container.py-4 .dataTables_wrapper {
+  margin-bottom: 0 !important;
+}
+main.container.py-4 .table thead th { position: sticky; top: 0; background: #fff; z-index: 2; border-bottom-width: 2px; }
+main.container.py-4 .table td, main.container.py-4 .table th { vertical-align: middle; padding-top: .65rem; padding-bottom: .65rem; }
+main.container.py-4 .js-complaint-row:hover { background: #f8fbff; }
+main.container.py-4 .badge { font-weight: 600; letter-spacing: .1px; }
+main.container.py-4 .alert { border-radius: 10px; }
+main.container.py-4 .modal-content { border: 0; border-radius: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.18); }
+main.container.py-4 .modal-header { border-bottom: 1px solid #eef1f4; background: #fafcff; }
+main.container.py-4 .modal-footer { border-top: 1px solid #eef1f4; background: #fcfdff; }
+main.container.py-4 .form-label { font-weight: 600; margin-bottom: .3rem; }
+main.container.py-4 .form-control, main.container.py-4 .form-select { border-radius: 10px; }
+main.container.py-4 .btn { border-radius: 10px; }
+main.container.py-4 .js-subject-template { border-radius: 999px; }
+main.container.py-4 .quick-kpis { display:flex; gap:.5rem; flex-wrap:wrap; margin:.3rem 0 .8rem; }
+main.container.py-4 .quick-kpis .chip { padding:.35rem .65rem; border-radius:999px; font-size:.82rem; font-weight:600; border:1px solid #e9ecef; background:#fff; }
+main.container.py-4 .quick-kpis .chip.warn { background:#fff8e1; border-color:#ffe08a; }
+main.container.py-4 .quick-kpis .chip.ok { background:#eafaf0; border-color:#b9ebc9; }
+main.container.py-4 .quick-kpis .chip.info { background:#eaf3ff; border-color:#bfd8ff; }
+</style>
+<script>
+(function () {
+  const actionType = document.getElementById('actionTypeSelect');
+  const penaltyWrap = document.getElementById('penaltyAmountWrap');
+  const syncPenaltyVisibility = () => {
+    if (!actionType || !penaltyWrap) return;
+    penaltyWrap.style.display = actionType.value === 'strafe' ? '' : 'none';
+  };
+  if (actionType) {
+    actionType.addEventListener('change', syncPenaltyVisibility);
+    syncPenaltyVisibility();
+  }
+
+  const driverMeta = <?= json_encode($driverComplaintMeta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+  const orderLookup = <?= json_encode($orderLookup, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+  const createOrderNumber = document.getElementById('create_order_number');
+  const createOrderDuplicateAlert = document.getElementById('createOrderDuplicateAlert');
+  const createDriverSearch = document.getElementById('create_driver_search');
+  const createDriverSelect = document.getElementById('create_driver_id');
+  const createEntrepreneurSelect = document.getElementById('create_entrepreneur_id');
+  const repeatAlert = document.getElementById('driverRepeatAlert');
+  const recentWrap = document.getElementById('driverRecentComplaints');
+
+  const editOrderNumber = document.getElementById('edit_order_number');
+  const editOrderDuplicateAlert = document.getElementById('editOrderDuplicateAlert');
+  const editDriverSearch = document.getElementById('edit_driver_search');
+  const editDriverSelect = document.getElementById('edit_driver_id');
+  const editEntrepreneurSelect = document.getElementById('edit_entrepreneur_id');
+  const editRepeatAlert = document.getElementById('editDriverRepeatAlert');
+  const editRecentWrap = document.getElementById('editDriverRecentComplaints');
+
+  const checkOrderDuplicate = (inputEl, alertEl, currentComplaintId = null) => {
+    if (!inputEl || !alertEl) return;
+    const key = (inputEl.value || '').trim();
+    if (!key) {
+      alertEl.className = 'small mt-1 text-muted';
+      alertEl.textContent = '';
+      return;
+    }
+    const foundId = orderLookup[key];
+    if (foundId && String(foundId) !== String(currentComplaintId || '')) {
+      alertEl.className = 'small mt-1 text-danger';
+      alertEl.textContent = `⚠️ Auftrag bereits vorhanden als Beschwerde #${foundId}`;
+    } else {
+      alertEl.className = 'small mt-1 text-success';
+      alertEl.textContent = '✓ Keine doppelte Auftragsnummer gefunden';
+    }
+  };
+
+  const renderTimeline = (meta) => {
+    const recent = Array.isArray(meta?.recent) ? meta.recent : [];
+    if (!recent.length) return '';
+
+    const getStatusView = (r) => {
+      const status = String(r.status || '');
+      const noMisconduct = Number(r.no_misconduct || 0) === 1;
+      const finePaid = r.fine_paid === null || r.fine_paid === undefined || r.fine_paid === '' ? null : Number(r.fine_paid);
+
+      if (status === 'geschlossen' && noMisconduct) {
+        return { label: 'abgeschlossen · kein Fehlverhalten', cls: 'text-success fw-semibold' };
+      }
+      if (status === 'geschlossen' && finePaid === 1) {
+        return { label: 'abgeschlossen · bezahlt', cls: 'text-success fw-semibold' };
+      }
+      if (status === 'geschlossen' && finePaid === 0) {
+        return { label: 'abgeschlossen · Strafe offen', cls: 'text-danger fw-semibold' };
+      }
+      if (status === 'in_pruefung') {
+        return { label: 'warte auf Zahlung', cls: 'text-primary fw-semibold' };
+      }
+      if (status === 'pruefen') {
+        return { label: 'prüfen', cls: 'text-warning fw-semibold' };
+      }
+      return { label: status || 'neu', cls: 'text-secondary fw-semibold' };
+    };
+
+    const rows = recent.map((r) => {
+      const dt = (r.created_at || '').slice(0, 10);
+      const actionBase = r.action_type || '-';
+      const penalty = r.penalty_amount === null || r.penalty_amount === undefined || r.penalty_amount === '' ? null : Number(r.penalty_amount);
+      const action = actionBase === 'strafe' && Number.isFinite(penalty)
+        ? `strafe (${penalty.toFixed(2).replace('.', ',')} €)`
+        : actionBase;
+      const company = r.company_name || '-';
+      const statusView = getStatusView(r);
+      return `<div class="border-start ps-2 mb-1">${dt} · Status: <span class="${statusView.cls}">${statusView.label}</span> · Maßnahme: ${action} · Unternehmer: ${company}</div>`;
+    }).join('');
+
+    return `<div class="fw-semibold mb-1">Chronik (letzte Fälle):</div>${rows}`;
+  };
+
+  const filterDriverOptions = (searchInput, selectEl) => {
+    if (!searchInput || !selectEl) return;
+    const q = (searchInput.value || '').toLowerCase().trim();
+    Array.from(selectEl.options).forEach((opt, idx) => {
+      if (idx === 0) {
+        opt.hidden = false;
+        return;
+      }
+      const txt = (opt.textContent || '').toLowerCase();
+      opt.hidden = q !== '' && !txt.includes(q);
+    });
+  };
+
+  const applyDriverComplaintMetaFor = (driverSelect, entrepreneurSelect, alertEl, recentEl) => {
+    if (!driverSelect || !alertEl || !recentEl) return;
+    const driverId = driverSelect.value || '';
+    const meta = driverMeta[driverId];
+    if (!driverId || !meta) {
+      alertEl.className = 'alert alert-secondary py-2 mb-2';
+      alertEl.textContent = 'Keine frühere Beschwerde gefunden.';
+      recentEl.innerHTML = '';
+      return;
+    }
+
+    const count = Number(meta.count || 0);
+    if (count >= 2) {
+      alertEl.className = 'alert alert-danger py-2 mb-2';
+      alertEl.textContent = `⚠️ Wiederholte Beschwerden: ${count}`;
+    } else if (count === 1) {
+      alertEl.className = 'alert alert-warning py-2 mb-2';
+      alertEl.textContent = 'Hinweis: 1 frühere Beschwerde';
+    } else {
+      alertEl.className = 'alert alert-success py-2 mb-2';
+      alertEl.textContent = 'Keine frühere Beschwerde gefunden.';
+    }
+
+    if (entrepreneurSelect && (!entrepreneurSelect.value || entrepreneurSelect.value === '') && meta.latest_entrepreneur_id) {
+      entrepreneurSelect.value = String(meta.latest_entrepreneur_id);
+    }
+
+    const recent = Array.isArray(meta.recent) ? meta.recent : [];
+    if (!recent.length) {
+      recentEl.innerHTML = '';
+      return;
+    }
+
+    recentEl.innerHTML = renderTimeline(meta);
+  };
+
+  if (createDriverSearch && createDriverSelect) {
+    createDriverSearch.addEventListener('input', () => filterDriverOptions(createDriverSearch, createDriverSelect));
+  }
+  if (editDriverSearch && editDriverSelect) {
+    editDriverSearch.addEventListener('input', () => filterDriverOptions(editDriverSearch, editDriverSelect));
+  }
+  if (createOrderNumber && createOrderDuplicateAlert) {
+    createOrderNumber.addEventListener('input', () => checkOrderDuplicate(createOrderNumber, createOrderDuplicateAlert));
+  }
+  if (editOrderNumber && editOrderDuplicateAlert) {
+    editOrderNumber.addEventListener('input', () => {
+      const currentId = document.getElementById('edit_complaint_id')?.value || null;
+      checkOrderDuplicate(editOrderNumber, editOrderDuplicateAlert, currentId);
+    });
+  }
+
+  const setSmokingFieldsVisible = (target, visible) => {
+    const wrap = document.getElementById(target === 'edit' ? 'edit_smoking_fields' : 'create_smoking_fields');
+    if (!wrap) return;
+    wrap.classList.toggle('d-none', !visible);
+  };
+
+  document.querySelectorAll('.js-subject-template').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+      const txt = btn.dataset.text || '';
+      const isSmoking = btn.dataset.smokingTemplate === '1';
+      const ta = document.getElementById(target === 'edit' ? 'edit_subject' : 'create_subject');
+      if (!ta) return;
+      if (ta.value.trim() === '') ta.value = txt;
+      else ta.value = `${ta.value.trim()}\n${txt}`;
+      setSmokingFieldsVisible(target, isSmoking);
+      ta.focus();
+    });
+  });
+
+  if (createDriverSelect) {
+    createDriverSelect.addEventListener('change', () => applyDriverComplaintMetaFor(createDriverSelect, createEntrepreneurSelect, repeatAlert, recentWrap));
+    applyDriverComplaintMetaFor(createDriverSelect, createEntrepreneurSelect, repeatAlert, recentWrap);
+  }
+  if (editDriverSelect) {
+    editDriverSelect.addEventListener('change', () => applyDriverComplaintMetaFor(editDriverSelect, editEntrepreneurSelect, editRepeatAlert, editRecentWrap));
+  }
+
+  const editActionType = document.getElementById('edit_action_type');
+  const editPenaltyWrap = document.getElementById('edit_penalty_wrap');
+  const syncEditPenaltyVisibility = () => {
+    if (!editActionType || !editPenaltyWrap) return;
+    editPenaltyWrap.style.display = editActionType.value === 'strafe' ? '' : 'none';
+  };
+  if (editActionType) {
+    editActionType.addEventListener('change', syncEditPenaltyVisibility);
+  }
+
+  const editModalEl = document.getElementById('modalEditComplaint');
+  const editModal = (editModalEl && window.bootstrap) ? new bootstrap.Modal(editModalEl) : null;
+  document.querySelectorAll('.js-complaint-row').forEach((row) => {
+    row.addEventListener('dblclick', () => {
+      if (!editModal) return;
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val ?? '';
+      };
+      setVal('edit_complaint_id', row.dataset.id || '');
+      setVal('edit_order_number', row.dataset.orderNumber || '');
+      setVal('edit_driver_id', row.dataset.driverId || '');
+      setVal('edit_entrepreneur_id', row.dataset.entrepreneurId || '');
+      setVal('edit_action_type', row.dataset.actionType || 'strafe');
+      setVal('edit_penalty_amount', row.dataset.penaltyAmount || '50');
+      setVal('edit_due_date', row.dataset.dueDate || '');
+      setVal('edit_status', row.dataset.status || 'neu');
+      setVal('edit_intake_employee_code', row.dataset.intakeEmployeeCode || '-');
+      setVal('edit_subject', row.dataset.subject || '');
+      setSmokingFieldsVisible('edit', (row.dataset.subject || '').toLowerCase().includes('rauch'));
+      if (editDriverSearch) editDriverSearch.value = '';
+      if (editDriverSearch && editDriverSelect) filterDriverOptions(editDriverSearch, editDriverSelect);
+      applyDriverComplaintMetaFor(editDriverSelect, editEntrepreneurSelect, editRepeatAlert, editRecentWrap);
+      checkOrderDuplicate(editOrderNumber, editOrderDuplicateAlert, row.dataset.id || null);
+      syncEditPenaltyVisibility();
+      editModal.show();
+    });
+  });
+})();
+
+function openPreviewPdf() {
+  const form = document.getElementById('letterForm');
+  const action = document.getElementById('letterAction');
+  const oldAction = action.value;
+  const oldTarget = form.target;
+  action.value = 'preview_letter_pdf';
+  form.target = '_blank';
+  form.submit();
+  action.value = oldAction;
+  form.target = oldTarget;
+}
+</script>
+</body></html>

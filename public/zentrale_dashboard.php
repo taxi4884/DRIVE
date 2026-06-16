@@ -1,0 +1,446 @@
+<?php
+// zentrale_dashboard.php
+
+require_once '../includes/bootstrap.php';
+require_once '../includes/date_utils.php';
+require_once 'modals/process_abwesenheit.php';
+
+if (!function_exists('tableHasColumn')) {
+    /**
+     * Prüft, ob eine bestimmte Spalte in einer Tabelle existiert.
+     */
+    function tableHasColumn(PDO $pdo, string $table, string $column): bool
+    {
+        $table = preg_replace('/[^a-zA-Z0-9_]/', '', $table);
+        $stmt = $pdo->prepare("SHOW COLUMNS FROM `{$table}` LIKE :column");
+        $stmt->execute(['column' => $column]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
+    }
+}
+
+// PHP-Fehleranzeige aktivieren
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Monat und Jahr aus GET-Parametern oder Standardwerte verwenden
+$currentMonth = isset($_GET['month']) ? $_GET['month'] : date('m');
+$currentYear = isset($_GET['year']) ? $_GET['year'] : date('Y');
+$start_date = "$currentYear-$currentMonth-01";
+$end_date = date('Y-m-t', strtotime($start_date));
+
+// Mitarbeiter abrufen, sortiert nach Nachnamen
+$stmt = $pdo->prepare("SELECT vorname, nachname, mitarbeiter_id FROM mitarbeiter_zentrale WHERE status = 'Aktiv' ORDER BY nachname ASC");
+$stmt->execute();
+$mitarbeiter = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Wochentage für den aktuellen Monat vorbereiten
+$dates = [];
+for ($day = 1; $day <= date('t', strtotime($start_date)); $day++) {
+    $timestamp = strtotime("$currentYear-$currentMonth-$day");
+    $dates[] = [
+        'day' => $day,
+        'isWeekend' => in_array(date('N', $timestamp), [6, 7]), // Samstag oder Sonntag
+        'date' => date('Y-m-d', $timestamp),
+    ];
+}
+
+// Abwesenheiten abrufen
+$abwesenheitenStmt = $pdo->prepare("SELECT mitarbeiter_id, typ, startdatum, enddatum FROM abwesenheiten_zentrale WHERE startdatum <= :end_date AND enddatum >= :start_date");
+$abwesenheitenStmt->execute(['start_date' => $start_date, 'end_date' => $end_date]);
+$abwesenheiten = $abwesenheitenStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Vorheriger und nächster Monat berechnen
+$prevMonth = date('m', strtotime('-1 month', strtotime($start_date)));
+$prevYear = date('Y', strtotime('-1 month', strtotime($start_date)));
+$nextMonth = date('m', strtotime('+1 month', strtotime($start_date)));
+$nextYear = date('Y', strtotime('+1 month', strtotime($start_date)));
+
+// Deutsche Monatsnamen
+setlocale(LC_TIME, 'de_DE.UTF-8');
+$formatter = new IntlDateFormatter('de_DE', IntlDateFormatter::LONG, IntlDateFormatter::NONE);
+$formatter->setPattern('MMMM yyyy');
+
+
+// Schichten aus dem Dienstplan abrufen
+$stmt = $pdo->prepare("
+    SELECT dp.mitarbeiter_id, dp.datum, s.name AS schicht_name
+    FROM dienstplan dp
+    LEFT JOIN schichten s ON dp.schicht_id = s.schicht_id
+    WHERE dp.datum BETWEEN :start_date AND :end_date
+");
+$stmt->execute(['start_date' => $start_date, 'end_date' => $end_date]);
+$dienstplan = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Dienstplan als assoziatives Array strukturieren
+$dienstplanMap = [];
+foreach ($dienstplan as $entry) {
+    $dienstplanMap[$entry['mitarbeiter_id']][$entry['datum']] = $entry['schicht_name'];
+}
+
+$hasZentraleBirthdateColumn = tableHasColumn($pdo, 'mitarbeiter_zentrale', 'geburtsdatum');
+$birthdays = [];
+$birthdaysError = null;
+
+if ($hasZentraleBirthdateColumn) {
+    try {
+        $birthdaysStmt = $pdo->prepare("
+            SELECT vorname, nachname, geburtsdatum, DATE_FORMAT(geburtsdatum, '%d.%m.') AS geburtstag
+            FROM mitarbeiter_zentrale
+            WHERE geburtsdatum IS NOT NULL
+              AND status = 'Aktiv'
+            ORDER BY MONTH(geburtsdatum), DAY(geburtsdatum)
+        ");
+        $birthdaysStmt->execute();
+        $birthdays = $birthdaysStmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        $birthdaysError = $e->getMessage();
+    }
+} else {
+    $birthdaysError = 'Spalte "geburtsdatum" existiert nicht in mitarbeiter_zentrale.';
+}
+
+function calculateAge($birthdate, $onDate) {
+    $birthDate = new DateTime($birthdate);
+    $referenceDate = new DateTime($onDate);
+    return $referenceDate->diff($birthDate)->y;
+}
+
+if (empty($birthdaysError) && !empty($birthdays)) {
+    foreach ($birthdays as &$birthday) {
+        $currentYear = date('Y');
+        // Nächstes Geburtstagsdatum im aktuellen Jahr berechnen
+        $birthdayDateThisYear = date("$currentYear-m-d", strtotime($birthday['geburtsdatum']));
+        $birthday['new_age'] = calculateAge($birthday['geburtsdatum'], $birthdayDateThisYear);
+    }
+    unset($birthday); // Referenz zurücksetzen
+}
+
+// Urlaube abfragen und gruppieren
+$birthdateSelect = $hasZentraleBirthdateColumn
+    ? 'mz.geburtsdatum AS geburtsdatum'
+    : 'NULL AS geburtsdatum';
+
+$upcomingVacationsStmt = $pdo->prepare("
+    SELECT mz.mitarbeiter_id, mz.vorname, mz.nachname, {$birthdateSelect}, az.startdatum, az.enddatum
+    FROM abwesenheiten_zentrale az
+    JOIN mitarbeiter_zentrale mz ON az.mitarbeiter_id = mz.mitarbeiter_id
+    WHERE az.typ = 'Urlaub'
+    AND az.startdatum BETWEEN CURDATE() AND CURDATE() + INTERVAL 3 MONTH
+    AND mz.status = 'Aktiv'
+    ORDER BY mz.mitarbeiter_id, az.startdatum
+");
+$upcomingVacationsStmt->execute();
+$upcomingVacations = $upcomingVacationsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Gruppierung vorbereiten
+$groupedVacations = [];
+$currentVacation = null;
+
+foreach ($upcomingVacations as $vacation) {
+    $start = $vacation['startdatum'];
+    $end = $vacation['enddatum'];
+
+    if (!$currentVacation) {
+        $currentVacation = [
+            'mitarbeiter_id' => $vacation['mitarbeiter_id'],
+            'vorname' => $vacation['vorname'],
+            'nachname' => $vacation['nachname'],
+            'geburtsdatum' => $vacation['geburtsdatum'],
+            'startdatum' => $start,
+            'enddatum' => $end
+        ];
+    } else {
+        if (
+            $currentVacation['mitarbeiter_id'] === $vacation['mitarbeiter_id'] &&
+            $currentVacation['enddatum'] >= date('Y-m-d', strtotime($start . ' -1 day'))
+        ) {
+            $currentVacation['enddatum'] = max($currentVacation['enddatum'], $end);
+        } else {
+            $groupedVacations[] = $currentVacation;
+            $currentVacation = [
+                'mitarbeiter_id' => $vacation['mitarbeiter_id'],
+                'vorname' => $vacation['vorname'],
+                'nachname' => $vacation['nachname'],
+                'geburtsdatum' => $vacation['geburtsdatum'],
+                'startdatum' => $start,
+                'enddatum' => $end
+            ];
+        }
+    }
+}
+
+if ($currentVacation) {
+    $groupedVacations[] = $currentVacation;
+}
+
+// Ungelesene Krankmeldungen für den aktuellen Benutzer ermitteln
+$unreadStmt = $pdo->prepare("
+    SELECT 
+        az.abwesenheit_id,
+        mz.vorname  AS employee_firstname, 
+        mz.nachname AS employee_lastname,
+        az.startdatum, 
+        az.enddatum,
+        az.typ
+    FROM abwesenheiten_zentrale az
+    JOIN mitarbeiter_zentrale mz 
+        ON az.mitarbeiter_id = mz.mitarbeiter_id
+    JOIN abwesenheiten_read_status ars 
+        ON az.abwesenheit_id = ars.abwesenheit_id
+    WHERE ars.BenutzerID = :user_id
+      AND ars.read_status = 0
+      AND az.typ = 'Krank'
+      AND mz.status = 'Aktiv'
+");
+
+// Hier nutze den Session-Key 'user_id':
+$unreadStmt->execute([
+    'user_id' => $_SESSION['user_id']
+]);
+$unreadAbwesenheiten = $unreadStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Anzahl ungelesener Einträge:
+$unreadCount = count($unreadAbwesenheiten);
+
+?>
+<?php
+$title = 'Zentrale Dashboard';
+include __DIR__ . '/../includes/layout.php';
+?>
+    <!-- Font Awesome Einbindung -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Bisheriges CSS -->
+    <script src="js/modal.js"></script>
+    <style>
+                /* Krankheitszellen */
+		.dashboard-table .absent-sick {
+		  background-color: #d4edda;
+		  color: #155724;
+		}
+		/* Urlaubszellen */
+		.dashboard-table .absent-vacation {
+		  background-color: #fff3cd;
+		  color: #856404;
+		}
+		/*Wochenende*/
+		.dashboard-table .weekend {
+		  background-color: #f8d7da;
+		  color: #721c24;
+		}
+		.month-navigation {
+		  margin: 20px auto;
+		  text-align: left;
+		}
+		.month-navigation a {
+		  padding: 10px 15px;
+		  font-size: 16px;
+		  background-color: #FFD700;
+		  color: #000000;
+		  text-decoration: none;
+		  border-radius: 4px;
+		  margin: 0 5px;
+		}
+		.month-navigation a:hover {
+		  background-color: #FFC107;
+		}
+		.month-navigation span {
+		  font-size: 18px;
+		  font-weight: bold;
+		  margin-left: 10px;
+		}
+		</style>
+
+        <main class="with_sidebar">
+        <h1>Zentrale Dashboard</h1>
+		
+		<?php if ($unreadCount > 0): ?>
+			<section>
+				<h3>Neue Krankmeldungen</h3>
+				<ul>
+					<?php foreach ($unreadAbwesenheiten as $absence): ?>
+						<li>
+							Mitarbeiter: 
+							<?php echo htmlspecialchars($absence['employee_lastname'] . ', ' . $absence['employee_firstname']); ?><br>
+							Zeitraum: 
+							<?php echo date('d.m.y', strtotime($absence['startdatum'])); ?>
+							bis 
+							<?php echo date('d.m.y', strtotime($absence['enddatum'])); ?><br>
+							Grund: 
+							<?php echo htmlspecialchars($absence['typ']); ?><br>
+							<button onclick="markAsRead(<?php echo $absence['abwesenheit_id']; ?>)">
+								Gelesen
+							</button>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			</section>
+			<?php else: ?>
+		<?php endif; ?>
+
+		<button onclick="openModal('abwesenheitModal')">Krank melden</button>
+
+        <!-- Monat wechseln -->
+        <div class="month-navigation">
+            <a href="?month=<?= $prevMonth ?>&year=<?= $prevYear ?>">&laquo; Vorheriger Monat</a>
+            <span><?= ucfirst($formatter->format(strtotime($start_date))) ?></span>
+            <a href="?month=<?= $nextMonth ?>&year=<?= $nextYear ?>">Nächster Monat &raquo;</a>
+        </div>
+
+        <table class="dashboard-table">
+			<thead>
+				<tr>
+					<th>Mitarbeiter</th>
+					<?php foreach ($dates as $date): ?>
+						<th class="<?php echo $date['isWeekend'] ? 'weekend' : ''; ?>">
+							<?php echo $date['day'] . '.'; ?>
+						</th>
+					<?php endforeach; ?>
+				</tr>
+			</thead>
+			<tbody>
+				<?php if (!empty($mitarbeiter)): ?>
+                                    <?php foreach ($mitarbeiter as $person): ?>
+                                                <tr class="mitarbeiter-row" data-mitarbeiter-id="<?= htmlspecialchars($person['mitarbeiter_id']) ?>">
+                                                        <td><?php echo htmlspecialchars($person['nachname'] . ', ' . $person['vorname']); ?></td>
+							<?php foreach ($dates as $date): ?>
+								<?php
+								// Standardklasse und Text
+								$cellClass = '';
+								$cellText = '-';
+
+								// Abwesenheiten prüfen
+								foreach ($abwesenheiten as $absence) {
+									if ($absence['mitarbeiter_id'] == $person['mitarbeiter_id'] && $date['date'] >= $absence['startdatum'] && $date['date'] <= $absence['enddatum']) {
+										if ($absence['typ'] === 'Krank') {
+											$cellClass = 'absent-sick';
+											$cellText = '-'; // Text bleibt unverändert
+										} elseif ($absence['typ'] === 'Urlaub') {
+											$cellClass = 'absent-vacation';
+											$cellText = 'U';
+										}
+										break;
+									}
+								}
+
+                                                                // Schicht prüfen, nur wenn kein Urlaub
+                                                                if ($cellText === '-' && isset($dienstplanMap[$person['mitarbeiter_id']][$date['date']])) {
+                                                                        $cellText = $dienstplanMap[$person['mitarbeiter_id']][$date['date']];
+                                                                }
+
+                                                                // Farben für Schichten wie im Dashboard setzen, falls keine Abwesenheit
+                                                                if ($cellClass === '' && $cellText !== '-' && isset($dienstplanMap[$person['mitarbeiter_id']][$date['date']])) {
+                                                                        switch ($cellText) {
+                                                                                case 'F0':
+                                                                                case 'F1':
+                                                                                case 'F3':
+                                                                                        $cellClass = 'early-shift';
+                                                                                        break;
+                                                                                case 'F2':
+                                                                                        $cellClass = 'mid-shift';
+                                                                                        break;
+                                                                                case 'S0':
+                                                                                case 'S1':
+                                                                                        $cellClass = 'late-shift';
+                                                                                        break;
+                                                                                case 'N':
+                                                                                        $cellClass = 'night-shift';
+                                                                                        break;
+                                                                        }
+                                                                }
+								?>
+								<td class="<?php echo $cellClass; ?>">
+									<?php echo htmlspecialchars($cellText); ?>
+								</td>
+							<?php endforeach; ?>
+						</tr>
+					<?php endforeach; ?>
+				<?php else: ?>
+					<tr>
+						<td colspan="<?php echo count($dates) + 1; ?>">Keine Mitarbeiter gefunden.</td>
+					</tr>
+				<?php endif; ?>
+			</tbody>
+		</table>
+	</main>
+	<aside class="sidebar">
+		<section>
+			<h3>Urlaube der nächsten 3 Monate</h3>
+			<ul>
+				<?php foreach ($groupedVacations as $vacation): ?>
+					<?php 
+                                            $workdays = workdaysBetween($vacation['startdatum'], $vacation['enddatum']);
+						$age = $vacation['geburtsdatum'] 
+							? calculateAge($vacation['geburtsdatum'], $vacation['startdatum']) 
+							: '-'; 
+					?>
+					<li>
+						<?php echo htmlspecialchars($vacation['vorname'] . ' ' . $vacation['nachname']); ?>: 
+						<?php echo date('d.m.y', strtotime($vacation['startdatum'])); ?> bis 
+						<?php echo date('d.m.y', strtotime($vacation['enddatum'])); ?> 
+						(<?php echo $workdays; ?> Tage)
+					</li>
+				<?php endforeach; ?>
+			</ul>
+		</section>
+                <section>
+                        <h3>Geburtstagsliste</h3>
+                        <ul>
+                                <?php if ($birthdaysError): ?>
+                                        <li><?php echo htmlspecialchars($birthdaysError); ?></li>
+                                <?php elseif (empty($birthdays)): ?>
+                                        <li>Keine Geburtstage vorhanden.</li>
+                                <?php else: ?>
+                                        <?php foreach ($birthdays as $birthday): ?>
+                                                <li>
+                                                        <?php echo htmlspecialchars($birthday['vorname'] . ' ' . $birthday['nachname']); ?>:
+                                                        <?php echo $birthday['geburtstag']; ?>
+                                                        (<?php echo $birthday['new_age']; ?> Jahre)
+                                                </li>
+                                        <?php endforeach; ?>
+                                <?php endif; ?>
+                        </ul>
+                </section>
+        </aside>
+        <div class="modal" id="mitarbeiterEditModal">
+                <div class="modal-content">
+                        <span class="close" role="button" aria-label="Modal schließen" onclick="closeModal('mitarbeiterEditModal')">&times;</span>
+                        <h2>Mitarbeiter bearbeiten</h2>
+                        <div id="mitarbeiterFormMessages" class="alert d-none" role="alert"></div>
+                        <form id="mitarbeiterEditForm">
+                                <input type="hidden" name="mitarbeiter_id" id="mitarbeiterEditId">
+                                <div id="mitarbeiterFormFields" class="row g-3"></div>
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                        <button type="button" class="btn btn-secondary" onclick="closeModal('mitarbeiterEditModal')">Abbrechen</button>
+                                        <button type="submit" class="btn btn-primary">Speichern</button>
+                                </div>
+                        </form>
+                </div>
+        </div>
+        <?php include 'modals/add_abwesenheit_modal.php'; ?>
+        <script>
+                function markAsRead(abwesenheitId) {
+                        fetch("mark_as_read.php?abwesenheit_id=" + abwesenheitId)
+				.then(response => response.text())
+				.then(data => {
+					console.log("Antwort von mark_as_read:", data); // <-- zum Debuggen
+					if (data === "success") {
+						location.reload();
+					} else {
+						alert("Fehler beim Aktualisieren des Lesestatus: " + data);
+					}
+				});
+                }
+        </script>
+        <?php $mitarbeiterScriptVersion = filemtime(__DIR__ . '/js/mitarbeiter_zentrale.js'); ?>
+        <script src="js/mitarbeiter_zentrale.js?v=<?= $mitarbeiterScriptVersion; ?>" defer></script>
+        <script>
+	document.querySelector('.burger-menu').addEventListener('click', () => {
+	document.querySelector('.nav-links').classList.toggle('active');
+	});
+	</script>
+
+
+</body>
+</html>

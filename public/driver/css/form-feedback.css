@@ -1,0 +1,39 @@
+.form-feedback {
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin: 0 0 20px 0;
+}
+
+.form-feedback--error {
+    background-color: #fdecea;
+    border: 1px solid #f5c2c7;
+    color: #842029;
+}
+
+.form-feedback--success {
+    background-color: #e6ffed;
+    border: 1px solid #a6f4c5;
+    color: #0f5132;
+}
+
+.form-feedback ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.field-error {
+    color: #c0392b;
+    font-size: 0.9rem;
+    margin-top: 4px;
+}
+
+.form-hint {
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.form-feedback--warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+}

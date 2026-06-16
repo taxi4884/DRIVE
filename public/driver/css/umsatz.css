@@ -1,0 +1,158 @@
+fieldset {
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+}
+
+fieldset.gruen {
+    background-color: #e8f5e9;
+}
+
+fieldset.blau {
+    background-color: #e3f2fd;
+}
+
+fieldset.rot {
+    background-color: #ffebee;
+}
+
+fieldset.gelb {
+    background-color: #fffde7;
+}
+
+legend {
+    font-weight: bold;
+}
+
+form,
+label,
+legend,
+textarea,
+input {
+    text-align: left;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+textarea {
+    vertical-align: top;
+}
+
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.taxi-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 80px;
+    overflow: hidden;
+}
+
+.taxi {
+    width: 60px;
+    height: 60px;
+    background-image: url('https://em-content.zobj.net/source/microsoft/310/taxi_1f695.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    position: absolute;
+    top: 10px;
+    left: 100%;
+    animation: drive 2s linear infinite;
+}
+
+.puste {
+    font-size: 40px;
+    position: absolute;
+    top: 20px;
+    right: calc(100% + 30px);
+    animation: blink 1s infinite, drivePuste 2s linear infinite;
+}
+
+@keyframes drive {
+    0% {
+        left: 100%;
+    }
+    100% {
+        left: -100px;
+    }
+}
+
+@keyframes drivePuste {
+    0% {
+        left: calc(100% + 50px);
+    }
+    100% {
+        left: -50px;
+    }
+}
+
+@keyframes blink {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    25%,
+    75% {
+        opacity: 0.4;
+        transform: scale(1.2);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#overlay p {
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+    margin-top: 20px;
+}
+
+.recherche-hinweis {
+    margin: 8px 0 4px;
+}
+
+.recherche-link {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #1976d2;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.recherche-link:hover {
+    background: #e3f2fd;
+}
+
+.hinweis {
+    color: #b07900;
+    margin-top: 4px;
+    font-size: 0.9rem;
+}

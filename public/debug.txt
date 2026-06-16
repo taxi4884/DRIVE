@@ -1,0 +1,9 @@
+Array
+(
+    [fahrer_id] => 1
+    [original_start] => 2025-04-15
+    [original_end] => 2025-04-17
+    [startdatum] => 2025-04-15
+    [enddatum] => 2025-04-16
+    [grund] => Urlaub
+)

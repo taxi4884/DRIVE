@@ -1,0 +1,140 @@
+<?php
+require_once '../includes/bootstrap.php';
+$title = 'Projektmanagement';
+include __DIR__ . '/../includes/layout.php';
+
+function ensureTables(PDO $pdo): void {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS pm_projects (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(190) NOT NULL,
+        notes TEXT NULL,
+        status VARCHAR(40) NOT NULL DEFAULT 'Idee',
+        due_date DATE NULL,
+        created_by VARCHAR(120) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS pm_tickets (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        project_id INT NOT NULL,
+        title VARCHAR(190) NOT NULL,
+        notes TEXT NULL,
+        status VARCHAR(40) NOT NULL DEFAULT 'Neu',
+        priority VARCHAR(20) NOT NULL DEFAULT 'Normal',
+        due_date DATE NULL,
+        assignee VARCHAR(120) NULL,
+        next_owner VARCHAR(120) NULL,
+        watchers TEXT NULL,
+        created_by VARCHAR(120) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        CONSTRAINT fk_pm_tickets_project FOREIGN KEY (project_id) REFERENCES pm_projects(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $pdo->exec("CREATE TABLE IF NOT EXISTS pm_activity (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        entity_type VARCHAR(20) NOT NULL,
+        entity_id INT NOT NULL,
+        action VARCHAR(60) NOT NULL,
+        details TEXT NULL,
+        actor VARCHAR(120) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+function logActivity(PDO $pdo, string $type, int $id, string $action, string $details, string $actor): void {
+    $stmt = $pdo->prepare("INSERT INTO pm_activity (entity_type, entity_id, action, details, actor) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$type, $id, $action, $details, $actor]);
+}
+
+ensureTables($pdo);
+$actor = $_SESSION['user_name'] ?? 'System';
+$msg = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+    if ($action === 'create_project') {
+        $stmt = $pdo->prepare("INSERT INTO pm_projects (title, notes, status, due_date, created_by) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([trim($_POST['title'] ?? ''), trim($_POST['notes'] ?? ''), $_POST['status'] ?? 'Idee', $_POST['due_date'] ?: null, $actor]);
+        logActivity($pdo, 'project', (int)$pdo->lastInsertId(), 'created', 'Projekt angelegt', $actor);
+        $msg = 'Projekt angelegt.';
+    } elseif ($action === 'create_ticket') {
+        $stmt = $pdo->prepare("INSERT INTO pm_tickets (project_id, title, notes, status, priority, due_date, assignee, next_owner, watchers, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([(int)$_POST['project_id'], trim($_POST['title'] ?? ''), trim($_POST['notes'] ?? ''), $_POST['status'] ?? 'Neu', $_POST['priority'] ?? 'Normal', $_POST['due_date'] ?: null, trim($_POST['assignee'] ?? ''), trim($_POST['next_owner'] ?? ''), trim($_POST['watchers'] ?? ''), $actor]);
+        logActivity($pdo, 'ticket', (int)$pdo->lastInsertId(), 'created', 'Ticket angelegt', $actor);
+        $msg = 'Ticket angelegt.';
+    } elseif ($action === 'update_ticket_status') {
+        $ticketId = (int)$_POST['ticket_id'];
+        $status = $_POST['status'] ?? 'Neu';
+        $stmt = $pdo->prepare("SELECT next_owner FROM pm_tickets WHERE id = ?");
+        $stmt->execute([$ticketId]);
+        $old = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($status === 'Wartet auf Nächsten' && !empty($old['next_owner'])) {
+            $stmt = $pdo->prepare("UPDATE pm_tickets SET status = ?, assignee = ? WHERE id = ?");
+            $stmt->execute([$status, $old['next_owner'], $ticketId]);
+        } else {
+            $stmt = $pdo->prepare("UPDATE pm_tickets SET status = ? WHERE id = ?");
+            $stmt->execute([$status, $ticketId]);
+        }
+        logActivity($pdo, 'ticket', $ticketId, 'status_changed', 'Status geändert auf: ' . $status, $actor);
+        $msg = 'Ticket aktualisiert.';
+    }
+}
+
+$projects = $pdo->query("SELECT * FROM pm_projects ORDER BY updated_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+$tickets = $pdo->query("SELECT t.*, p.title AS project_title FROM pm_tickets t JOIN pm_projects p ON p.id=t.project_id ORDER BY t.updated_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+$activity = $pdo->query("SELECT * FROM pm_activity ORDER BY created_at DESC LIMIT 30")->fetchAll(PDO::FETCH_ASSOC);
+?>
+<div class="container">
+<h1>Projektmanagement + Tickets</h1>
+<?php if ($msg): ?><p><strong><?= htmlspecialchars($msg) ?></strong></p><?php endif; ?>
+
+<h2>Projekt erstellen</h2>
+<form method="post">
+  <input type="hidden" name="action" value="create_project">
+  <input name="title" placeholder="Titel" required>
+  <input name="notes" placeholder="Notizen">
+  <select name="status"><option>Idee</option><option>Geplant</option><option>In Umsetzung</option><option>Review</option><option>Abgeschlossen</option><option>On Hold</option></select>
+  <input type="date" name="due_date">
+  <button>Projekt speichern</button>
+</form>
+
+<h2>Ticket erstellen</h2>
+<form method="post">
+  <input type="hidden" name="action" value="create_ticket">
+  <select name="project_id" required>
+    <?php foreach($projects as $p): ?>
+      <option value="<?= (int)$p['id'] ?>"><?= htmlspecialchars($p['title']) ?></option>
+    <?php endforeach; ?>
+  </select>
+  <input name="title" placeholder="Ticket-Titel" required>
+  <input name="notes" placeholder="Notizen">
+  <input name="assignee" placeholder="Verantwortlich">
+  <input name="next_owner" placeholder="Nächster Bearbeiter">
+  <input name="watchers" placeholder="Info-Empfänger (kommagetrennt)">
+  <select name="status"><option>Neu</option><option>In Bearbeitung</option><option>Wartet auf Nächsten</option><option>Review/Freigabe</option><option>Erledigt</option><option>Blockiert</option><option>Abgelehnt</option></select>
+  <button>Ticket speichern</button>
+</form>
+
+<h2>Tickets</h2>
+<?php foreach($tickets as $t): ?>
+  <div style="border:1px solid #ddd;padding:10px;margin:8px 0;background:#fff">
+    <strong>#<?= (int)$t['id'] ?> <?= htmlspecialchars($t['title']) ?></strong> (<?= htmlspecialchars($t['project_title']) ?>)<br>
+    Status: <?= htmlspecialchars($t['status']) ?> | Assignee: <?= htmlspecialchars($t['assignee'] ?: '-') ?> | Next: <?= htmlspecialchars($t['next_owner'] ?: '-') ?><br>
+    Watcher: <?= htmlspecialchars($t['watchers'] ?: '-') ?>
+    <form method="post" style="margin-top:6px;">
+      <input type="hidden" name="action" value="update_ticket_status">
+      <input type="hidden" name="ticket_id" value="<?= (int)$t['id'] ?>">
+      <select name="status"><option>Neu</option><option>In Bearbeitung</option><option>Wartet auf Nächsten</option><option>Review/Freigabe</option><option>Erledigt</option><option>Blockiert</option><option>Abgelehnt</option></select>
+      <button>Status setzen</button>
+    </form>
+  </div>
+<?php endforeach; ?>
+
+<h2>Aktivität</h2>
+<?php foreach($activity as $a): ?>
+  <div><?= htmlspecialchars($a['created_at']) ?> · <?= htmlspecialchars($a['entity_type']) ?> #<?= (int)$a['entity_id'] ?> · <?= htmlspecialchars($a['action']) ?> · <?= htmlspecialchars($a['details']) ?></div>
+<?php endforeach; ?>
+</div>
+</body></html>

@@ -1,0 +1,358 @@
+<?php
+require_once '../includes/db.php';
+require_once '../includes/config.php';
+
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+
+header_remove('X-Frame-Options');
+
+$canUse = true;
+
+$ok = '';
+$err = '';
+$warn = '';
+
+$pdo->exec("ALTER TABLE complaint_entrepreneurs ADD COLUMN IF NOT EXISTS external_number VARCHAR(30) NULL AFTER company_name");
+$pdo->exec("ALTER TABLE complaints MODIFY COLUMN status ENUM('neu','pruefen','in_pruefung','geschlossen') NOT NULL DEFAULT 'neu'");
+
+function v(array $row, array $keys): ?string {
+    foreach ($keys as $k) {
+        if (array_key_exists($k, $row) && $row[$k] !== null && $row[$k] !== '') {
+            return trim((string)$row[$k]);
+        }
+    }
+    return null;
+}
+
+function gatewayCall(array $payload): array {
+    $ch = curl_init('https://4884gateway.de/fms');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST => true,
+        CURLOPT_HTTPHEADER => ['Content-Type: application/json', 'Accept: application/json'],
+        CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
+        CURLOPT_TIMEOUT => 15,
+    ]);
+    $raw = curl_exec($ch);
+    $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr = curl_error($ch);
+    curl_close($ch);
+
+    $decoded = null;
+    if (is_string($raw) && $raw !== '') {
+        $tmp = json_decode($raw, true);
+        if (is_array($tmp)) {
+            $decoded = $tmp;
+        }
+    }
+
+    return [
+        'ok' => ($curlErr === '' && $code >= 200 && $code < 300),
+        'http_code' => $code,
+        'curl_error' => $curlErr,
+        'raw' => is_string($raw) ? $raw : '',
+        'decoded' => $decoded,
+    ];
+}
+
+function findByNumberRecursive($node, string $number, array $keys): ?array {
+    $norm = ltrim($number, '0');
+    $norm = $norm === '' ? '0' : $norm;
+
+    if (is_array($node)) {
+        $map = [];
+        foreach ($node as $k => $val) {
+            $map[strtolower((string)$k)] = $val;
+        }
+        foreach ($keys as $k) {
+            $lk = strtolower($k);
+            if (!isset($map[$lk])) continue;
+            $candidate = ltrim((string)$map[$lk], '0');
+            $candidate = $candidate === '' ? '0' : $candidate;
+            if ($candidate === $norm) {
+                return $node;
+            }
+        }
+        foreach ($node as $child) {
+            $found = findByNumberRecursive($child, $number, $keys);
+            if ($found) return $found;
+        }
+    }
+    return null;
+}
+
+function loadDriverFromGateway(string $driverNo): ?array {
+    $attempts = [
+        ['GETFAHRER' => ['FAHRER_NR' => (int)$driverNo]],
+        ['GETFAHRER' => ['nummer' => (int)$driverNo]],
+        ['getfahrer' => ['fahrernummer' => $driverNo]],
+        ['GETFAHRERLISTE' => new stdClass()],
+    ];
+
+    foreach ($attempts as $payload) {
+        $result = gatewayCall($payload);
+        $response = $result['decoded'];
+        if (!is_array($response)) continue;
+
+        $candidate = findByNumberRecursive($response, $driverNo, ['fahrerNr','fahrernummer','fahrer_nr','nummer','fahrernr','displaynummer']);
+        if (!$candidate) {
+            continue;
+        }
+
+        return [
+            'display_number' => (string)(v($candidate, ['displaynummer','display_number']) ?? $driverNo),
+            'driver_number' => v($candidate, ['fahrerNr','fahrernummer','fahrer_nr','nummer','fahrernr']) ?? $driverNo,
+            'first_name' => v($candidate, ['vorname','first_name']),
+            'last_name' => v($candidate, ['nachname','last_name']),
+            'street' => v($candidate, ['strasseName','strasse','street']),
+            'house_no' => v($candidate, ['hausnummerEcke','hausnummer','house_no']),
+            'postal_code' => v($candidate, ['plz','postal_code']),
+            'city' => v($candidate, ['ortName','ort','city']),
+            'email' => v($candidate, ['email','e_mail']),
+            'mobile' => v($candidate, ['mobiltelefonnummer','handynummer','mobilnummer','mobile']),
+            'entrepreneur_number' => v($candidate, ['unternehmerNr','unternehmernummer','unternehmer_nr','unternehmer']),
+            'raw_payload' => json_encode($response, JSON_UNESCAPED_UNICODE),
+        ];
+    }
+    return null;
+}
+
+function loadEntrepreneurFromGateway(string $number): ?array {
+    $attempts = [
+        ['GETUNTERNEHMER' => ['UNTERNEHMER_NR' => (int)$number]],
+        ['GETUNTERNEHMER' => ['nummer' => (int)$number]],
+        ['getunternehmer' => ['unternehmernummer' => $number]],
+        ['GETUNTERNEHMERLISTE' => new stdClass()],
+    ];
+
+    foreach ($attempts as $payload) {
+        $result = gatewayCall($payload);
+        $response = $result['decoded'];
+        if (!is_array($response)) continue;
+
+        $candidate = findByNumberRecursive($response, $number, ['unternehmerNr','unternehmernummer','unternehmer_nr','nummer']);
+        if (!$candidate) continue;
+
+        return [
+            'external_number' => (string)(v($candidate, ['unternehmerNr','unternehmernummer','unternehmer_nr','nummer']) ?? $number),
+            'company_name' => (string)(v($candidate, ['firma','firmenname','company_name','name']) ?? ('Unternehmer #' . $number)),
+            'first_name' => v($candidate, ['vorname','first_name']),
+            'last_name' => v($candidate, ['nachname','last_name']),
+            'street' => v($candidate, ['strasseName','strasse','street']),
+            'house_no' => v($candidate, ['hausnummerEcke','hausnummer','house_no']),
+            'postal_code' => v($candidate, ['plz','postal_code']),
+            'city' => v($candidate, ['ortName','ort','city']),
+            'email' => v($candidate, ['email','e_mail']),
+            'phone' => v($candidate, ['telefon','phone']),
+            'mobile' => v($candidate, ['mobiltelefonnummer','mobilnummer','mobile']),
+        ];
+    }
+    return null;
+}
+
+function templateByType(string $type, string $orderNo, string $freeText): string {
+    $base = [
+        'not_driven' => "Der Auftrag {$orderNo} wurde vom Fahrer angenommen, jedoch wurde die Abholadresse nicht angefahren.",
+        'wrong_passenger' => "Der Auftrag {$orderNo} wurde angenommen und angefahren, jedoch wurde ohne den vorgesehenen Fahrgast bzw. mit einem falschen Fahrgast abgefahren.",
+        'cancelled' => "Der Auftrag {$orderNo} wurde vom Fahrer angenommen und anschließend ohne ordnungsgemäße Durchführung storniert bzw. abgeschlossen.",
+        'other' => trim($freeText),
+    ];
+    return trim((string)($base[$type] ?? $base['other']));
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $driverNo = trim((string)($_POST['driver_number'] ?? ''));
+        $orderNo = trim((string)($_POST['order_number'] ?? ''));
+        $incidentType = trim((string)($_POST['incident_type'] ?? ''));
+        $otherText = trim((string)($_POST['other_text'] ?? ''));
+
+        if ($driverNo === '' || $orderNo === '' || $incidentType === '') {
+            throw new RuntimeException('Bitte Fahrernummer, Auftragsnummer und Vorfalltyp ausfüllen.');
+        }
+        if ($incidentType === 'other' && $otherText === '') {
+            throw new RuntimeException('Bitte bei "Anderes" den Freitext erfassen.');
+        }
+
+        $driverStmt = $pdo->prepare('SELECT * FROM complaint_drivers WHERE driver_number = ? OR display_number = ? LIMIT 1');
+        $driverStmt->execute([$driverNo, $driverNo]);
+        $driverRow = $driverStmt->fetch(PDO::FETCH_ASSOC);
+
+        $driverData = loadDriverFromGateway($driverNo);
+        if ($driverData && !$driverRow) {
+            $ins = $pdo->prepare('INSERT INTO complaint_drivers (display_number, driver_number, first_name, last_name, street, house_no, postal_code, city, email, mobile, raw_payload) VALUES (:display,:dno,:first,:last,:street,:house,:plz,:city,:email,:mobile,:raw)');
+            $ins->execute([
+                ':display' => $driverData['display_number'],
+                ':dno' => $driverData['driver_number'],
+                ':first' => $driverData['first_name'],
+                ':last' => $driverData['last_name'],
+                ':street' => $driverData['street'],
+                ':house' => $driverData['house_no'],
+                ':plz' => $driverData['postal_code'],
+                ':city' => $driverData['city'],
+                ':email' => $driverData['email'],
+                ':mobile' => $driverData['mobile'],
+                ':raw' => $driverData['raw_payload'],
+            ]);
+            $driverId = (int)$pdo->lastInsertId();
+            $driverRow = ['id' => $driverId, 'display_number' => $driverData['display_number']];
+        } elseif ($driverRow && $driverData) {
+            $upd = $pdo->prepare('UPDATE complaint_drivers SET display_number=:display, first_name=:first, last_name=:last, street=:street, house_no=:house, postal_code=:plz, city=:city, email=:email, mobile=:mobile, raw_payload=:raw WHERE id=:id');
+            $upd->execute([
+                ':display' => $driverData['display_number'],
+                ':first' => $driverData['first_name'],
+                ':last' => $driverData['last_name'],
+                ':street' => $driverData['street'],
+                ':house' => $driverData['house_no'],
+                ':plz' => $driverData['postal_code'],
+                ':city' => $driverData['city'],
+                ':email' => $driverData['email'],
+                ':mobile' => $driverData['mobile'],
+                ':raw' => $driverData['raw_payload'],
+                ':id' => (int)$driverRow['id'],
+            ]);
+        }
+
+        $driverMissingInFms = false;
+        if (!$driverRow && !$driverData) {
+            $driverMissingInFms = true;
+            $warn = 'Fahrernummer konnte in FMS nicht gefunden werden. Beschwerde wird trotzdem aufgenommen und zur Backoffice-Prüfung markiert.';
+        }
+
+        $entrepreneurId = null;
+        if (!empty($driverData['entrepreneur_number'])) {
+            $eno = (string)$driverData['entrepreneur_number'];
+            $es = $pdo->prepare('SELECT id FROM complaint_entrepreneurs WHERE external_number = ? LIMIT 1');
+            $es->execute([$eno]);
+            $entrepreneurId = (int)$es->fetchColumn();
+
+            if ($entrepreneurId <= 0) {
+                $eData = loadEntrepreneurFromGateway($eno);
+                if ($eData) {
+                    $ei = $pdo->prepare('INSERT INTO complaint_entrepreneurs (external_number, company_name, first_name, last_name, street, house_no, postal_code, city, email, phone, mobile, active) VALUES (:nr,:company,:first,:last,:street,:house,:plz,:city,:email,:phone,:mobile,1)');
+                    $ei->execute([
+                        ':nr' => $eData['external_number'],
+                        ':company' => $eData['company_name'],
+                        ':first' => $eData['first_name'],
+                        ':last' => $eData['last_name'],
+                        ':street' => $eData['street'],
+                        ':house' => $eData['house_no'],
+                        ':plz' => $eData['postal_code'],
+                        ':city' => $eData['city'],
+                        ':email' => $eData['email'],
+                        ':phone' => $eData['phone'],
+                        ':mobile' => $eData['mobile'],
+                    ]);
+                    $entrepreneurId = (int)$pdo->lastInsertId();
+                }
+            }
+        }
+
+        $subject = templateByType($incidentType, $orderNo, $otherText);
+        if ($subject === '') {
+            throw new RuntimeException('Der Sachverhalt ist leer.');
+        }
+
+        $displayNo = (string)($driverData['display_number'] ?? $driverRow['display_number'] ?? $driverNo);
+        if ($displayNo === '') {
+            $displayNo = $driverNo;
+        }
+
+        if ($driverMissingInFms) {
+            $subject = "[FMS-PRÜFUNG ERFORDERLICH] Fahrernummer {$driverNo} konnte nicht im System gefunden werden.\n" . $subject;
+        }
+
+        $driverIdForComplaint = isset($driverRow['id']) ? (int)$driverRow['id'] : null;
+
+        $insComplaint = $pdo->prepare('INSERT INTO complaints (order_number, display_number, driver_id, entrepreneur_id, subject, action_type, status, created_by) VALUES (:order_number,:display_number,:driver_id,:entrepreneur_id,:subject,:action_type,:status,:created_by)');
+        $insComplaint->execute([
+            ':order_number' => $orderNo,
+            ':display_number' => $displayNo,
+            ':driver_id' => $driverIdForComplaint,
+            ':entrepreneur_id' => $entrepreneurId ?: null,
+            ':subject' => $subject,
+            ':action_type' => 'strafe',
+            ':status' => 'pruefen',
+            ':created_by' => (int)($_SESSION['user_id'] ?? 0) ?: null,
+        ]);
+
+        if ($driverMissingInFms) {
+            $ok = 'Beschwerde wurde aufgenommen und als Backoffice-Prüffall markiert.';
+        } else {
+            $ok = 'Beschwerde wurde vorbereitet und in die Übersicht übernommen.';
+        }
+    } catch (Throwable $e) {
+        $err = 'Fehler: ' . $e->getMessage();
+    }
+}
+?>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Beschwerde-Erfassung</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#f8f9fa}
+    .wrap{max-width:900px;margin:0 auto;padding:16px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h1 class="h5 mb-3">Beschwerde-Erfassung (Vorstufe)</h1>
+      <p class="text-muted mb-3">Diese Eingabe erstellt eine vorbereitete Beschwerde für die Nachbearbeitung im Beschwerdemanagement.</p>
+
+      <?php if ($ok): ?><div class="alert alert-success"><?= htmlspecialchars($ok, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+      <?php if ($warn): ?><div class="alert alert-warning"><?= htmlspecialchars($warn, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+      <?php if ($err): ?><div class="alert alert-danger"><?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></div><?php endif; ?>
+
+      <form method="post" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Fahrernummer *</label>
+          <input class="form-control" name="driver_number" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Auftragsnummer *</label>
+          <input class="form-control" name="order_number" required>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Was ist passiert? *</label>
+          <select class="form-select" name="incident_type" id="incidentType" required>
+            <option value="">Bitte wählen</option>
+            <option value="not_driven">Fahrer hat Auftrag angenommen, aber ist nicht hingefahren</option>
+            <option value="wrong_passenger">Fahrer hat Auftrag angenommen, ist hingefahren, aber ohne Fahrgast / falscher Fahrgast weggefahren</option>
+            <option value="cancelled">Fahrer hat Auftrag angenommen und diesen einfach storniert/abgeschlossen</option>
+            <option value="other">Anderes (Freitext)</option>
+          </select>
+        </div>
+
+        <div class="col-12" id="otherWrap" style="display:none;">
+          <label class="form-label">Freitext für Sachverhalt *</label>
+          <textarea class="form-control" name="other_text" rows="4" placeholder="Bitte Vorfall kurz und klar beschreiben"></textarea>
+        </div>
+
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Beschwerde vorbereiten</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  const incident = document.getElementById('incidentType');
+  const otherWrap = document.getElementById('otherWrap');
+  const toggleOther = () => {
+    if (!incident || !otherWrap) return;
+    otherWrap.style.display = incident.value === 'other' ? '' : 'none';
+  };
+  if (incident) {
+    incident.addEventListener('change', toggleOther);
+    toggleOther();
+  }
+</script>
+</body>
+</html>
